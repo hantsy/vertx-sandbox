@@ -13,16 +13,20 @@ public class MainVerticle extends AbstractVerticle {
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
 
+        //Create a PgPool instance
         var pgPool = pgPool();
 
+        //Creating PostRepository
         var postRepository = PostRepository.create(pgPool);
 
+        //Creating PostHandler
         var postHandlers = PostsHandler.create(postRepository);
 
-        var intializer = DataInitializer.create(pgPool);
-        intializer.initialize();
+        // Initializing the sample data
+        var initializer = DataInitializer.create(pgPool);
+        initializer.run();
 
-
+        // Configure routes
         var router = routes(postHandlers);
 
         // Create the HTTP server

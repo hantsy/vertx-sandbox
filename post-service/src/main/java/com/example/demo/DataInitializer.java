@@ -23,7 +23,7 @@ public class DataInitializer {
         return new DataInitializer(client);
     }
 
-    public void initialize() {
+    public void run() {
         LOGGER.info("Data initialization is starting...");
 
         Tuple first = Tuple.of("Hello Quarkus", "My first post of Quarkus");
@@ -38,8 +38,7 @@ public class DataInitializer {
                 .forEach(row -> LOGGER.log(Level.INFO, "saved data:{0}", new Object[]{row.toJson()}))
             )
             .onComplete(
-                objectAsyncResult ->
-                {
+                r -> {
                     //client.close();
                     LOGGER.info("Data initialization is done...");
                 }

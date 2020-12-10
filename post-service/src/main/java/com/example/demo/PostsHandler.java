@@ -37,11 +37,11 @@ class PostsHandler {
         var params = rc.pathParams();
         var id = params.get("id");
         this.posts.findById(UUID.fromString(id))
-            .onSuccess(post ->
-                rc.response().end(Json.encode(post))
+            .onSuccess(
+                post -> rc.response().end(Json.encode(post))
             )
-            .onFailure(throwable ->
-                rc.fail(404, throwable)
+            .onFailure(
+                throwable -> rc.fail(404, throwable)
             );
 
     }
@@ -79,8 +79,8 @@ class PostsHandler {
             .onSuccess(
                 data -> rc.response().setStatusCode(204).end()
             )
-            .onFailure(throwable ->
-                rc.fail(404, throwable)
+            .onFailure(
+                throwable -> rc.fail(404, throwable)
             );
 
     }
