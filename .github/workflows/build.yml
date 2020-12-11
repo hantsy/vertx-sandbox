@@ -1,0 +1,56 @@
+name: build
+
+on:
+  push:
+    paths-ignore:
+      - "docs/**"
+    branches:
+      - master
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 15
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+          
+      - name: Start up databases via Docker Compose 
+        run: |
+            docker-compose up -d postgres
+            docker ps -a
+
+      - name: Build post-service
+        run: mvn clean install --file post-service/pom.xml
+                 
+        
+  automerge:
+    name: Merge pull request
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.base_ref == 'master' && github.actor == 'dependabot[bot]'
+    steps:
+      - name: Merge
+        uses: actions/github-script@v3.0.0
+        with:
+          script: |
+            github.pullRequests.merge({
+              owner: context.payload.repository.owner.login,
+              repo: context.payload.repository.name,
+              pull_number: context.payload.pull_request.number
+            })
+          github-token: ${{github.token}}

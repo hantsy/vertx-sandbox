@@ -13,13 +13,15 @@
 
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
-        <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <exec-maven-plugin.version>1.5.0</exec-maven-plugin.version>
 
         <vertx.version>4.0.0</vertx.version>
         <junit-jupiter.version>5.4.0</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
+        <assertj-core.version>3.18.1</assertj-core.version>
+        <jackson.version>2.11.3</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -43,10 +45,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
@@ -57,12 +61,6 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-pg-client</artifactId>
         </dependency>
-
-        <!--    <dependency>-->
-        <!--      <groupId>io.vertx</groupId>-->
-        <!--      <artifactId>vertx-web-client</artifactId>-->
-        <!--    </dependency>-->
-
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-junit5</artifactId>
@@ -81,9 +79,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>2.11.3</version>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj-core.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
