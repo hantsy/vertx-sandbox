@@ -29,7 +29,8 @@ class PostsHandler {
 //        LOGGER.log(Level.INFO, " find by keyword: q={0}, limit={1}, offset={2}", new Object[]{q, limit, offset});
         this.posts.findAll()
             .onSuccess(
-                data -> rc.response().end(Json.encode(data))
+                //data -> rc.response().end(Json.encode(data))
+                data -> rc.response().end(EntityUtils.toJson(data))
             );
     }
 
@@ -48,9 +49,10 @@ class PostsHandler {
 
 
     public void save(RoutingContext rc) {
-        var body = rc.getBodyAsJson();
+        //rc.getBodyAsJson().mapTo(PostForm.class)
+        var body = rc.getBodyAsString();
         LOGGER.log(Level.INFO, "request body: {0}", body);
-        var form = body.mapTo(PostForm.class);
+        var form = EntityUtils.fromJson(body, PostForm.class);
         this.posts.save(Post.of(form.getTitle(), form.getContent()))
             .onSuccess(
                 savedId -> rc.response()
@@ -64,9 +66,9 @@ class PostsHandler {
     public void update(RoutingContext rc) {
         var params = rc.pathParams();
         var id = params.get("id");
-        var body = rc.getBodyAsJson();
+        var body = rc.getBodyAsString();
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", new Object[]{id, body});
-        var form = body.mapTo(PostForm.class);
+        var form = EntityUtils.fromJson(body, PostForm.class);
         this.posts.findById(UUID.fromString(id))
             .compose(
                 post -> {

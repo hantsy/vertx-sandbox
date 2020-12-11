@@ -29,11 +29,14 @@ public class DataInitializer {
         Tuple first = Tuple.of("Hello Quarkus", "My first post of Quarkus");
         Tuple second = Tuple.of("Hello Again, Quarkus", "My second post of Quarkus");
 
-        client.query("DELETE FROM posts").execute()
-            .compose(r -> client.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)")
-                .executeBatch(List.of(first, second))
+        client
+            .withTransaction(
+                conn -> conn.query("DELETE FROM posts").execute()
+                    .flatMap(r -> conn.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)")
+                        .executeBatch(List.of(first, second))
+                    )
+                    .flatMap(r -> conn.query("SELECT * FROM posts").execute())
             )
-            .compose(r -> client.query("SELECT * FROM posts").execute())
             .onSuccess(data -> StreamSupport.stream(data.spliterator(), true)
                 .forEach(row -> LOGGER.log(Level.INFO, "saved data:{0}", new Object[]{row.toJson()}))
             )
