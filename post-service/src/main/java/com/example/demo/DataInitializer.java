@@ -42,7 +42,7 @@ public class DataInitializer {
             )
             .onComplete(
                 r -> {
-                    client.close();
+                    //client.close(); will block the application.
                     LOGGER.info("Data initialization is done...");
                 }
             )
