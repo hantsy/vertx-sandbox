@@ -8,6 +8,7 @@ import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -49,6 +50,7 @@ public class PostRepository {
 
 
     public Future<Post> findById(UUID id) {
+        Objects.requireNonNull(id, "id can not be null");
         return client.preparedQuery("SELECT * FROM posts WHERE id=$1").execute(Tuple.of(id))
             .map(RowSet::iterator)
             .map(iterator -> iterator.hasNext() ? MAPPER.apply(iterator.next()) : null)
@@ -84,8 +86,9 @@ public class PostRepository {
             .map(SqlResult::rowCount);
     }
 
-    public Future<Integer> deleteById(String id) {
-        return client.preparedQuery("DELETE FROM posts WHERE id=$1").execute(Tuple.of(UUID.fromString(id)))
+    public Future<Integer> deleteById(UUID id) {
+        Objects.requireNonNull(id, "id can not be null");
+        return client.preparedQuery("DELETE FROM posts WHERE id=$1").execute(Tuple.of(id))
             .map(SqlResult::rowCount);
     }
 

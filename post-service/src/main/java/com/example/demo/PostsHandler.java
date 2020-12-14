@@ -29,8 +29,7 @@ class PostsHandler {
 //        LOGGER.log(Level.INFO, " find by keyword: q={0}, limit={1}, offset={2}", new Object[]{q, limit, offset});
         this.posts.findAll()
             .onSuccess(
-                //data -> rc.response().end(Json.encode(data))
-                data -> rc.response().end(EntityUtils.toJson(data))
+                data -> rc.response().end(Json.encode(data))
             );
     }
 
@@ -50,9 +49,9 @@ class PostsHandler {
 
     public void save(RoutingContext rc) {
         //rc.getBodyAsJson().mapTo(PostForm.class)
-        var body = rc.getBodyAsString();
+        var body = rc.getBodyAsJson();
         LOGGER.log(Level.INFO, "request body: {0}", body);
-        var form = EntityUtils.fromJson(body, PostForm.class);
+        var form = body.mapTo(PostForm.class);
         this.posts.save(Post.of(form.getTitle(), form.getContent()))
             .onSuccess(
                 savedId -> rc.response()
@@ -66,9 +65,9 @@ class PostsHandler {
     public void update(RoutingContext rc) {
         var params = rc.pathParams();
         var id = params.get("id");
-        var body = rc.getBodyAsString();
+        var body = rc.getBodyAsJson();
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", new Object[]{id, body});
-        var form = EntityUtils.fromJson(body, PostForm.class);
+        var form = body.mapTo(PostForm.class);
         this.posts.findById(UUID.fromString(id))
             .compose(
                 post -> {
@@ -91,9 +90,10 @@ class PostsHandler {
         var params = rc.pathParams();
         var id = params.get("id");
 
-        this.posts.findById(UUID.fromString(id))
+        var uuid = UUID.fromString(id);
+        this.posts.findById(uuid)
             .compose(
-                post -> this.posts.deleteById(id)
+                post -> this.posts.deleteById(uuid)
             )
             .onSuccess(
                 data -> rc.response().setStatusCode(204).end()
