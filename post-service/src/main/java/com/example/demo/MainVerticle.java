@@ -62,14 +62,15 @@ public class MainVerticle extends AbstractVerticle {
             .listen(8888)
             // Print the port
             .onSuccess(server -> {
-                    System.out.println(
-                        "HTTP server started on port " + server.actualPort()
-                    );
-                    startPromise.complete();
-                }
-            );
+                startPromise.complete();
+                System.out.println("HTTP server started on port " + server.actualPort());
+            })
+            .onFailure(event -> {
+                startPromise.fail(event);
+                System.out.println("Failed to start HTTP server:" + event.getMessage());
+            })
+        ;
     }
-
 
     //create routes
     private Router routes(PostsHandler handlers) {
