@@ -1,17 +1,42 @@
 package com.example.demo;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
+import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
 public class MainVerticle extends AbstractVerticle {
+
+    private final static Logger LOGGER = Logger.getLogger(MainVerticle.class.getName());
+
+    static {
+        LOGGER.info("Customizing the built-in jackson ObjectMapper...");
+        var objectMapper = DatabindCodec.mapper();
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        objectMapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS);
+        objectMapper.disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
+
+        JavaTimeModule module = new JavaTimeModule();
+        objectMapper.registerModule(module);
+    }
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
+        LOGGER.log(Level.INFO, "Starting HTTP server...");
+        //setupLogging();
 
         //Create a PgPool instance
         var pgPool = pgPool();
@@ -36,10 +61,12 @@ public class MainVerticle extends AbstractVerticle {
             // Start listening
             .listen(8888)
             // Print the port
-            .onSuccess(server ->
-                System.out.println(
-                    "HTTP server started on port " + server.actualPort()
-                )
+            .onSuccess(server -> {
+                    System.out.println(
+                        "HTTP server started on port " + server.actualPort()
+                    );
+                    startPromise.complete();
+                }
             );
     }
 
@@ -77,6 +104,17 @@ public class MainVerticle extends AbstractVerticle {
         PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
 
         return pool;
+    }
+
+    /**
+     * Configure logging from logging.properties file.
+     * When using custom JUL logging properties, named it to vertx-default-jul-logging.properties
+     * or set java.util.logging.config.file system property to locate the properties file.
+     */
+    private static void setupLogging() throws IOException {
+        try (InputStream is = MainVerticle.class.getResourceAsStream("/logging.properties")) {
+            LogManager.getLogManager().readConfiguration(is);
+        }
     }
 
 }
