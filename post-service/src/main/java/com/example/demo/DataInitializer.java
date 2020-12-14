@@ -42,12 +42,12 @@ public class DataInitializer {
             )
             .onComplete(
                 r -> {
-                    //client.close();
+                    client.close();
                     LOGGER.info("Data initialization is done...");
                 }
             )
             .onFailure(
-                throwable -> LOGGER.warning("failed")
+                throwable -> LOGGER.warning("Data initialization is failed:" + throwable.getMessage())
             );
     }
 }

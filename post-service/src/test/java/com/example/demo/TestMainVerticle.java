@@ -22,13 +22,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TestMainVerticle {
 
     @BeforeEach
-    @DisplayName("Deploy MainVerticle")
     void deploy_verticle(Vertx vertx, VertxTestContext testContext) {
-        vertx.deployVerticle(new MainVerticle(), testContext.succeedingThenComplete());
+        vertx.deployVerticle(new MainVerticle(), testContext.succeeding(id -> testContext.completeNow()));
+    }
+
+    @Test
+    void verticle_deployed(Vertx vertx, VertxTestContext testContext) throws Throwable {
+        testContext.completeNow();
     }
 
     // Repeat this test 3 times
     @RepeatedTest(3)
+    @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
+    @DisplayName("Check the HTTP response...")
     void http_server_check_response(Vertx vertx, VertxTestContext testContext) {
         HttpClient client = vertx.createHttpClient();
         client.request(HttpMethod.GET, 8888, "localhost", "/hello")
@@ -43,13 +49,6 @@ public class TestMainVerticle {
                     )
                 )
             );
-    }
-
-    @Test
-    @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
-    @DisplayName("a simple test to verify deploy")
-    void verticle_deployed(Vertx vertx, VertxTestContext testContext) throws Throwable {
-        testContext.completeNow();
     }
 
     static Stream<Arguments> testData() {
