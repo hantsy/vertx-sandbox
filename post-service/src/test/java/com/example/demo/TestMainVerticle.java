@@ -2,6 +2,7 @@ package com.example.demo;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.junit5.Timeout;
@@ -13,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -74,4 +76,41 @@ public class TestMainVerticle {
             .isNotEmpty()
             .hasSize(1);
     }
+
+    @Test
+    void testGetAll(Vertx vertx, VertxTestContext testContext) {
+        var client = vertx.createHttpClient();
+        client.request(HttpMethod.GET, 8888, "localhost", "/posts")
+            .flatMap(req -> req.send().flatMap(HttpClientResponse::body))
+            .onComplete(
+                testContext.succeeding(
+                    buffer -> testContext.verify(
+                        () -> {
+                            assertThat(buffer.toJsonArray().size()).isEqualTo(2);
+                            testContext.completeNow();
+                        }
+                    )
+                )
+            );
+    }
+
+
+    @Test
+    void testGetByNoneExistingId(Vertx vertx, VertxTestContext testContext) {
+        var client = vertx.createHttpClient();
+        var id = "/posts/" + UUID.randomUUID().toString();
+        client.request(HttpMethod.GET, 8888, "localhost", id)
+            .flatMap(HttpClientRequest::send)
+            .onComplete(
+                testContext.succeeding(
+                    response -> testContext.verify(
+                        () -> {
+                            assertThat(response.statusCode()).isEqualTo(404);
+                            testContext.completeNow();
+                        }
+                    )
+                )
+            );
+    }
+
 }
