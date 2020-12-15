@@ -18,3 +18,13 @@ updates:
     - dependency-name: "jackson-*"
       versions: ["2.11.x"]    
           
+- package-ecosystem: maven
+  directory: "/rxjava2"
+  schedule:
+    interval: daily
+    time: "21:00"
+  open-pull-requests-limit: 10
+  # Overwrite any ignores created using `@dependabot ignore` commands
+  ignore:
+    - dependency-name: "jackson-*"
+      versions: ["2.11.x", "2.12.x"] 
