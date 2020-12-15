@@ -2,7 +2,6 @@ package com.example.demo;
 
 
 import io.reactivex.Flowable;
-import io.reactivex.Maybe;
 import io.reactivex.Single;
 import io.vertx.reactivex.pgclient.PgPool;
 import io.vertx.reactivex.sqlclient.Row;
@@ -57,7 +56,7 @@ public class PostRepository {
         Objects.requireNonNull(id, "id can not be null");
         return client.preparedQuery("SELECT * FROM posts WHERE id=$1").rxExecute(Tuple.of(id))
             .map(RowSet::iterator)
-            .flatMap(iterator -> iterator.hasNext() ? Single.just(MAPPER.apply(iterator.next())) : Single.error( new PostNotFoundException(id)));
+            .flatMap(iterator -> iterator.hasNext() ? Single.just(MAPPER.apply(iterator.next())) : Single.error(new PostNotFoundException(id)));
     }
 
     public Single<UUID> save(Post data) {
@@ -68,9 +67,7 @@ public class PostRepository {
 
     public Single<Integer> saveAll(List<Post> data) {
         var tuples = data.stream()
-            .map(
-                d -> Tuple.of(d.getTitle(), d.getContent())
-            )
+            .map(d -> Tuple.of(d.getTitle(), d.getContent()))
             .collect(Collectors.toList());
 
         return client.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)")
