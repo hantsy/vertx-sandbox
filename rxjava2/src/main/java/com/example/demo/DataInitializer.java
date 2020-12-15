@@ -3,14 +3,15 @@ package com.example.demo;
 import io.vertx.reactivex.pgclient.PgPool;
 import io.vertx.reactivex.sqlclient.SqlConnection;
 import io.vertx.reactivex.sqlclient.Tuple;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 public class DataInitializer {
 
-    private final static Logger LOGGER = Logger.getLogger(DataInitializer.class.getName());
+    private final static Logger LOGGER = LoggerFactory.getLogger(DataInitializer.class.getName());
 
     private PgPool client;
 
@@ -34,14 +35,14 @@ public class DataInitializer {
                     .flatMap(result -> tx.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)").rxExecuteBatch(List.of(first, second)))
                     .toMaybe()
             )
-            .flatMapSingle(d->client.query("SELECT * FROM posts").rxExecute())
+            .flatMapSingle(d -> client.query("SELECT * FROM posts").rxExecute())
             .subscribe(
                 (data) -> {
                     data.forEach(row -> {
-                        LOGGER.log(Level.INFO, "saved row: {0}", row.toJson());
+                        LOGGER.info("saved row: {}", row.toJson());
                     });
                 },
-                err -> LOGGER.warning("failed to initializing:" + err.getMessage())
+                err -> LOGGER.warn("failed to initializing: {}", err.getMessage())
             );
     }
 }

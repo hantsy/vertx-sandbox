@@ -4,6 +4,8 @@ package com.example.demo;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import io.reactivex.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.json.jackson.DatabindCodec;
@@ -21,9 +23,8 @@ import io.vertx.reactivex.json.schema.SchemaParser;
 import io.vertx.reactivex.json.schema.SchemaRouter;
 import io.vertx.reactivex.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static io.vertx.json.schema.common.dsl.Keywords.minLength;
 import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
@@ -31,7 +32,7 @@ import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 
 public class MainVerticle extends AbstractVerticle {
 
-    private final static Logger LOGGER = Logger.getLogger(MainVerticle.class.getName());
+    private final static Logger LOGGER = LoggerFactory.getLogger(MainVerticle.class.getName());
 
     static {
         LOGGER.info("Customizing the built-in jackson ObjectMapper...");
@@ -46,8 +47,8 @@ public class MainVerticle extends AbstractVerticle {
 
     @Override
     public Completable rxStart() {
-        LOGGER.log(Level.INFO, "Starting HTTP server...");
-        //setupLogging();
+        LOGGER.info("Starting HTTP server...");
+        InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE);
 
         //Create a PgPool instance
         var pgPool = pgPool();
@@ -112,7 +113,7 @@ public class MainVerticle extends AbstractVerticle {
             .handler(BodyHandler.create())
             .handler(handlers::save)
             .failureHandler(validationFailureHandler);
-        
+
         router.get("/posts/:id").produces("application/json").handler(handlers::get).failureHandler(frc -> frc.response().setStatusCode(404).end());
         router.put("/posts/:id").consumes("application/json").handler(BodyHandler.create()).handler(handlers::update);
         router.delete("/posts/:id").handler(handlers::delete);
