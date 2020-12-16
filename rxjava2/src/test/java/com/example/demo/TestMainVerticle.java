@@ -1,9 +1,10 @@
 package com.example.demo;
 
 
-import io.vertx.core.Vertx;
+
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.client.WebClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ public class TestMainVerticle {
 
     @Test
     void testGetAll(Vertx vertx, VertxTestContext testContext) throws Throwable {
-        WebClient client = WebClient.create(new io.vertx.reactivex.core.Vertx(vertx));
+        WebClient client = WebClient.create(vertx);
         client.get(8888, "localhost", "/posts")
             .rxSend()
             .subscribe(
@@ -45,7 +46,7 @@ public class TestMainVerticle {
 
     @Test
     void testPostValidation(Vertx vertx, VertxTestContext testContext) throws Throwable {
-        WebClient client = WebClient.create(new io.vertx.reactivex.core.Vertx(vertx));
+        WebClient client = WebClient.create(vertx);
         client.post(8888, "localhost", "/posts")
             .rxSendJson(PostForm.of("test", ""))
             .subscribe(
