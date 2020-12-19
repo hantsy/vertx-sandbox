@@ -1,6 +1,6 @@
 package com.example.demo
 
-import io.vertx.core.Future
+import io.vertx.kotlin.coroutines.await
 import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.Row
 import io.vertx.sqlclient.RowSet
@@ -12,49 +12,52 @@ import kotlin.streams.toList
 
 class PostRepository(private val client: PgPool) {
 
-    fun findAll() = client.query("SELECT * FROM posts ORDER BY id ASC")
+    suspend fun findAll() = client.query("SELECT * FROM posts ORDER BY id ASC")
         .execute()
         .map { rs: RowSet<Row?> ->
             StreamSupport.stream(rs.spliterator(), false)
                 .map { mapFun(it!!) }
                 .toList()
-        }
+        }.await()
 
 
-    fun findById(id: UUID) = client.preparedQuery("SELECT * FROM posts WHERE id=$1")
+    suspend fun findById(id: UUID): Post? = client.preparedQuery("SELECT * FROM posts WHERE id=$1")
         .execute(Tuple.of(id))
         .map { it.iterator() }
-        .map {
-            if (it.hasNext()) mapFun(it.next()) else null
-        }
-        .map { Optional.ofNullable(it) }
-        .map { it.orElseThrow<RuntimeException> { PostNotFoundException(id) } }
+        .map { if (it.hasNext()) mapFun(it.next()) else null }
+        .await()
 
 
-    fun save(data: Post) = client.preparedQuery("INSERT INTO posts(title, content) VALUES ($1, $2) RETURNING (id)")
-        .execute(Tuple.of(data.title, data.content))
-        .map { it.iterator().next().getUUID("id") }
+    suspend fun save(data: Post) =
+        client.preparedQuery("INSERT INTO posts(title, content) VALUES ($1, $2) RETURNING (id)")
+            .execute(Tuple.of(data.title, data.content))
+            .map { it.iterator().next().getUUID("id") }
+            .await()
 
 
-    fun saveAll(data: List<Post>): Future<Int> {
+    suspend fun saveAll(data: List<Post>): Int? {
         val tuples = data.map { Tuple.of(it.title, it.content) }
 
         return client.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)")
             .executeBatch(tuples)
             .map { it.rowCount() }
+            .await()
     }
 
-    fun update(data: Post) = client.preparedQuery("UPDATE posts SET title=$1, content=$2 WHERE id=$3")
+    suspend fun update(data: Post) = client.preparedQuery("UPDATE posts SET title=$1, content=$2 WHERE id=$3")
         .execute(Tuple.of(data.title, data.content, data.id))
         .map { it.rowCount() }
+        .await()
 
 
-    fun deleteAll() = client.query("DELETE FROM posts").execute()
+    suspend fun deleteAll() = client.query("DELETE FROM posts").execute()
         .map { it.rowCount() }
+        .await()
 
 
-    fun deleteById(id: UUID) = client.preparedQuery("DELETE FROM posts WHERE id=$1").execute(Tuple.of(id))
+    suspend fun deleteById(id: UUID) = client.preparedQuery("DELETE FROM posts WHERE id=$1").execute(Tuple.of(id))
         .map { it.rowCount() }
+        .await()
 
     companion object {
         private val LOGGER = Logger.getLogger(PostRepository::class.java.name)

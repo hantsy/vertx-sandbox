@@ -72,10 +72,5 @@ class PostsHandler(val posts: PostRepository) {
 
     companion object {
         private val LOGGER = Logger.getLogger(PostsHandler::class.java.simpleName)
-
-        //factory method
-        fun create(posts: PostRepository): PostsHandler {
-            return PostsHandler(posts)
-        }
     }
 }

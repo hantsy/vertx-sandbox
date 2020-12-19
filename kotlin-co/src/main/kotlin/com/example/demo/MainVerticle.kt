@@ -3,21 +3,26 @@ package com.example.demo
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import io.vertx.core.AbstractVerticle
-import io.vertx.core.Promise
-import io.vertx.core.http.HttpServer
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
+import io.vertx.kotlin.core.http.httpServerOptionsOf
+import io.vertx.kotlin.core.json.json
+import io.vertx.kotlin.core.json.obj
+import io.vertx.kotlin.coroutines.CoroutineVerticle
+import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.dispatcher
 import io.vertx.pgclient.PgConnectOptions
 import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.PoolOptions
+import kotlinx.coroutines.launch
 import java.io.IOException
+import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.LogManager
 import java.util.logging.Logger
 
-class MainVerticle : AbstractVerticle() {
+class MainVerticle : CoroutineVerticle() {
     companion object {
         private val LOGGER = Logger.getLogger(MainVerticle::class.java.name)
 
@@ -43,8 +48,7 @@ class MainVerticle : AbstractVerticle() {
         }
     }
 
-    @Throws(Exception::class)
-    override fun start(startPromise: Promise<Void>) {
+    override suspend fun start() {
         LOGGER.log(Level.INFO, "Starting HTTP server...")
         //setupLogging();
 
@@ -65,17 +69,16 @@ class MainVerticle : AbstractVerticle() {
         val router = routes(postHandlers)
 
         // Create the HTTP server
-        vertx.createHttpServer() // Handle every request using the router
+        val options = httpServerOptionsOf(idleTimeout = 5, idleTimeoutUnit = TimeUnit.MINUTES, logActivity = true)
+        vertx.createHttpServer(options) // Handle every request using the router
             .requestHandler(router) // Start listening
             .listen(8888) // Print the port
-            .onSuccess {
-                startPromise.complete()
-                println("HTTP server started on port " + it.actualPort())
-            }
-            .onFailure {
-                startPromise.fail(it)
-                println("Failed to start HTTP server:" + it.message)
-            }
+            .onComplete { println("HttpSever started at ${it.result().actualPort()}") }
+            .await()
+    }
+
+    override suspend fun stop() {
+        super.stop()
     }
 
     //create routes
@@ -85,27 +88,63 @@ class MainVerticle : AbstractVerticle() {
         val router = Router.router(vertx)
         // register BodyHandler globally.
         //router.route().handler(BodyHandler.create());
+
         router.get("/posts")
             .produces("application/json")
-            .handler { handlers.all(it) }
+            .handler {
+                launch(it.vertx().dispatcher()) {
+                    handlers.all(it)
+                }
+            }
 
         router.post("/posts")
             .consumes("application/json")
             .handler(BodyHandler.create())
-            .handler { handlers.save(it) }
+            .handler {
+                launch(it.vertx().dispatcher()) {
+                    handlers.save(it)
+                }
+            }
 
         router.get("/posts/:id")
             .produces("application/json")
-            .handler { handlers.getById(it) }
-            .failureHandler { it.response().setStatusCode(404).end() }
+            .handler {
+                launch(it.vertx().dispatcher()) {
+                    handlers.getById(it)
+                }
+            }
+
 
         router.put("/posts/:id")
             .consumes("application/json")
             .handler(BodyHandler.create())
-            .handler { handlers.update(it) }
+            .handler {
+                launch(it.vertx().dispatcher()) {
+                    handlers.update(it)
+                }
+            }
 
         router.delete("/posts/:id")
-            .handler { handlers.delete(it) }
+            .handler {
+                launch(it.vertx().dispatcher()) {
+                    handlers.delete(it)
+                }
+            }
+
+        router.route().failureHandler {
+            if (it.failure() is PostNotFoundException) {
+                it.response()
+                    .setStatusCode(404)
+                    .end(
+                        json {
+                            obj(
+                                "message" to "${it.failure().message}",
+                                "code" to "not_found"
+                            )
+                        }.toString()
+                    )
+            }
+        }
 
         router.get("/hello").handler { it.response().end("Hello from my route") }
 
