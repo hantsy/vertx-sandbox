@@ -14,17 +14,22 @@ updates:
     # Ignore some updates to the 'resteasy' package
     - dependency-name: "resteasy"
       # Ignore only new versions for 4.x
-      versions: ["3.x, 4.x"]
-    - dependency-name: "jackson-*"
-      versions: ["2.11.x"]    
-          
+      versions: ["3.x, 4.x"]       
 - package-ecosystem: maven
   directory: "/rxjava2"
   schedule:
     interval: daily
     time: "21:00"
   open-pull-requests-limit: 10
-  # Overwrite any ignores created using `@dependabot ignore` commands
-  ignore:
-    - dependency-name: "jackson-*"
-      versions: ["2.11.x", "2.12.x"] 
+- package-ecosystem: maven
+  directory: "/kotlin"
+  schedule:
+    interval: daily
+    time: "21:00"
+  open-pull-requests-limit: 10
+- package-ecosystem: maven
+  directory: "/kotlin-co"
+  schedule:
+    interval: daily
+    time: "21:00"
+  open-pull-requests-limit: 10
