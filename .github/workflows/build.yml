@@ -36,8 +36,15 @@ jobs:
 
       - name: Build post-service
         run: mvn clean install --file post-service/pom.xml
-                 
-        
+      
+      - name: Build rxjava2
+        run: mvn clean install --file rxjava2/pom.xml
+      
+      - name: Build kotlin
+        run: mvn clean install --file kotlin/pom.xml
+     
+      - name: Build kotlin-co
+        run: mvn clean install --file kotlin-co/pom.xml
   automerge:
     name: Merge pull request
     runs-on: ubuntu-latest
