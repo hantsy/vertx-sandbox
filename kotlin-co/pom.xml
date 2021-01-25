@@ -22,7 +22,7 @@
         <junit-jupiter.version>5.7.0</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
-        <assertj-core.version>3.18.1</assertj-core.version>
+        <assertj-core.version>3.19.0</assertj-core.version>
         <jackson.version>2.11.3</jackson.version>
     </properties>
 
