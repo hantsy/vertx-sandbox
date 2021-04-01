@@ -1,5 +1,6 @@
 package com.example.demo
 
+import com.example.verticle.CoroutineBaseVerticle
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
@@ -9,20 +10,17 @@ import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.core.http.httpServerOptionsOf
 import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
-import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
-import io.vertx.kotlin.coroutines.dispatcher
 import io.vertx.pgclient.PgConnectOptions
 import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.PoolOptions
-import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.LogManager
 import java.util.logging.Logger
 
-class MainVerticle : CoroutineVerticle() {
+class MainVerticle : CoroutineBaseVerticle() {
     companion object {
         private val LOGGER = Logger.getLogger(MainVerticle::class.java.name)
 
@@ -91,44 +89,34 @@ class MainVerticle : CoroutineVerticle() {
 
         router.get("/posts")
             .produces("application/json")
-            .handler {
-                launch(it.vertx().dispatcher()) {
-                    handlers.all(it)
-                }
+            .coroutineHandler {
+                handlers.all(it)
             }
 
         router.post("/posts")
             .consumes("application/json")
             .handler(BodyHandler.create())
-            .handler {
-                launch(it.vertx().dispatcher()) {
-                    handlers.save(it)
-                }
+            .coroutineHandler {
+                handlers.save(it)
             }
 
         router.get("/posts/:id")
             .produces("application/json")
-            .handler {
-                launch(it.vertx().dispatcher()) {
-                    handlers.getById(it)
-                }
+            .coroutineHandler {
+                handlers.getById(it)
             }
 
 
         router.put("/posts/:id")
             .consumes("application/json")
             .handler(BodyHandler.create())
-            .handler {
-                launch(it.vertx().dispatcher()) {
-                    handlers.update(it)
-                }
+            .coroutineHandler {
+                handlers.update(it)
             }
 
         router.delete("/posts/:id")
-            .handler {
-                launch(it.vertx().dispatcher()) {
-                    handlers.delete(it)
-                }
+            .coroutineHandler {
+                handlers.delete(it)
             }
 
         router.route().failureHandler {
