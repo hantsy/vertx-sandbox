@@ -1,26 +1,30 @@
 package com.example.demo
 
-import com.example.verticle.CoroutineBaseVerticle
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.vertx.core.json.jackson.DatabindCodec
+import io.vertx.ext.web.Route
 import io.vertx.ext.web.Router
+import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.core.http.httpServerOptionsOf
 import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
+import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.dispatcher
 import io.vertx.pgclient.PgConnectOptions
 import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.PoolOptions
+import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.LogManager
 import java.util.logging.Logger
 
-class MainVerticle : CoroutineBaseVerticle() {
+class MainVerticle : CoroutineVerticle() {
     companion object {
         private val LOGGER = Logger.getLogger(MainVerticle::class.java.name)
 
@@ -124,7 +128,7 @@ class MainVerticle : CoroutineBaseVerticle() {
                 it.response()
                     .setStatusCode(404)
                     .end(
-                        json {
+                        json {// an example using JSON DSL
                             obj(
                                 "message" to "${it.failure().message}",
                                 "code" to "not_found"
@@ -153,4 +157,15 @@ class MainVerticle : CoroutineBaseVerticle() {
         // Create the pool from the data object
         return PgPool.pool(vertx, connectOptions, poolOptions)
     }
+
+    private fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Unit) = handler {
+        launch(it.vertx().dispatcher()) {
+            try {
+                fn(it)
+            } catch (e: Exception) {
+                it.fail(e)
+            }
+        }
+    }
+
 }
