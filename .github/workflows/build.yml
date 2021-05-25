@@ -60,7 +60,7 @@ jobs:
       )
     steps:
       - name: Merge
-        uses: actions/github-script@v3.0.0
+        uses: actions/github-script@v4.0.2
         with:
           script: |
             const pullRequest = context.payload.pull_request
