@@ -16,7 +16,7 @@
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
 
-        <vertx.version>4.0.3</vertx.version>
+        <vertx.version>4.1.0</vertx.version>
         <junit-jupiter.version>5.7.2</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
