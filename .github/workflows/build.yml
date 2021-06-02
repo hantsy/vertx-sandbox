@@ -73,4 +73,4 @@ jobs:
               pull_number: pullRequest.number,
               repo: repository.repo,
             })
-          github-token: ${{github.token}}
+          github-token: ${{env.REPO_TOKEN}}
