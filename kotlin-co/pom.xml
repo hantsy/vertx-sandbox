@@ -11,7 +11,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <kotlin.version>1.4.32</kotlin.version>
+        <kotlin.version>1.5.10</kotlin.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
 
         <maven-shade-plugin.version>3.2.4</maven-shade-plugin.version>
@@ -19,10 +19,10 @@
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
 
         <vertx.version>4.1.0</vertx.version>
-        <junit-jupiter.version>5.7.1</junit-jupiter.version>
+        <junit-jupiter.version>5.7.2</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
-        <assertj-core.version>3.19.0</assertj-core.version>
+        <assertj-core.version>3.20.1</assertj-core.version>
         <jackson.version>2.11.3</jackson.version>
     </properties>
 
