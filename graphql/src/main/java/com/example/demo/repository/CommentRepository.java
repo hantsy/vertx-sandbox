@@ -17,7 +17,7 @@ import java.util.stream.StreamSupport;
 public class CommentRepository {
     private static Function<Row, CommentEntity> MAPPER = (row) -> new CommentEntity(
         row.getUUID("id"),
-        row.getString("name"),
+        row.getString("content"),
         row.getLocalDateTime("created_at"),
         row.getUUID("post_id")
     );
@@ -40,7 +40,7 @@ public class CommentRepository {
 
 
     public Future<List<CommentEntity>> findByPostIdIn(List<UUID> uuids) {
-        return client.preparedQuery("SELECT * FROM comments WHERE post_id in ($1)").execute(Tuple.of(uuids))
+        return client.preparedQuery("SELECT * FROM comments WHERE post_id = any($1)").execute(Tuple.of(uuids.toArray(new UUID[0])))
             .map(rs -> StreamSupport.stream(rs.spliterator(), false)
                 .map(MAPPER)
                 .toList()

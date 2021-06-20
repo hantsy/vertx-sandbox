@@ -53,7 +53,7 @@ public class AuthorRepository {
 
 
     public Future<List<AuthorEntity>> findByIdIn(List<UUID> uuids) {
-        return client.preparedQuery("SELECT * FROM users WHERE id in ($1)").execute(Tuple.of(uuids))
+        return client.preparedQuery("SELECT * FROM users WHERE id = any($1)").execute(Tuple.of(uuids.toArray(new UUID[0])))
             .map(rs -> StreamSupport.stream(rs.spliterator(), false)
                 .map(MAPPER)
                 .toList()

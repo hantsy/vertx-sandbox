@@ -1,8 +1,7 @@
 package com.example.demo;
 
 import com.example.demo.gql.DataFetchers;
-import com.example.demo.gql.dataloaders.AuthorsDataLoader;
-import com.example.demo.gql.dataloaders.CommentsDataLoader;
+import com.example.demo.gql.DataLoaders;
 import com.example.demo.gql.directives.UpperCaseDirectiveWiring;
 import com.example.demo.gql.scalars.Scalars;
 import com.example.demo.repository.AuthorRepository;
@@ -30,7 +29,6 @@ import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.dataloader.DataLoader;
 import org.dataloader.DataLoaderRegistry;
 
 import java.io.IOException;
@@ -76,6 +74,9 @@ public class MainVerticle extends AbstractVerticle {
         var postService = new PostService(postRepository, commentRepository, authorRepository);
         var authorService = new AuthorService(authorRepository);
 
+        // assemble DataLoaders
+        var dataLoaders = new DataLoaders(authorService, postService);
+
         //assemble DataFetcher
         var dataFetchers = new DataFetchers(postService);
 
@@ -83,7 +84,7 @@ public class MainVerticle extends AbstractVerticle {
         GraphQL graphQL = setupGraphQLJava(dataFetchers);
 
         // Configure routes
-        var router = setupRoutes(graphQL, authorService, postService);
+        var router = setupRoutes(graphQL, dataLoaders);
 
 
         // enable GraphQL Websocket Protocol
@@ -108,7 +109,7 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     //create routes
-    private Router setupRoutes(GraphQL graphQL, AuthorService authorService, PostService postService) {
+    private Router setupRoutes(GraphQL graphQL, DataLoaders dataLoaders) {
 
         // Create a Router
         Router router = Router.router(vertx);
@@ -131,8 +132,8 @@ public class MainVerticle extends AbstractVerticle {
                     .dataLoaderRegistry(
                         rc -> {
                             DataLoaderRegistry registry = new DataLoaderRegistry();
-                            registry.register("commentsLoader", DataLoader.newMappedDataLoader(new CommentsDataLoader(postService)));
-                            registry.register("authorsLoader", DataLoader.newDataLoader(new AuthorsDataLoader(authorService)));
+                            registry.register("commentsLoader", dataLoaders.commentsLoader());
+                            registry.register("authorsLoader", dataLoaders.authorsLoader());
 
                             return registry;
                         }
@@ -143,7 +144,7 @@ public class MainVerticle extends AbstractVerticle {
         // register `/graphiql` endpoint for the GraphiQL UI
         GraphiQLHandlerOptions graphiqlOptions = new GraphiQLHandlerOptions()
             .setEnabled(true);
-        router.route("/graphiql/*").handler(GraphiQLHandler.create(graphiqlOptions));
+        router.route("/graphiql").handler(GraphiQLHandler.create(graphiqlOptions));
 
         router.get("/hello").handler(rc -> rc.response().end("Hello from my route"));
 
