@@ -38,13 +38,13 @@
         <appender-ref ref="Console"/>
     </root>
 
-    <logger name="io.netty" level="debug"/>
-    <logger name="com.example.demo" level="DEBUG" >
+    <logger name="io.netty" level="INFO"/>
+    <logger name="com.example.demo" level="DEBUG">
     </logger>
-    <logger name="io.vertx.core" level="DEBUG" >
+    <logger name="io.vertx.core" level="DEBUG">
     </logger>
-    <logger name="io.vertx.pgclient" level="trace" >
+    <logger name="io.vertx.pgclient" level="trace">
     </logger>
-    <logger name="io.vertx.sqlclient" level="DEBUG" >
+    <logger name="io.vertx.sqlclient" level="DEBUG">
     </logger>
 </configuration>

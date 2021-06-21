@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.example.demo.gql.CustomDataFetchingExceptionHandler;
 import com.example.demo.gql.DataFetchers;
 import com.example.demo.gql.DataLoaders;
 import com.example.demo.gql.directives.UpperCaseDirectiveWiring;
@@ -13,9 +14,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import graphql.GraphQL;
-import graphql.schema.DataFetcher;
+import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLSchema;
-import graphql.schema.idl.*;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.SchemaParser;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerOptions;
@@ -35,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Map;
 import java.util.logging.LogManager;
 
 import static graphql.schema.idl.RuntimeWiring.newRuntimeWiring;
@@ -160,6 +165,7 @@ public class MainVerticle extends AbstractVerticle {
         TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(schema);
 
         RuntimeWiring runtimeWiring = newRuntimeWiring()
+            /*
             .wiringFactory(new WiringFactory() {
                 @Override
                 public DataFetcher<Object> getDefaultDataFetcher(FieldWiringEnvironment environment) {
@@ -175,6 +181,25 @@ public class MainVerticle extends AbstractVerticle {
                 .dataFetcher("author", dataFetchers.authorOfPost())
                 .dataFetcher("comments", dataFetchers.commentsOfPost())
             )
+            */
+            .codeRegistry(
+                GraphQLCodeRegistry.newCodeRegistry()
+                    .dataFetchers("Query", Map.of(
+                        "postById", dataFetchers.getPostById(),
+                        "allPosts", dataFetchers.getAllPosts()
+                    ))
+                    .dataFetchers("Mutation", Map.of(
+                        "createPost", dataFetchers.createPost()
+                    ))
+                    .dataFetchers("Post", Map.of(
+                        "author", dataFetchers.authorOfPost(),
+                        "comments", dataFetchers.commentsOfPost()
+                    ))
+                    //.typeResolver()
+                    //.fieldVisibility()
+                    .defaultDataFetcher(environment -> VertxPropertyDataFetcher.create(environment.getFieldDefinition().getName()))
+                    .build()
+            )
             .scalar(Scalars.localDateTimeType())
             .scalar(Scalars.uuidType())
             .directive("uppercase", new UpperCaseDirectiveWiring())
@@ -183,7 +208,13 @@ public class MainVerticle extends AbstractVerticle {
         SchemaGenerator schemaGenerator = new SchemaGenerator();
         GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
 
-        return GraphQL.newGraphQL(graphQLSchema).build();
+        return GraphQL.newGraphQL(graphQLSchema)
+            .defaultDataFetcherExceptionHandler(new CustomDataFetchingExceptionHandler())
+            //.queryExecutionStrategy()
+            //.mutationExecutionStrategy()
+            //.subscriptionExecutionStrategy()
+            //.instrumentation()
+            .build();
     }
 
     private PgPool pgPool() {
