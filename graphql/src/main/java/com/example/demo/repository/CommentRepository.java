@@ -25,7 +25,7 @@ public class CommentRepository {
     private final PgPool client;
 
     public Future<List<CommentEntity>> findAll() {
-        return client.query("SELECT * FROM comments ORDER BY id ASC")
+        return client.query("SELECT * FROM comments ORDER BY created_at DESC ")
             .execute()
             .map(rs -> StreamSupport.stream(rs.spliterator(), false)
                 .map(MAPPER)

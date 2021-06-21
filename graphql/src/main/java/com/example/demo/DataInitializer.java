@@ -29,41 +29,35 @@ public class DataInitializer {
 
     public void run() {
         log.info("Data initialization is starting...");
-        var deleteComments = this.comments.deleteAll().onSuccess(event -> log.info("deleted comments: {}", event));
-        var deletePosts = this.posts.deleteAll().onSuccess(event -> log.info("deleted posts: {}", event));
-        var deleteUsers = this.authors.deleteAll().onSuccess(event -> log.info("deleted users: {}", event));
 
-        //log.info("deleted rows: authors: {}, comments: {}, posts: {}", authorsDel, commentsDel, postDel);
-        var insertData = this.authors.create("user", "user@example.com").onSuccess(
-            authorId -> {
-                IntStream.range(1, 5)
-                    .forEach(
-                        i -> {
-                            this.posts.create("Dgs post #" + i, "test content of #" + i, PostStatus.DRAFT.name(), authorId).onSuccess(
-                                postId -> {
+        this.comments.deleteAll().onSuccess(event -> log.info("deleted comments: {}", event))
+            .flatMap(r -> this.posts.deleteAll().onSuccess(event -> log.info("deleted posts: {}", event)))
+            .flatMap(r -> this.authors.deleteAll().onSuccess(event -> log.info("deleted users: {}", event)))
+            .flatMap(r -> this.authors.create("user", "user@example.com")
+                .onSuccess(
+                    authorId -> {
+                        log.info("inserted user: {}", authorId);
+                        IntStream.range(1, 5)
+                            .forEach(
+                                i -> {
+                                    this.posts.create("Dgs post #" + i, "test content of #" + i, PostStatus.DRAFT.name(), authorId).onSuccess(
+                                        postId -> {
+                                            log.info("inserted post: {}", postId);
+                                            IntStream.range(1, new Random().nextInt(5) + 1)
+                                                .forEach(c -> this.comments.create("comment #" + c, postId)
+                                                    .onSuccess(id -> log.info("inserted comment: {}", id))
+                                                );
+                                        }
+                                    );
 
-                                    IntStream.range(1, new Random().nextInt(5) + 1)
-                                        .forEach(c -> this.comments.create("comment #" + c, postId));
                                 }
                             );
-
-                        }
-                    );
-            }
-        );
-
-        var printPosts = this.posts.findAll().onSuccess(p -> log.info("post: {}", p));
-        var printComments = this.comments.findAll().onSuccess(p -> log.info("comment: {}", p));
-        var printAuthors = this.authors.findAll().onSuccess(p -> log.info("author: {}", p));
-
-        deleteComments
-            .flatMap(integer -> deletePosts)
-            .flatMap(integer -> deleteUsers)
-            .flatMap(integer -> insertData)
-            .flatMap( uuid -> printPosts)
-            .flatMap(postEntities -> printComments)
-            .flatMap(commentEntities -> printAuthors)
-            .onSuccess(event -> log.info("done"));
-        log.info("done data initialization...");
+                    }
+                )
+            )
+            .flatMap(r -> this.posts.findAll().onSuccess(p -> log.info("saved posts: {}", p)))
+            .flatMap(r -> this.comments.findAll().onSuccess(p -> log.info("saved comments: {}", p)))
+            .flatMap(r -> this.authors.findAll().onSuccess(p -> log.info("saved authors: {}", p)))
+            .onComplete(event -> log.info("Data initialization is done."));
     }
 }

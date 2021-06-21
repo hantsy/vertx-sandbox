@@ -27,7 +27,7 @@ public class AuthorRepository {
     private final PgPool client;
 
     public Future<List<AuthorEntity>> findAll() {
-        return client.query("SELECT * FROM users ORDER BY id ASC")
+        return client.query("SELECT * FROM users ORDER BY created_at DESC ")
             .execute()
             .map(rs -> StreamSupport.stream(rs.spliterator(), false)
                 .map(MAPPER)

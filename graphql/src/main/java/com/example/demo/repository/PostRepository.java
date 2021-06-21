@@ -34,7 +34,7 @@ public class PostRepository {
     private final PgPool client;
 
     public Future<List<PostEntity>> findAll() {
-        return client.query("SELECT * FROM posts ORDER BY id ASC")
+        return client.query("SELECT * FROM posts ORDER BY created_at DESC ")
             .execute()
             .map(rs -> StreamSupport.stream(rs.spliterator(), false)
                 .map(MAPPER)
