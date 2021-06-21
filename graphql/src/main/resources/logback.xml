@@ -43,8 +43,10 @@
     </logger>
     <logger name="io.vertx.core" level="DEBUG">
     </logger>
-    <logger name="io.vertx.pgclient" level="trace">
+    <logger name="io.vertx.pgclient.impl.PgPoolImpl" level="trace">
     </logger>
     <logger name="io.vertx.sqlclient" level="DEBUG">
+    </logger>
+    <logger name="graphql.GraphQL" level="DEBUG">
     </logger>
 </configuration>
