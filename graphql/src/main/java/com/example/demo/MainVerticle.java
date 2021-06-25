@@ -25,6 +25,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.graphql.*;
 import io.vertx.ext.web.handler.graphql.schema.VertxPropertyDataFetcher;
@@ -37,9 +38,11 @@ import org.dataloader.DataLoaderRegistry;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.logging.LogManager;
 
 import static graphql.schema.idl.RuntimeWiring.newRuntimeWiring;
@@ -128,20 +131,19 @@ public class MainVerticle extends AbstractVerticle {
             .setRequestMultipartEnabled(true)
             .setRequestBatchingEnabled(true);
 
-        router.route("/subscriptions").handler(ApolloWSHandler.create(graphQL));
+        // enable subscription support.
+        router.route("/graphql").handler(
+            ApolloWSHandler.create(graphQL)
+                .connectionHandler(event -> log.info("connection: {}", event))
+                .connectionInitHandler(init -> log.info("init event: {}", init))
+        );
 
         // alternatively, use `router.route()` to enable GET and POST http methods
         router.post("/graphql")
             .handler(
                 GraphQLHandler.create(graphQL, options)
                     .dataLoaderRegistry(
-                        rc -> {
-                            DataLoaderRegistry registry = new DataLoaderRegistry();
-                            registry.register("commentsLoader", dataLoaders.commentsLoader());
-                            registry.register("authorsLoader", dataLoaders.authorsLoader());
-
-                            return registry;
-                        }
+                        buildDataLoaderRegistry(dataLoaders)
                     )
 
             );
@@ -156,15 +158,48 @@ public class MainVerticle extends AbstractVerticle {
         return router;
     }
 
+    private Function<RoutingContext, DataLoaderRegistry> buildDataLoaderRegistry(DataLoaders dataLoaders) {
+        DataLoaderRegistry registry = new DataLoaderRegistry();
+        registry.register("commentsLoader", dataLoaders.commentsLoader());
+        registry.register("authorsLoader", dataLoaders.authorsLoader());
+        return rc -> registry;
+    }
+
     @SneakyThrows
     private GraphQL setupGraphQLJava(DataFetchers dataFetchers) {
+        TypeDefinitionRegistry typeDefinitionRegistry = buildTypeDefinitionRegistry();
+        RuntimeWiring runtimeWiring = buildRuntimeWiring(dataFetchers);
+        GraphQLSchema graphQLSchema = buildGraphQLSchema(typeDefinitionRegistry, runtimeWiring);
+        return buildGraphQL(graphQLSchema);
+    }
+
+    private GraphQL buildGraphQL(GraphQLSchema graphQLSchema) {
+        return GraphQL.newGraphQL(graphQLSchema)
+            .defaultDataFetcherExceptionHandler(new CustomDataFetchingExceptionHandler())
+            //.queryExecutionStrategy()
+            //.mutationExecutionStrategy()
+            //.subscriptionExecutionStrategy()
+            //.instrumentation()
+            .build();
+    }
+
+    private GraphQLSchema buildGraphQLSchema(TypeDefinitionRegistry typeDefinitionRegistry, RuntimeWiring runtimeWiring) {
+        SchemaGenerator schemaGenerator = new SchemaGenerator();
+        GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
+        return graphQLSchema;
+    }
+
+    private TypeDefinitionRegistry buildTypeDefinitionRegistry() throws IOException, URISyntaxException {
         var schema = Files.readString(Paths.get(getClass().getResource("/schema/schema.graphql").toURI()));
         //String schema = vertx.fileSystem().readFileBlocking("/schema/schema.graphql").toString();
 
         SchemaParser schemaParser = new SchemaParser();
         TypeDefinitionRegistry typeDefinitionRegistry = schemaParser.parse(schema);
+        return typeDefinitionRegistry;
+    }
 
-        RuntimeWiring runtimeWiring = newRuntimeWiring()
+    private RuntimeWiring buildRuntimeWiring(DataFetchers dataFetchers) {
+        return newRuntimeWiring()
             /*
             .wiringFactory(new WiringFactory() {
                 @Override
@@ -182,38 +217,35 @@ public class MainVerticle extends AbstractVerticle {
                 .dataFetcher("comments", dataFetchers.commentsOfPost())
             )
             */
-            .codeRegistry(
-                GraphQLCodeRegistry.newCodeRegistry()
-                    .dataFetchers("Query", Map.of(
-                        "postById", dataFetchers.getPostById(),
-                        "allPosts", dataFetchers.getAllPosts()
-                    ))
-                    .dataFetchers("Mutation", Map.of(
-                        "createPost", dataFetchers.createPost()
-                    ))
-                    .dataFetchers("Post", Map.of(
-                        "author", dataFetchers.authorOfPost(),
-                        "comments", dataFetchers.commentsOfPost()
-                    ))
-                    //.typeResolver()
-                    //.fieldVisibility()
-                    .defaultDataFetcher(environment -> VertxPropertyDataFetcher.create(environment.getFieldDefinition().getName()))
-                    .build()
-            )
+            .codeRegistry(buildCodeRegistry(dataFetchers))
             .scalar(Scalars.localDateTimeType())
             .scalar(Scalars.uuidType())
+            .scalar(UploadScalar.build())// handling `Upload` scalar
             .directive("uppercase", new UpperCaseDirectiveWiring())
             .build();
+    }
 
-        SchemaGenerator schemaGenerator = new SchemaGenerator();
-        GraphQLSchema graphQLSchema = schemaGenerator.makeExecutableSchema(typeDefinitionRegistry, runtimeWiring);
-
-        return GraphQL.newGraphQL(graphQLSchema)
-            .defaultDataFetcherExceptionHandler(new CustomDataFetchingExceptionHandler())
-            //.queryExecutionStrategy()
-            //.mutationExecutionStrategy()
-            //.subscriptionExecutionStrategy()
-            //.instrumentation()
+    private GraphQLCodeRegistry buildCodeRegistry(DataFetchers dataFetchers) {
+        return GraphQLCodeRegistry.newCodeRegistry()
+            .dataFetchers("Query", Map.of(
+                "postById", dataFetchers.getPostById(),
+                "allPosts", dataFetchers.getAllPosts()
+            ))
+            .dataFetchers("Mutation", Map.of(
+                "createPost", dataFetchers.createPost(),
+                "upload", dataFetchers.upload(),
+                "addComment", dataFetchers.addComment()
+            ))
+            .dataFetchers("Subscription", Map.of(
+                "commentAdded", dataFetchers.commentAdded()
+            ))
+            .dataFetchers("Post", Map.of(
+                "author", dataFetchers.authorOfPost(),
+                "comments", dataFetchers.commentsOfPost()
+            ))
+            //.typeResolver()
+            //.fieldVisibility()
+            .defaultDataFetcher(environment -> VertxPropertyDataFetcher.create(environment.getFieldDefinition().getName()))
             .build();
     }
 

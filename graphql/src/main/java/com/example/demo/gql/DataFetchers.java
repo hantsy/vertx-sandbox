@@ -1,17 +1,19 @@
 package com.example.demo.gql;
 
-import com.example.demo.gql.types.Author;
-import com.example.demo.gql.types.Comment;
-import com.example.demo.gql.types.CreatePostInput;
-import com.example.demo.gql.types.Post;
+import com.example.demo.gql.types.*;
 import com.example.demo.service.PostService;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.observables.ConnectableObservable;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.vertx.core.json.jackson.DatabindCodec;
+import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.handler.graphql.schema.VertxDataFetcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
+import org.reactivestreams.Publisher;
 
 import java.util.List;
 import java.util.UUID;
@@ -61,6 +63,41 @@ public class DataFetchers {
             Post post = dfe.getSource();
             //log.info("source: {}", post);
             return dataLoader.load(post.getAuthorId());
+        };
+    }
+
+    public VertxDataFetcher<UUID> addComment() {
+        return VertxDataFetcher.create((DataFetchingEnvironment dfe) -> {
+            var commentInputArg = dfe.getArgument("commentInput");
+            var jacksonMapper = DatabindCodec.mapper();
+            var input = jacksonMapper.convertValue(commentInputArg, CommentInput.class);
+            return this.posts.addComment(input)
+                .onSuccess(id -> this.posts.getCommentById(id.toString())
+                                        .onSuccess(c ->subject.onNext(c)));
+        });
+    }
+
+    private BehaviorSubject<Comment> subject = BehaviorSubject.create();
+
+    public  DataFetcher<Publisher<Comment>> commentAdded() {
+        return (DataFetchingEnvironment dfe) -> {
+            ConnectableObservable<Comment> connectableObservable = subject.share().publish();
+            connectableObservable.connect();
+            return connectableObservable.toFlowable(BackpressureStrategy.BUFFER);
+        };
+    }
+
+    public DataFetcher<Boolean> upload() {
+        return (DataFetchingEnvironment dfe) -> {
+
+            FileUpload upload = dfe.getArgument("file");
+            log.info("name: {}", upload.name());
+            log.info("file name: {}", upload.fileName());
+            log.info("uploaded file name: {}", upload.uploadedFileName());
+            log.info("content type: {}", upload.contentType());
+            log.info("charset: {}", upload.charSet());
+            log.info("size: {}", upload.size());
+            return true;
         };
     }
 }

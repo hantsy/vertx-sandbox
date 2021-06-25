@@ -1,14 +1,17 @@
 package com.example.demo.repository;
 
 import com.example.demo.model.CommentEntity;
+import com.example.demo.model.PostEntity;
 import io.vertx.core.Future;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
@@ -31,6 +34,16 @@ public class CommentRepository {
                 .map(MAPPER)
                 .toList()
             );
+    }
+
+    public Future<CommentEntity> findById(UUID id) {
+        Objects.requireNonNull(id, "id can not be null");
+        return client.preparedQuery("SELECT * FROM comments WHERE id=$1").execute(Tuple.of(id))
+            .map(RowSet::iterator)
+            .map(iterator -> {
+                if (iterator.hasNext()) return MAPPER.apply(iterator.next());
+                throw new CommentNotFoundException(id);
+            });
     }
 
     public Future<Integer> deleteAll() {
