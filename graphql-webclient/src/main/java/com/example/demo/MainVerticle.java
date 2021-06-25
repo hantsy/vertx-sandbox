@@ -4,7 +4,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.Json;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
@@ -76,12 +75,47 @@ public class MainVerticle extends AbstractVerticle {
             .setDefaultHost("localhost")
             .setDefaultPort(8080);
 
-        var httpClient = vertx.createHttpClient(options);
-        httpClient.webSocket("/graphql")
-            .onSuccess(ws -> ws.textMessageHandler(text -> log.info("web socket message handler:{}", text)))
+        // see: https://github.com/vert-x3/vertx-web/blob/master/vertx-web-graphql/src/test/java/io/vertx/ext/web/handler/graphql/ApolloWSHandlerTest.java
+//        var httpClient = vertx.createHttpClient(options);
+//        httpClient.webSocket("/graphql")
+//            .onSuccess(ws -> {
+//                ws.textMessageHandler(text -> log.info("web socket message handler:{}", text));
+//
+//                JsonObject messageInit = new JsonObject()
+//                    .put("type", "connection_init")
+//                    .put("id", "1");
+//
+//                JsonObject message = new JsonObject()
+//                    .put("payload", new JsonObject()
+//                        .put("query", "subscription onCommentAdded { commentAdded { id content } }"))
+//                    .put("type", "start")
+//                    .put("id", "1");
+//
+//                ws.write(messageInit.toBuffer());
+//                ws.write(message.toBuffer());
+//
+//                addCommentToPost(client, id);
+//            })
+//            .onFailure(e -> log.error("error: {}", e));
+
+        client.post("/graphql")
+            .sendJson(Map.of(
+                "query", "subscription onCommentAdded { commentAdded { id content } }"
+                )
+            )
+            .onSuccess(
+                data -> {
+                    log.info("data type: {}", data.getClass());
+                    log.info("data of subscription onCommentAdded: {}", data.bodyAsString());
+                }
+            )
             .onFailure(e -> log.error("error: {}", e));
 
+        addCommentToPost(client, id);
 
+    }
+
+    private void addCommentToPost(WebClient client, String id) {
         client.post("/graphql")
             .sendJson(Map.of(
                 "query", "mutation addComment($input:CommentInput!){ addComment(commentInput:$input) }",

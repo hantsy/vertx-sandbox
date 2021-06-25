@@ -94,7 +94,6 @@ public class MainVerticle extends AbstractVerticle {
         // Configure routes
         var router = setupRoutes(graphQL, dataLoaders);
 
-
         // enable GraphQL Websocket Protocol
         HttpServerOptions httpServerOptions = new HttpServerOptions()
             .addWebSocketSubProtocol("graphql-ws");
@@ -125,33 +124,31 @@ public class MainVerticle extends AbstractVerticle {
         // register BodyHandler globally.
         router.route().handler(BodyHandler.create());
 
-        // register `/graphql` handler
+        // register GraphQL Subscription websocket handler.
+        router.route("/graphql").handler(
+            ApolloWSHandler.create(graphQL)
+                .connectionHandler(event -> log.info("connection event: {}", event))
+                .connectionInitHandler(init -> log.info("connectionInit event: {}", init))
+        );
+
         GraphQLHandlerOptions options = new GraphQLHandlerOptions()
             // enable multipart for file upload.
             .setRequestMultipartEnabled(true)
             .setRequestBatchingEnabled(true);
-
-        // enable subscription support.
-        router.route("/graphql").handler(
-            ApolloWSHandler.create(graphQL)
-                .connectionHandler(event -> log.info("connection: {}", event))
-                .connectionInitHandler(init -> log.info("init event: {}", init))
-        );
-
+        // register `/graphql` for GraphQL handler
         // alternatively, use `router.route()` to enable GET and POST http methods
         router.post("/graphql")
             .handler(
                 GraphQLHandler.create(graphQL, options)
-                    .dataLoaderRegistry(
-                        buildDataLoaderRegistry(dataLoaders)
-                    )
-
+                    .dataLoaderRegistry(buildDataLoaderRegistry(dataLoaders))
+                    //.locale()
+                    //.queryContext()
             );
 
         // register `/graphiql` endpoint for the GraphiQL UI
         GraphiQLHandlerOptions graphiqlOptions = new GraphiQLHandlerOptions()
             .setEnabled(true);
-        router.route("/graphiql").handler(GraphiQLHandler.create(graphiqlOptions));
+        router.get("/graphiql/*").handler(GraphiQLHandler.create(graphiqlOptions));
 
         router.get("/hello").handler(rc -> rc.response().end("Hello from my route"));
 
@@ -200,6 +197,7 @@ public class MainVerticle extends AbstractVerticle {
 
     private RuntimeWiring buildRuntimeWiring(DataFetchers dataFetchers) {
         return newRuntimeWiring()
+            // the following codes are moved to CodeRegistry, the central place to configure the execution codes.
             /*
             .wiringFactory(new WiringFactory() {
                 @Override

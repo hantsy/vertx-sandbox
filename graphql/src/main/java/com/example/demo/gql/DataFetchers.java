@@ -73,16 +73,17 @@ public class DataFetchers {
             var input = jacksonMapper.convertValue(commentInputArg, CommentInput.class);
             return this.posts.addComment(input)
                 .onSuccess(id -> this.posts.getCommentById(id.toString())
-                                        .onSuccess(c ->subject.onNext(c)));
+                    .onSuccess(c -> subject.onNext(c)));
         });
     }
 
     private BehaviorSubject<Comment> subject = BehaviorSubject.create();
 
-    public  DataFetcher<Publisher<Comment>> commentAdded() {
+    public DataFetcher<Publisher<Comment>> commentAdded() {
         return (DataFetchingEnvironment dfe) -> {
             ConnectableObservable<Comment> connectableObservable = subject.share().publish();
             connectableObservable.connect();
+            log.info("connect to `commentAdded`");
             return connectableObservable.toFlowable(BackpressureStrategy.BUFFER);
         };
     }
