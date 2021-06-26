@@ -5,8 +5,10 @@ import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.ext.web.handler.graphql.ApolloWSMessageType;
 import io.vertx.ext.web.multipart.MultipartForm;
 import lombok.extern.slf4j.Slf4j;
 
@@ -14,6 +16,9 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static io.vertx.ext.web.handler.graphql.ApolloWSMessageType.CONNECTION_KEEP_ALIVE;
+import static io.vertx.ext.web.handler.graphql.ApolloWSMessageType.DATA;
 
 @Slf4j
 public class MainVerticle extends AbstractVerticle {
@@ -71,48 +76,52 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     private void addComment(WebClient client, String id) {
+
+
+        // switch to HttpClient to handle WebSocket
         var options = new HttpClientOptions()
+            .setWebSocketClosingTimeout(7200)
             .setDefaultHost("localhost")
             .setDefaultPort(8080);
 
         // see: https://github.com/vert-x3/vertx-web/blob/master/vertx-web-graphql/src/test/java/io/vertx/ext/web/handler/graphql/ApolloWSHandlerTest.java
-//        var httpClient = vertx.createHttpClient(options);
-//        httpClient.webSocket("/graphql")
-//            .onSuccess(ws -> {
-//                ws.textMessageHandler(text -> log.info("web socket message handler:{}", text));
-//
-//                JsonObject messageInit = new JsonObject()
-//                    .put("type", "connection_init")
-//                    .put("id", "1");
-//
-//                JsonObject message = new JsonObject()
-//                    .put("payload", new JsonObject()
-//                        .put("query", "subscription onCommentAdded { commentAdded { id content } }"))
-//                    .put("type", "start")
-//                    .put("id", "1");
-//
-//                ws.write(messageInit.toBuffer());
-//                ws.write(message.toBuffer());
-//
-//                addCommentToPost(client, id);
-//            })
-//            .onFailure(e -> log.error("error: {}", e));
+        var httpClient = vertx.createHttpClient(options);
+        httpClient.webSocket("/graphql")
+            .onSuccess(ws -> {
+                ws.closeHandler(v -> log.info("websocket is closed"));
+                ws.endHandler(v -> log.info("websocket is ended"));
+                ws.exceptionHandler(e -> log.info("caught websocket exception: {}", e.getMessage()));
 
-        client.post("/graphql")
-            .sendJson(Map.of(
-                "query", "subscription onCommentAdded { commentAdded { id content } }"
-                )
-            )
-            .onSuccess(
-                data -> {
-                    log.info("data type: {}", data.getClass());
-                    log.info("data of subscription onCommentAdded: {}", data.bodyAsString());
-                }
-            )
+                ws.textMessageHandler(text -> {
+                    log.info("websocket message handler:{}", text);
+                    JsonObject obj = new JsonObject(text);
+                    ApolloWSMessageType type = ApolloWSMessageType.from(obj.getString("type"));
+                    if (type.equals(CONNECTION_KEEP_ALIVE)) {
+                        return;
+                    } else if (type.equals(DATA)) {
+                        log.info("subscription data commentAdded: {}", obj.getJsonObject("payload").getJsonObject("data").getJsonObject("commentAdded"));
+                    }
+                });
+
+                JsonObject messageInit = new JsonObject()
+                    .put("type", "connection_init")//this is required to initialize a connection.
+                    .put("id", "1");
+
+                JsonObject message = new JsonObject()
+                    .put("payload", new JsonObject()
+                        .put("query", "subscription onCommentAdded { commentAdded { id content } }"))
+                    .put("type", "start")
+                    .put("id", "1");
+
+                ws.write(messageInit.toBuffer());
+                ws.write(message.toBuffer());
+            })
             .onFailure(e -> log.error("error: {}", e));
 
-        addCommentToPost(client, id);
 
+        addCommentToPost(client, id);
+        addCommentToPost(client, id);
+        addCommentToPost(client, id);
     }
 
     private void addCommentToPost(WebClient client, String id) {

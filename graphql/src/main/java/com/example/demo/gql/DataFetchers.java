@@ -11,6 +11,7 @@ import io.reactivex.rxjava3.subjects.ReplaySubject;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.FileUpload;
+import io.vertx.ext.web.handler.graphql.ApolloWSMessage;
 import io.vertx.ext.web.handler.graphql.schema.VertxDataFetcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,10 +80,12 @@ public class DataFetchers {
         });
     }
 
-    private BehaviorSubject<Comment> subject = BehaviorSubject.create();
+    private ReplaySubject<Comment> subject = ReplaySubject.create(1);
 
     public DataFetcher<Publisher<Comment>> commentAdded() {
         return (DataFetchingEnvironment dfe) -> {
+            ApolloWSMessage message = dfe.getContext();
+            log.info("msg: {}, connectionParams: {}", message.content(), message.connectionParams());
             ConnectableObservable<Comment> connectableObservable = subject.share().publish();
             connectableObservable.connect();
             log.info("connect to `commentAdded`");

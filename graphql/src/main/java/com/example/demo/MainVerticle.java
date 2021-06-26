@@ -23,6 +23,7 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -125,10 +126,19 @@ public class MainVerticle extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
 
         // register GraphQL Subscription websocket handler.
+        ApolloWSOptions apolloWSOptions = new ApolloWSOptions();
         router.route("/graphql").handler(
-            ApolloWSHandler.create(graphQL)
+            ApolloWSHandler.create(graphQL, apolloWSOptions)
+                .connectionInitHandler(connectionInitEvent -> {
+                    JsonObject payload = connectionInitEvent.message().content().getJsonObject("payload");
+                    log.info("connection init event: {}", payload);
+                    if (payload != null && payload.containsKey("rejectMessage")) {
+                        connectionInitEvent.fail(payload.getString("rejectMessage"));
+                        return;
+                    }
+                    connectionInitEvent.complete(payload);
+                })
                 .connectionHandler(event -> log.info("connection event: {}", event))
-                .connectionInitHandler(init -> log.info("connectionInit event: {}", init))
                 .messageHandler(msg -> log.info("websocket message: {}", msg.content().toString()))
                 .endHandler(event -> log.info("end event: {}", event))
         );
