@@ -103,8 +103,8 @@ public class DataFetchers {
             log.info("content type: {}", upload.contentType());
             log.info("charset: {}", upload.charSet());
             log.info("size: {}", upload.size());
-            String fileContent = Vertx.vertx().fileSystem().readFileBlocking(upload.uploadedFileName()).toString();
-            log.info("file content: {}", fileContent);
+//            String fileContent = Vertx.vertx().fileSystem().readFileBlocking(upload.uploadedFileName()).toString();
+//            log.info("file content: {}", fileContent);
             return true;
         };
     }

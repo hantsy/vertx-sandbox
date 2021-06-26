@@ -33,8 +33,8 @@ public class MainVerticle extends AbstractVerticle {
 
         var client = WebClient.create(vertx, options);
 
-        //uploadFile(client);
-        createPostAndAddComments(client);
+        uploadFile(client);
+        //createPostAndAddComments(client);
         //getAllPosts(client);
 
 
@@ -88,18 +88,19 @@ public class MainVerticle extends AbstractVerticle {
         var httpClient = vertx.createHttpClient(options);
         httpClient.webSocket("/graphql")
             .onSuccess(ws -> {
-                ws.closeHandler(v -> log.info("websocket is closed"));
-                ws.endHandler(v -> log.info("websocket is ended"));
-                ws.exceptionHandler(e -> log.info("caught websocket exception: {}", e.getMessage()));
+                ws.closeHandler(v -> log.info("websocket is being closed"));
+                ws.endHandler(v -> log.info("websocket is being ended"));
+                ws.exceptionHandler(e -> log.info("catching websocket exception: {}", e.getMessage()));
 
                 ws.textMessageHandler(text -> {
-                    log.info("websocket message handler:{}", text);
+                    //log.info("websocket message handler:{}", text);
                     JsonObject obj = new JsonObject(text);
                     ApolloWSMessageType type = ApolloWSMessageType.from(obj.getString("type"));
                     if (type.equals(CONNECTION_KEEP_ALIVE)) {
-                        return;
+                        return;// do nothing when ka.
                     } else if (type.equals(DATA)) {
-                        log.info("subscription data commentAdded: {}", obj.getJsonObject("payload").getJsonObject("data").getJsonObject("commentAdded"));
+                        // handle the subscription `commentAdded` data.
+                        log.info("subscription commentAdded data: {}", obj.getJsonObject("payload").getJsonObject("data").getJsonObject("commentAdded"));
                     }
                 });
 
@@ -117,7 +118,6 @@ public class MainVerticle extends AbstractVerticle {
                 ws.write(message.toBuffer());
             })
             .onFailure(e -> log.error("error: {}", e));
-
 
         addCommentToPost(client, id);
         addCommentToPost(client, id);

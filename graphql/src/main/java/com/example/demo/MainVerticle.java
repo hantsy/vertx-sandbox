@@ -138,9 +138,9 @@ public class MainVerticle extends AbstractVerticle {
                     }
                     connectionInitEvent.complete(payload);
                 })
-                .connectionHandler(event -> log.info("connection event: {}", event))
-                .messageHandler(msg -> log.info("websocket message: {}", msg.content().toString()))
-                .endHandler(event -> log.info("end event: {}", event))
+                //.connectionHandler(event -> log.info("connection event: {}", event))
+                //.messageHandler(msg -> log.info("websocket message: {}", msg.content().toString()))
+                //.endHandler(event -> log.info("end event: {}", event))
         );
 
         GraphQLHandlerOptions options = new GraphQLHandlerOptions()
