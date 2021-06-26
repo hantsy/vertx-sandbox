@@ -129,6 +129,8 @@ public class MainVerticle extends AbstractVerticle {
             ApolloWSHandler.create(graphQL)
                 .connectionHandler(event -> log.info("connection event: {}", event))
                 .connectionInitHandler(init -> log.info("connectionInit event: {}", init))
+                .messageHandler(msg -> log.info("websocket message: {}", msg.content().toString()))
+                .endHandler(event -> log.info("end event: {}", event))
         );
 
         GraphQLHandlerOptions options = new GraphQLHandlerOptions()
@@ -141,8 +143,8 @@ public class MainVerticle extends AbstractVerticle {
             .handler(
                 GraphQLHandler.create(graphQL, options)
                     .dataLoaderRegistry(buildDataLoaderRegistry(dataLoaders))
-                    //.locale()
-                    //.queryContext()
+                //.locale()
+                //.queryContext()
             );
 
         // register `/graphiql` endpoint for the GraphiQL UI

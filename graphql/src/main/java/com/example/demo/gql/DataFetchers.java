@@ -7,6 +7,8 @@ import graphql.schema.DataFetchingEnvironment;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.observables.ConnectableObservable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.ReplaySubject;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.handler.graphql.schema.VertxDataFetcher;
@@ -98,6 +100,8 @@ public class DataFetchers {
             log.info("content type: {}", upload.contentType());
             log.info("charset: {}", upload.charSet());
             log.info("size: {}", upload.size());
+            String fileContent = Vertx.vertx().fileSystem().readFileBlocking(upload.uploadedFileName()).toString();
+            log.info("file content: {}", fileContent);
             return true;
         };
     }
