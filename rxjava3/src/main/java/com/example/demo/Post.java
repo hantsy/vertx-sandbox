@@ -15,5 +15,4 @@ public class Post {
     String title;
     String content;
     LocalDateTime createdAt;
-
 }

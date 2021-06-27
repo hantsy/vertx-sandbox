@@ -3,16 +3,12 @@ package com.example.demo;
 import io.vertx.rxjava3.pgclient.PgPool;
 import io.vertx.rxjava3.sqlclient.SqlConnection;
 import io.vertx.rxjava3.sqlclient.Tuple;
-import io.vertx.rxjava3.pgclient.PgPool;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
-
+@Slf4j
 public class DataInitializer {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(DataInitializer.class.getName());
 
     private PgPool client;
 
@@ -25,7 +21,7 @@ public class DataInitializer {
     }
 
     public void run() {
-        LOGGER.info("Data initialization is starting...");
+        log.info("Data initialization is starting...");
 
         Tuple first = Tuple.of("Hello Quarkus", "My first post of Quarkus");
         Tuple second = Tuple.of("Hello Again, Quarkus", "My second post of Quarkus");
@@ -40,10 +36,10 @@ public class DataInitializer {
             .subscribe(
                 (data) -> {
                     data.forEach(row -> {
-                        LOGGER.info("saved row: {}", row.toJson());
+                        log.info("saved row: {}", row.toJson());
                     });
                 },
-                err -> LOGGER.warn("failed to initializing: {}", err.getMessage())
+                err -> log.warn("failed to initializing: {}", err.getMessage())
             );
     }
 }

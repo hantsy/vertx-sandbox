@@ -23,6 +23,7 @@ import io.vertx.rxjava3.json.schema.SchemaParser;
 import io.vertx.rxjava3.json.schema.SchemaRouter;
 import io.vertx.rxjava3.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,12 +32,11 @@ import static io.vertx.json.schema.common.dsl.Keywords.minLength;
 import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
 
+@Slf4j
 public class MainVerticle extends AbstractVerticle {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(MainVerticle.class.getName());
-
     static {
-        LOGGER.info("Customizing the built-in jackson ObjectMapper...");
+        log.info("Customizing the built-in jackson ObjectMapper...");
         var objectMapper = DatabindCodec.mapper();
         objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         objectMapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS);
@@ -48,7 +48,7 @@ public class MainVerticle extends AbstractVerticle {
 
     @Override
     public Completable rxStart() {
-        LOGGER.info("Starting HTTP server...");
+        log.info("Starting HTTP server...");
         InternalLoggerFactory.setDefaultFactory(Slf4JLoggerFactory.INSTANCE);
 
         //Create a PgPool instance
@@ -93,6 +93,7 @@ public class MainVerticle extends AbstractVerticle {
         ObjectSchemaBuilder bodySchemaBuilder = objectSchema()
             .requiredProperty("title", stringSchema().with(minLength(5)).with(maxLength(100)))
             .requiredProperty("content", stringSchema().with(minLength(10)).with(maxLength(2000)));
+
         ValidationHandler validation = ValidationHandler.newInstance(
             ValidationHandler
                 .builder(schemaParser)
@@ -115,9 +116,16 @@ public class MainVerticle extends AbstractVerticle {
             .handler(handlers::save)
             .failureHandler(validationFailureHandler);
 
-        router.get("/posts/:id").produces("application/json").handler(handlers::get).failureHandler(frc -> frc.response().setStatusCode(404).end());
-        router.put("/posts/:id").consumes("application/json").handler(BodyHandler.create()).handler(handlers::update);
-        router.delete("/posts/:id").handler(handlers::delete);
+        router.get("/posts/:id").produces("application/json")
+            .handler(handlers::get)
+            .failureHandler(frc -> frc.response().setStatusCode(404).end());
+
+        router.put("/posts/:id")
+            .consumes("application/json")
+            .handler(BodyHandler.create()).handler(handlers::update);
+
+        router.delete("/posts/:id")
+            .handler(handlers::delete);
 
         router.get("/hello").handler(rc -> rc.response().end("Hello from my route"));
 

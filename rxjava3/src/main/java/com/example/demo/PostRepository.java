@@ -8,17 +8,17 @@ import io.vertx.rxjava3.sqlclient.Row;
 import io.vertx.rxjava3.sqlclient.RowSet;
 import io.vertx.rxjava3.sqlclient.SqlResult;
 import io.vertx.rxjava3.sqlclient.Tuple;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+@Slf4j
 public class PostRepository {
-    private static final Logger LOGGER = Logger.getLogger(PostRepository.class.getName());
 
     private static Function<Row, Post> MAPPER = (row) ->
         Post.of(
