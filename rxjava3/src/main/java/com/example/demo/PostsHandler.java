@@ -1,7 +1,7 @@
 package com.example.demo;
 
 import io.vertx.core.json.Json;
-import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.rxjava3.ext.web.RoutingContext;
 
 import java.util.UUID;
 import java.util.logging.Level;
@@ -50,8 +50,13 @@ class PostsHandler {
         //rc.getBodyAsJson().mapTo(PostForm.class)
         var body = rc.getBodyAsJson();
         LOGGER.log(Level.INFO, "request body: {0}", body);
-        var form = body.mapTo(PostForm.class);
-        this.posts.save(Post.of(form.getTitle(), form.getContent()))
+        var form = body.mapTo(CreatePostCommand.class);
+        this.posts
+            .save(Post.builder()
+                .title(form.getTitle())
+                .content(form.getContent())
+                .build()
+            )
             .subscribe(
                 savedId -> rc.response()
                     .putHeader("Location", "/posts/" + savedId)
@@ -66,7 +71,7 @@ class PostsHandler {
         var id = params.get("id");
         var body = rc.getBodyAsJson();
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", new Object[]{id, body});
-        var form = body.mapTo(PostForm.class);
+        var form = body.mapTo(CreatePostCommand.class);
         this.posts.findById(UUID.fromString(id))
             .flatMap(
                 post -> {

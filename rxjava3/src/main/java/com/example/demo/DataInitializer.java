@@ -1,8 +1,9 @@
 package com.example.demo;
 
-import io.vertx.reactivex.pgclient.PgPool;
-import io.vertx.reactivex.sqlclient.SqlConnection;
-import io.vertx.reactivex.sqlclient.Tuple;
+import io.vertx.rxjava3.pgclient.PgPool;
+import io.vertx.rxjava3.sqlclient.SqlConnection;
+import io.vertx.rxjava3.sqlclient.Tuple;
+import io.vertx.rxjava3.pgclient.PgPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

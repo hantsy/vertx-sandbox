@@ -1,13 +1,13 @@
 package com.example.demo;
 
 
-import io.reactivex.Flowable;
-import io.reactivex.Single;
-import io.vertx.reactivex.pgclient.PgPool;
-import io.vertx.reactivex.sqlclient.Row;
-import io.vertx.reactivex.sqlclient.RowSet;
-import io.vertx.reactivex.sqlclient.SqlResult;
-import io.vertx.reactivex.sqlclient.Tuple;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
+import io.vertx.rxjava3.pgclient.PgPool;
+import io.vertx.rxjava3.sqlclient.Row;
+import io.vertx.rxjava3.sqlclient.RowSet;
+import io.vertx.rxjava3.sqlclient.SqlResult;
+import io.vertx.rxjava3.sqlclient.Tuple;
 
 import java.util.List;
 import java.util.Objects;

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.validation.BadRequestException;
@@ -14,18 +14,19 @@ import io.vertx.ext.web.validation.builder.Bodies;
 import io.vertx.json.schema.SchemaRouterOptions;
 import io.vertx.json.schema.common.dsl.ObjectSchemaBuilder;
 import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.ext.web.Router;
-import io.vertx.reactivex.ext.web.RoutingContext;
-import io.vertx.reactivex.ext.web.handler.BodyHandler;
-import io.vertx.reactivex.ext.web.validation.ValidationHandler;
-import io.vertx.reactivex.json.schema.SchemaParser;
-import io.vertx.reactivex.json.schema.SchemaRouter;
-import io.vertx.reactivex.pgclient.PgPool;
+import io.vertx.rxjava3.core.AbstractVerticle;
+import io.vertx.rxjava3.ext.web.Router;
+import io.vertx.rxjava3.ext.web.RoutingContext;
+import io.vertx.rxjava3.ext.web.handler.BodyHandler;
+import io.vertx.rxjava3.ext.web.validation.ValidationHandler;
+import io.vertx.rxjava3.json.schema.SchemaParser;
+import io.vertx.rxjava3.json.schema.SchemaRouter;
+import io.vertx.rxjava3.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static io.vertx.json.schema.common.dsl.Keywords.maxLength;
 import static io.vertx.json.schema.common.dsl.Keywords.minLength;
 import static io.vertx.json.schema.common.dsl.Schemas.objectSchema;
 import static io.vertx.json.schema.common.dsl.Schemas.stringSchema;
@@ -90,8 +91,8 @@ public class MainVerticle extends AbstractVerticle {
         SchemaParser schemaParser = SchemaParser.createDraft201909SchemaParser(schemaRouter);
 
         ObjectSchemaBuilder bodySchemaBuilder = objectSchema()
-            .requiredProperty("title", stringSchema().with(minLength(5)))
-            .requiredProperty("content", stringSchema().with(minLength(10)));
+            .requiredProperty("title", stringSchema().with(minLength(5)).with(maxLength(100)))
+            .requiredProperty("content", stringSchema().with(minLength(10)).with(maxLength(2000)));
         ValidationHandler validation = ValidationHandler.newInstance(
             ValidationHandler
                 .builder(schemaParser)
