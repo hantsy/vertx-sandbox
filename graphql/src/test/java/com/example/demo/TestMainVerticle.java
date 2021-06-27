@@ -69,4 +69,68 @@ public class TestMainVerticle {
                 )
             );
     }
+
+    @Test
+    void createPost(Vertx vertx, VertxTestContext testContext) throws Throwable {
+        String TITLE = "My post created by Vertx HttpClient";
+        //var creatPostQuery = "mutation newPost($input:CreatePostInput!){ createPost(createPostInput:$input)}";
+        var creatPostQuery = """
+            mutation newPost($input:CreatePostInput!){
+                createPost(createPostInput:$input)
+            }""";
+        client.request(HttpMethod.POST, "/graphql")
+            .flatMap(req -> {
+                    String encodedJson = Json.encode(Map.of(
+                        "query", creatPostQuery,
+                        "variables", Map.of(
+                            "input", Map.of(
+                                "title", TITLE,
+                                "content", "content of my post"
+                            )
+                        )
+                    ));
+                    log.info("sending encoded json: {}", encodedJson);
+                    return req.putHeader("Content-Type", "application/json")
+                        .putHeader("Accept", "application/json")
+                        .send(encodedJson)//have to use Json.encode to convert objects to json string.
+                        .flatMap(HttpClientResponse::body);
+                }
+            )
+            .flatMap(buf -> {
+                Object id = buf.toJsonObject().getJsonObject("data").getValue("createPost");
+
+                log.info("created post: {}", id);
+                assertThat(id).isNotNull();
+
+                var postById = """
+                    query post($id:String!) {
+                        postById(postId:$id){id title content}
+                    }""";
+
+                return client.request(HttpMethod.POST, "/graphql")
+                    .flatMap(req -> req.putHeader("Content-Type", "application/json")
+                        .putHeader("Accept", "application/json")
+                        .send(Json.encode(Map.of(
+                            "query", postById,
+                            "variables", Map.of("id", id.toString())
+                        )))//have to use Json.encode to convert objects to json string.
+                        .flatMap(HttpClientResponse::body)
+                    );
+            })
+            .onComplete(
+                testContext.succeeding(
+                    buffer -> testContext.verify(
+                        () -> {
+                            log.info("buf: {}", buffer.toString());
+                            String title = buffer.toJsonObject()
+                                .getJsonObject("data")
+                                .getJsonObject("postById")
+                                .getString("title");
+                            assertThat(title).isEqualTo(TITLE.toUpperCase());
+                            testContext.completeNow();
+                        }
+                    )
+                )
+            );
+    }
 }
