@@ -1,10 +1,11 @@
 package com.example.demo;
 
-import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 
+import io.vertx.rxjava3.core.RxHelper;
+import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.ext.web.client.WebClient;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,16 +21,33 @@ public class TestMainVerticle {
 
     @BeforeEach
     void setUp(Vertx vertx, VertxTestContext testContext) {
-        vertx.deployVerticle(new MainVerticle(), testContext.succeeding(id -> testContext.completeNow()));
+
+        // see: https://github.com/vert-x3/vertx-rx/blob/master/rx-junit5-providers/vertx-junit5-rx-java3/src/test/java/io/vertx/junit5/rxjava3/RxJava3Test.java
+        RxHelper
+            .deployVerticle(vertx, new MainVerticle())
+            .subscribe(
+                message -> testContext.verify(() -> {
+                    log.info("deployed: {}", message);
+                    testContext.completeNow();
+                }),
+                testContext::failNow);
+
+        // this will block application.
+//        vertx.deployVerticle(new MainVerticle())
+//            .subscribe(
+//                data -> {
+//                    log.info("deployed: {}", data);
+//                    testContext.succeeding(id -> testContext.completeNow());
+//                },
+//                error -> log.error("error: {}", error)
+//            );
 
         // build RxJava3 WebClient
-        var rxVertx = new io.vertx.rxjava3.core.Vertx(vertx);
         var options = new WebClientOptions()
             .setDefaultHost("localhost")
             .setDefaultPort(8888);
-        this.client = WebClient.create(rxVertx, options);
+        this.client = WebClient.create(vertx, options);
     }
-
 
     @Test
     void testGetAll(Vertx vertx, VertxTestContext testContext) {
