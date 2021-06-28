@@ -178,6 +178,10 @@
                 <version>${exec-maven-plugin.version}</version>
                 <configuration>
                     <mainClass>com.example.demo.DemoApplication</mainClass>
+                    <!-- ues jvm.config instead -->
+<!--                    <commandlineArgs>-->
+<!--                        &#45;&#45;add-opens java.base/java.lang=ALL-UNNAMED-->
+<!--                    </commandlineArgs>-->
                 </configuration>
             </plugin>
         </plugins>
