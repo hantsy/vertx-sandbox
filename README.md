@@ -22,3 +22,4 @@ TBD
 ## Reference
 
 * [Vertx Documentation](https://vertx.io/docs/)
+* [Building Reactive Microservices in Java](https://developers.redhat.com/promotions/building-reactive-microservices-in-java)
