@@ -18,10 +18,9 @@ import java.util.logging.Logger;
 @ApplicationScoped
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class MainVerticle extends AbstractVerticle {
+    private final static Logger LOGGER = Logger.getLogger(MainVerticle.class.getName());
 
     final PostsHandler postHandlers;
-
-    private final static Logger LOGGER = Logger.getLogger(MainVerticle.class.getName());
 
     static {
         LOGGER.info("Customizing the built-in jackson ObjectMapper...");
