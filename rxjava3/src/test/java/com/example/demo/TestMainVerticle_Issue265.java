@@ -3,7 +3,6 @@ package com.example.demo;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.rxjava3.core.RxHelper;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.ext.web.client.WebClient;
 import lombok.extern.slf4j.Slf4j;
@@ -21,14 +20,22 @@ public class TestMainVerticle_Issue265 {
     @BeforeEach
     void setUp(Vertx vertx, VertxTestContext testContext) {
 
+        // see https://github.com/vert-x3/vertx-rx/issues/265
         // this will block application.
         vertx.deployVerticle(new MainVerticle())
             .subscribe(
                 data -> {
                     log.info("deployed: {}", data);
-                    testContext.succeeding(id -> testContext.completeNow());
+                    // The following line creates a handler that is never used
+                    //testContext.succeeding(id -> testContext.completeNow());
+
+                    testContext.completeNow();
                 },
-                error -> log.error("error: {}", error)
+                error -> {
+                    log.error("error: {}", error);
+                    // Without this line the test will timeout in case of failure to deploy the verticle
+                    testContext.failNow(error);
+                }
             );
 
         // build RxJava3 WebClient
