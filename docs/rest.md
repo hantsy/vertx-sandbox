@@ -1,12 +1,12 @@
 # Building RESTful APIs with Eclipse Vertx
 
-In this post, we will explore the Eclipse Vertx  and build a simple blog RESTful API with Eclipse Vertx and reactive Postgres Client.
+In this post, we will explore how to build a simple RESTful example application with Eclipse Vertx and reactive Postgres Client.
 
-Unlike other frameworks in which reactive is an addition to the existing features, Eclipse Vertx is born for reactive applications,  read [the introduction guide](https://vertx.io/introduction-to-vertx-and-reactive/) to get know the reactive support in Vertx .
+Unlike other frameworks in which *reactive* is an addition to the existing features, Eclipse Vertx is born for *reactive applications*,  read [the official introduction guide](https://vertx.io/introduction-to-vertx-and-reactive/) to get know the reactive support in Vertx .
 
- Similar to the Spring Boot starter page,  Eclipse Vertx also provides a scaffold page to generate the project skeleton for you.
+Similar to the [Spring Boot intializr](https://start.spring.io),  Eclipse Vertx also provides a scaffold tool to generate the project skeleton for you.
 
-Open your browser, go to [Vertx Starter](https://start.vertx.io/).  In the **Dependencies** field, select *Vertx Web*, *Reactive  PostgreSQL Client*, and optionally expand the **Advance options** and select the latest Java version(at the moment it is **16**). 
+Open your browser, navigate to the [Vertx Starter page](https://start.vertx.io/).  In the **Dependencies** field, select *Vertx Web*, *Reactive  PostgreSQL Client*, and optionally expand the **Advance options** and select the *latest Java version*(at the moment it is **16**). 
 
 ![Vertx starter](./starter.png)
 
@@ -14,9 +14,9 @@ Open your browser, go to [Vertx Starter](https://start.vertx.io/).  In the **Dep
 
 Leave others options as they are, it will use the default values, then hit  **Generate Project** button to generate the project into an archive for downloading.
 
-Download the archive, and extract the files into local disc, and import into your IDEs, eg. Intellij IDEA.
+Download the project archive, and extract the files into local disc, and import into your IDEs, eg. Intellij IDEA.
 
-Open the *pom.xml*,  as you see. It uses the `maven-shade-plugin` to package the built results into a fat jar, and  the *Main-Class* is the Vertx built-in `io.vertx.core.Launcher`. When running the application via `java -jar target\xxx.jar` , it will use the `Launcher` to deploy the declared `MainVerticle` .  A `Verticle` is a Vertx specific deployment unit to group  the resources, such as Network, HTTP, etc.
+Open the *pom.xml*.  As you see, it uses `maven-shade-plugin` to package the built results into a fat jar, and  the *Main-Class* is the Vertx built-in `io.vertx.core.Launcher`. When running the application via `java -jar target\xxx.jar` , it will use the `Launcher` to deploy the declared `MainVerticle` .  A `Verticle` is a Vertx specific deployment unit to group  the resources, such as Network, HTTP, etc.
 
 Let's move to the `MainVerticle` class.
 
@@ -28,7 +28,7 @@ public class MainVerticle extends AbstractVerticle {
 
 Generally , to code our business logic, you just need to override the `start()` method or `start(Promise<Void> startPromise)`.
 
-In our application, we will start a Http Server to serve the HTTP requests.  Replace `start(Promise<Void> startPromise)` method with the following codes.
+In our application, we will start a HTTP Server to serve the HTTP requests.  Replace the content of the `start(Promise<Void> startPromise)` method with the following.
 
 ```java
 // Create the HTTP server
@@ -48,9 +48,9 @@ vertx.createHttpServer()
     });
 ```
 
-The `Router` is a specific `Handler<HttpServerRequest>`  which simplifies the handling Http requests and allow chain multiple handlers.
+The request handling work is done by  the above `.requestHandler(Handler<HttpServerRequest>)`. The `Router` is a specific `Handler<HttpServerRequest>`  which simplifies the handling HTTP requests and allows chaining a sequence of handlers.
 
-We defines  a  `Router` via `reoutes` to assemble the handling  of all routes.
+Add a `reoutes` method to handle requests  of all routes in a central place, it returns the router.
 
 ```java
 //create routes
@@ -72,9 +72,9 @@ private Router routes(PostsHandler handlers) {
 }
 ```
 
-For `post` and `put` Http Methods, the `BodyHandler` is required to consume the  HTTP request body.
+For `post` and `put` HTTP  methods, the `BodyHandler` is required to handling consuming the  HTTP request body.
 
- We  extract all handing details into the `PostHandler` class.
+Extract all handing details into a new `PostHandler` class.
 
 ```java
 class PostsHandler {
@@ -264,11 +264,11 @@ public class PostRepository {
 
 
 
-The `pgPool` is a Postgres client to interact with the Postgres database, the API is similar to the traditional Jdbc, but based on the Vertx's `Future`. Similar to Java 8 `CompletionStage` or Reactor  `Mono` /`Flux`, Vertx  Future provides limited APIs for transforming  and observing the completed result.
+The `pgPool` is a Postgres client to interact with the Postgres database, the operations  are very similar to the traditional JDBC, but it is based on the Vertx's `Future` API. Similar to Java 8 `CompletionStage` or Reactor  `Mono` /`Flux`, Vertx  Future provides very limited APIs for producing, transforming  and observing the completed result in an asynchronous mode.
 
 > More details about the  Reactive PostgreSQL Client, read [PostgreSQL Client docs](https://vertx.io/docs/vertx-pg-client/java/).
 
-> Almost all async methods in Vertx , it provides a variant of accepting a `Promise` callback as parameter instead of return a `Future` instance.  But personally I think the `Promise` is evil if the progress is passed into a sequence of  transitions, thus the `Promise`  will nest another Promise, and so on.
+> Almost all async methods in Vertx it provides a variant of accepting a `Promise` callback as parameter instead of return a `Future` instance.  But personally I think the `Promise` is evil if the progress is passed into a sequence of  transitions, thus the `Promise`  will nest another `Promise`, and so on. It will put yourself in the infinite `Promise` hole.
 
 Create a method in the `MainVerticle` to produce a `PgPool` instance.
 
@@ -291,7 +291,7 @@ private PgPool pgPool() {
 }
 ```
 
-Create a class to initialize the sample data.
+Create a class to initialize some sample data.
 
 ```java
 public class DataInitializer {
@@ -338,7 +338,7 @@ public class DataInitializer {
 }
 ```
 
-
+In the above codes, use the `withTransaction` method to wrap a series of database operations in a single transaction.  
 
 Let's assemble all the resources in the `MainVerticle`'s start method.
 
@@ -366,12 +366,13 @@ public void start(Promise<Void> startPromise) throws Exception {
 
     // Create the HTTP server
     vertx.createHttpServer()
+        // Handle every request using the router
+    	.requestHandler(router)
         ...
 }
-
 ```
 
-By default Vertx Web use Jackson to serialize and deserialize the request payload. Unfortunately it does not register Java DateTime module by default.
+By default Vertx Web uses Jackson to serialize and deserialize the request/response payload. Unfortunately it does not register a Java DateTime module by default.
 
 Add the following dependencies in the *pom.xml* file.
 
@@ -388,7 +389,11 @@ Add the following dependencies in the *pom.xml* file.
 </dependency>
 ```
 
-Add `<jackson.version>2.11.3</jackson.version>` to the `properties ` section.
+Add a `jackson.version` property to the `properties ` section.
+
+```xml
+<jackson.version>2.11.3</jackson.version>
+```
 
 Then add a static block to configure DateTime serialization and deserialization in the `MainVerticle` class.
 
@@ -407,13 +412,15 @@ static {
 
 Let's start the application.  
 
-Get [the source codes](https://github.com/hantsy/vertx-sandbox), simply run the following command to start a Postgres instance in Docker.
+Simply fetch [the source codes](https://github.com/hantsy/vertx-sandbox), it provides a docker compose file.
+
+Run the following command to start a Postgres instance in Docker container.
 
 ```bash
 docker compose postgres
 ```
 
-It will initialize the database tables through [the initial scripts](https://github.com/hantsy/vertx-sandbox/tree/master/pg-initdb.d)  when the database is starting.
+It will prepare the essential tables through [the initial scripts](https://github.com/hantsy/vertx-sandbox/tree/master/pg-initdb.d)  when the database is starting.
 
 Now switch to the project folder, run the following command to start the application.
 
@@ -421,7 +428,7 @@ Now switch to the project folder, run the following command to start the applica
 mvn clean compile exec:java
 ```
 
-Or build the project firstly, and run the final jar.
+Or build the project firstly, and run the final jar file.
 
 ```bash
 mvn clean package
@@ -436,3 +443,4 @@ curl http://localhost:8888/posts -H "Accept: application/json"
 ```
 
 Get [the complete source codes](https://github.com/hantsy/vertx-sandbox/tree/master/post-service) from my Github.
+
