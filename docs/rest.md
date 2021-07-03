@@ -268,7 +268,7 @@ The `pgPool` is a Postgres client to interact with the Postgres database, the op
 
 > More details about the  Reactive PostgreSQL Client, read [PostgreSQL Client docs](https://vertx.io/docs/vertx-pg-client/java/).
 
-> Almost all async methods in Vertx it provides a variant of accepting a `Promise` callback as parameter instead of return a `Future` instance.  But personally I think the `Promise` is evil if the progress is passed into a sequence of  transitions, thus the `Promise`  will nest another `Promise`, and so on. It will put yourself in the infinite `Promise` hole.
+> In Vertx almost all async methods provide a variant to accept a `Promise` like callback as parameter instead of returning a `Future` instance.  But personally I think the `Promise` is evil if the handling progress is passed into a sequence of  transitions, thus the `Promise`  will nest another `Promise`, and so on. It will put you in an infinite `Promise` hole.
 
 Create a method in the `MainVerticle` to produce a `PgPool` instance.
 
