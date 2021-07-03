@@ -7,9 +7,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.exceptions.UndeliverableException;
 import io.vertx.core.Handler;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.validation.BadRequestException;
+import io.vertx.ext.web.validation.BodyProcessorException;
+import io.vertx.ext.web.validation.RequestPredicate;
 import io.vertx.ext.web.validation.builder.Bodies;
 import io.vertx.json.schema.SchemaRouterOptions;
 import io.vertx.json.schema.common.dsl.ObjectSchemaBuilder;
@@ -97,22 +100,26 @@ public class MainVerticle extends AbstractVerticle {
         ValidationHandler validation = ValidationHandler.newInstance(
             ValidationHandler
                 .builder(schemaParser)
+                //.queryParameter(param("parameterName", intSchema()))
+                //.pathParameter(param("pathParam", numberSchema()))
                 .body(Bodies.json(bodySchemaBuilder))
                 //.body(Bodies.formUrlEncoded(bodySchemaBuilder))
+                .predicate(RequestPredicate.BODY_REQUIRED)
                 .build()
         );
 
         Handler<RoutingContext> validationFailureHandler = (RoutingContext rc) -> {
-            if (rc.failure() instanceof BadRequestException) {
+            if (rc.failure() instanceof BodyProcessorException exception) {
                 rc.response()
                     .setStatusCode(400)
                     .end("validation failed.");
+                    //.end(exception.toJson().encode());
             }
         };
 
         router.post("/posts").consumes("application/json")
-            .handler(validation)
             .handler(BodyHandler.create())
+            .handler(validation)
             .handler(handlers::save)
             .failureHandler(validationFailureHandler);
 

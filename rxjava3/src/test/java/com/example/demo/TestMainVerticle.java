@@ -3,7 +3,6 @@ package com.example.demo;
 import io.vertx.ext.web.client.WebClientOptions;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-
 import io.vertx.rxjava3.core.RxHelper;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.ext.web.client.WebClient;
@@ -11,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,16 +32,6 @@ public class TestMainVerticle {
                     testContext.completeNow();
                 }),
                 testContext::failNow);
-
-        // this will block application.
-//        vertx.deployVerticle(new MainVerticle())
-//            .subscribe(
-//                data -> {
-//                    log.info("deployed: {}", data);
-//                    testContext.succeeding(id -> testContext.completeNow());
-//                },
-//                error -> log.error("error: {}", error)
-//            );
 
         // build RxJava3 WebClient
         var options = new WebClientOptions()
@@ -66,7 +57,7 @@ public class TestMainVerticle {
     @Test
     void testPostValidation(Vertx vertx, VertxTestContext testContext) {
         client.post("/posts")
-            .rxSendJson(CreatePostCommand.of("test", ""))
+            .rxSendJson(CreatePostCommand.of("test", "t"))
             .subscribe(
                 response -> {
                     var statusCode = response.statusCode();
@@ -75,7 +66,28 @@ public class TestMainVerticle {
                     assertThat(statusCode).isEqualTo(400);
                     assertThat(body).isEqualTo("validation failed.");
                     testContext.completeNow();
-                }
+                },
+                testContext::failNow
+            );
+    }
+
+    @Test
+    void testPostValidationOK(Vertx vertx, VertxTestContext testContext) {
+        client.post("/posts")
+            .rxSendJson(
+                CreatePostCommand.of("The quick brown fox jumps over the lazy dog",
+                    "body of `the quick brown fox jumps over the lazy dog`")
+            )
+            .subscribe(
+                response -> {
+                    var statusCode = response.statusCode();
+                    var body = response.bodyAsString();
+                    log.info("status code: {}, body: {}", statusCode, body);
+                    assertThat(statusCode).isEqualTo(201);
+                    assertThat(response.getHeader("Location")).isNotNull();
+                    testContext.completeNow();
+                },
+                testContext::failNow
             );
     }
 
