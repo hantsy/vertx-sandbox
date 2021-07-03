@@ -97,7 +97,12 @@ class MainVerticle : AbstractVerticle() {
         router.get("/posts/:id")
             .produces("application/json")
             .handler { handlers.getById(it) }
-            .failureHandler { it.response().setStatusCode(404).end() }
+            .failureHandler {
+                val error = it.failure()
+                if (error is PostNotFoundException) {
+                    it.response().setStatusCode(404).end(error.message)
+                }
+            }
 
         router.put("/posts/:id")
             .consumes("application/json")

@@ -25,10 +25,9 @@ class PostRepository(private val client: PgPool) {
         .execute(Tuple.of(id))
         .map { it.iterator() }
         .map {
-            if (it.hasNext()) mapFun(it.next()) else null
+            if (it.hasNext()) mapFun(it.next());
+            throw PostNotFoundException(id)
         }
-        .map { Optional.ofNullable(it) }
-        .map { it.orElseThrow<RuntimeException> { PostNotFoundException(id) } }
 
 
     fun save(data: Post) = client.preparedQuery("INSERT INTO posts(title, content) VALUES ($1, $2) RETURNING (id)")

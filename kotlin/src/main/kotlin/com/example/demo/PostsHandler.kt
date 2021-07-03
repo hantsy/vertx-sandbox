@@ -32,7 +32,7 @@ class PostsHandler(val posts: PostRepository) {
         //rc.getBodyAsJson().mapTo(PostForm.class)
         val body = rc.bodyAsJson
         LOGGER.log(Level.INFO, "request body: {0}", body)
-        val (title, content) = body.mapTo(PostForm::class.java)
+        val (title, content) = body.mapTo(CreatePostCommand::class.java)
         posts.save(Post(title = title, content = content))
             .onSuccess { savedId: UUID ->
                 rc.response()
@@ -47,7 +47,7 @@ class PostsHandler(val posts: PostRepository) {
         val id = params["id"]
         val body = rc.bodyAsJson
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", arrayOf(id, body))
-        var (title, content) = body.mapTo(PostForm::class.java)
+        var (title, content) = body.mapTo(CreatePostCommand::class.java)
         posts.findById(UUID.fromString(id))
             .flatMap { post: Post ->
                 post.apply {
@@ -57,7 +57,7 @@ class PostsHandler(val posts: PostRepository) {
                 posts.update(post)
             }
             .onSuccess { rc.response().setStatusCode(204).end() }
-            .onFailure { rc.fail(404, it) }
+            .onFailure { rc.fail(it) }
     }
 
     fun delete(rc: RoutingContext) {
