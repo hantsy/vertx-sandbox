@@ -77,8 +77,44 @@ public class TestMainVerticle {
 
     @Test
     void testGetByNoneExistingId(Vertx vertx, VertxTestContext testContext) {
-        var postByIdUrl = "/posts/" + UUID.randomUUID().toString();
+        var postByIdUrl = "/posts/" + UUID.randomUUID();
         client.request(HttpMethod.GET, postByIdUrl)
+            .flatMap(HttpClientRequest::send)
+            .onComplete(
+                testContext.succeeding(
+                    response -> testContext.verify(
+                        () -> {
+                            assertThat(response.statusCode()).isEqualTo(404);
+                            testContext.completeNow();
+                        }
+                    )
+                )
+            );
+    }
+
+    @Test
+    void testUpdateByNoneExistingId(Vertx vertx, VertxTestContext testContext) {
+        var postByIdUrl = "/posts/" + UUID.randomUUID();
+        client.request(HttpMethod.PUT, postByIdUrl)
+            .flatMap(req -> req.putHeader("Content-Type", "application/json")
+                .send(Json.encode(CreatePostCommand.of("test title", "test content of my post")))
+            )
+            .onComplete(
+                testContext.succeeding(
+                    response -> testContext.verify(
+                        () -> {
+                            assertThat(response.statusCode()).isEqualTo(404);
+                            testContext.completeNow();
+                        }
+                    )
+                )
+            );
+    }
+
+    @Test
+    void testDeleteByNoneExistingId(Vertx vertx, VertxTestContext testContext) {
+        var postByIdUrl = "/posts/" + UUID.randomUUID();
+        client.request(HttpMethod.DELETE, postByIdUrl)
             .flatMap(HttpClientRequest::send)
             .onComplete(
                 testContext.succeeding(
@@ -97,26 +133,56 @@ public class TestMainVerticle {
         client.request(HttpMethod.POST, "/posts")
             .flatMap(req -> req.putHeader("Content-Type", "application/json")
                 .send(Json.encode(CreatePostCommand.of("test title", "test content of my post")))
+                .onSuccess(
+                    response -> assertThat(response.statusCode()).isEqualTo(201)
+                )
             )
-            .flatMap(
-                response -> {
-                    assertThat(response.statusCode()).isEqualTo(201);
-                    String location = response.getHeader("Location");
-                    LOGGER.log(Level.INFO, "location header: {0}", location);
-                    assertThat(location).isNotNull();
+            .flatMap(response -> {
+                String location = response.getHeader("Location");
+                LOGGER.log(Level.INFO, "location header: {0}", location);
+                assertThat(location).isNotNull();
 
-                    return Future.succeededFuture(location);
-                }
-            )
-            .flatMap(
-                url -> client.request(HttpMethod.GET, url)
-                    .flatMap(HttpClientRequest::send)
-                    .onSuccess(
-                        response -> {
-                            LOGGER.log(Level.INFO, "http status: {0}", response.statusCode());
-                            assertThat(response.statusCode()).isEqualTo(200);
-                        }
+                return Future.succeededFuture(location);
+            })
+            .flatMap(url -> client.request(HttpMethod.GET, url)
+                .flatMap(HttpClientRequest::send)
+                .onSuccess(response -> {
+                    LOGGER.log(Level.INFO, "http status: {0}", response.statusCode());
+                    assertThat(response.statusCode()).isEqualTo(200);
+                })
+                .flatMap(res -> client.request(HttpMethod.PUT, url)
+                    .flatMap(req -> req.putHeader("Content-Type", "application/json")
+                        .send(Json.encode(CreatePostCommand.of("updated test title", "updated test content of my post")))
                     )
+                    .onSuccess(response -> {
+                        LOGGER.log(Level.INFO, "http status: {0}", response.statusCode());
+                        assertThat(response.statusCode()).isEqualTo(204);
+                    })
+                )
+                .flatMap(res -> client.request(HttpMethod.GET, url)
+                    .flatMap(HttpClientRequest::send)
+                    .onSuccess(response -> {
+                        LOGGER.log(Level.INFO, "http status: {0}", response.statusCode());
+                        assertThat(response.statusCode()).isEqualTo(200);
+
+                    })
+                    .flatMap(HttpClientResponse::body)
+                    .onSuccess(body -> assertThat(body.toJsonObject().getString("title")).isEqualTo("updated test title"))
+                )
+                .flatMap(res -> client.request(HttpMethod.DELETE, url)
+                    .flatMap(HttpClientRequest::send)
+                    .onSuccess(response -> {
+                        LOGGER.log(Level.INFO, "http status: {0}", response.statusCode());
+                        assertThat(response.statusCode()).isEqualTo(204);
+                    })
+                )
+                .flatMap(res -> client.request(HttpMethod.GET, url)
+                    .flatMap(HttpClientRequest::send)
+                    .onSuccess(response -> {
+                        LOGGER.log(Level.INFO, "http status: {0}", response.statusCode());
+                        assertThat(response.statusCode()).isEqualTo(404);
+                    })
+                )
             )
             .onComplete(
                 testContext.succeeding(id -> testContext.completeNow())
