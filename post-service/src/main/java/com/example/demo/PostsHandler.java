@@ -51,7 +51,7 @@ class PostsHandler {
         //rc.getBodyAsJson().mapTo(PostForm.class)
         var body = rc.getBodyAsJson();
         LOGGER.log(Level.INFO, "request body: {0}", body);
-        var form = body.mapTo(PostForm.class);
+        var form = body.mapTo(CreatePostCommand.class);
         this.posts.save(Post.of(form.getTitle(), form.getContent()))
             .onSuccess(
                 savedId -> rc.response()
@@ -67,7 +67,7 @@ class PostsHandler {
         var id = params.get("id");
         var body = rc.getBodyAsJson();
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", new Object[]{id, body});
-        var form = body.mapTo(PostForm.class);
+        var form = body.mapTo(CreatePostCommand.class);
         this.posts.findById(UUID.fromString(id))
             .compose(
                 post -> {

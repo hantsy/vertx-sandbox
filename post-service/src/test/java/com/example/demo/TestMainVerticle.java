@@ -1,45 +1,41 @@
 package com.example.demo;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.*;
+import io.vertx.core.json.Json;
 import io.vertx.junit5.Timeout;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(VertxExtension.class)
 public class TestMainVerticle {
+    private final static Logger LOGGER = Logger.getLogger(TestMainVerticle.class.getName());
+    HttpClient client;
 
     @BeforeEach
-    void deploy_verticle(Vertx vertx, VertxTestContext testContext) {
+    void setup(Vertx vertx, VertxTestContext testContext) {
         vertx.deployVerticle(new MainVerticle(), testContext.succeeding(id -> testContext.completeNow()));
-    }
-
-    @Test
-    void verticle_deployed(Vertx vertx, VertxTestContext testContext) throws Throwable {
-        testContext.completeNow();
+        var options = new HttpClientOptions()
+            .setDefaultPort(8888);
+        this.client = vertx.createHttpClient(options);
     }
 
     // Repeat this test 3 times
     @RepeatedTest(3)
     @Timeout(value = 10, timeUnit = TimeUnit.SECONDS)
     @DisplayName("Check the HTTP response...")
-    void http_server_check_response(Vertx vertx, VertxTestContext testContext) {
-        HttpClient client = vertx.createHttpClient();
-        client.request(HttpMethod.GET, 8888, "localhost", "/hello")
+    void testHello(Vertx vertx, VertxTestContext testContext) {
+        client.request(HttpMethod.GET, "/hello")
             .compose(req -> req.send().compose(HttpClientResponse::body))
             .onComplete(
                 testContext.succeeding(
@@ -53,22 +49,6 @@ public class TestMainVerticle {
             );
     }
 
-    static Stream<Arguments> testData() {
-        return Stream.of(
-            Arguments.of("complex object1", 4),
-            Arguments.of("complex object2", 0)
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("testData")
-    void test2(String obj, int count, Vertx vertx, VertxTestContext testContext) {
-        System.out.println(obj);
-        System.out.println(count);
-        // your test code
-        testContext.completeNow();
-    }
-
     @AfterEach
     @DisplayName("Check that the verticle is still there")
     void lastChecks(Vertx vertx) {
@@ -79,9 +59,9 @@ public class TestMainVerticle {
 
     @Test
     void testGetAll(Vertx vertx, VertxTestContext testContext) {
-        var client = vertx.createHttpClient();
-        client.request(HttpMethod.GET, 8888, "localhost", "/posts")
-            .flatMap(req -> req.send().flatMap(HttpClientResponse::body))
+        client.request(HttpMethod.GET, "/posts")
+            .flatMap(HttpClientRequest::send)
+            .flatMap(HttpClientResponse::body)
             .onComplete(
                 testContext.succeeding(
                     buffer -> testContext.verify(
@@ -97,9 +77,8 @@ public class TestMainVerticle {
 
     @Test
     void testGetByNoneExistingId(Vertx vertx, VertxTestContext testContext) {
-        var client = vertx.createHttpClient();
-        var id = "/posts/" + UUID.randomUUID().toString();
-        client.request(HttpMethod.GET, 8888, "localhost", id)
+        var postByIdUrl = "/posts/" + UUID.randomUUID().toString();
+        client.request(HttpMethod.GET, postByIdUrl)
             .flatMap(HttpClientRequest::send)
             .onComplete(
                 testContext.succeeding(
@@ -110,6 +89,37 @@ public class TestMainVerticle {
                         }
                     )
                 )
+            );
+    }
+
+    @Test
+    void testCreatePost(Vertx vertx, VertxTestContext testContext) {
+        client.request(HttpMethod.POST, "/posts")
+            .flatMap(req -> req.putHeader("Content-Type", "application/json")
+                .send(Json.encode(CreatePostCommand.of("test title", "test content of my post")))
+            )
+            .flatMap(
+                response -> {
+                    assertThat(response.statusCode()).isEqualTo(201);
+                    String location = response.getHeader("Location");
+                    LOGGER.log(Level.INFO, "location header: {0}", location);
+                    assertThat(location).isNotNull();
+
+                    return Future.succeededFuture(location);
+                }
+            )
+            .flatMap(
+                url -> client.request(HttpMethod.GET, url)
+                    .flatMap(HttpClientRequest::send)
+                    .onSuccess(
+                        response -> {
+                            LOGGER.log(Level.INFO, "http status: {0}", response.statusCode());
+                            assertThat(response.statusCode()).isEqualTo(200);
+                        }
+                    )
+            )
+            .onComplete(
+                testContext.succeeding(id -> testContext.completeNow())
             );
     }
 
