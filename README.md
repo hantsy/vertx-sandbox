@@ -2,9 +2,9 @@
 
 Eclipse Vertx playgroud
 
-## Guides
+## Notes
 
-TBD
+Read it online: [https://hantsy.github.io/vertx-sandbox/](https://hantsy.github.io/vertx-sandbox/)
 
 ## Sample Codes
 
