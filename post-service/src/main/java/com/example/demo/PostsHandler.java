@@ -41,7 +41,7 @@ class PostsHandler {
                 post -> rc.response().end(Json.encode(post))
             )
             .onFailure(
-                throwable -> rc.fail(404, throwable)
+                throwable -> rc.fail(throwable)
             );
 
     }

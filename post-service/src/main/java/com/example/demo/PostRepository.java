@@ -53,9 +53,13 @@ public class PostRepository {
         Objects.requireNonNull(id, "id can not be null");
         return client.preparedQuery("SELECT * FROM posts WHERE id=$1").execute(Tuple.of(id))
             .map(RowSet::iterator)
-            .map(iterator -> iterator.hasNext() ? MAPPER.apply(iterator.next()) : null)
-            .map(Optional::ofNullable)
-            .map(p -> p.orElseThrow(() -> new PostNotFoundException(id)));
+            .map(iterator -> {
+                    if (iterator.hasNext()) {
+                        return MAPPER.apply(iterator.next());
+                    }
+                    throw new PostNotFoundException(id);
+                }
+            );
     }
 
     public Future<UUID> save(Post data) {

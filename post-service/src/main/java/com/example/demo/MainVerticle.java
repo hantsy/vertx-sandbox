@@ -81,7 +81,14 @@ public class MainVerticle extends AbstractVerticle {
         //router.route().handler(BodyHandler.create());
         router.get("/posts").produces("application/json").handler(handlers::all);
         router.post("/posts").consumes("application/json").handler(BodyHandler.create()).handler(handlers::save);
-        router.get("/posts/:id").produces("application/json").handler(handlers::get).failureHandler(frc -> frc.response().setStatusCode(404).end());
+        router.get("/posts/:id").produces("application/json").handler(handlers::get)
+            .failureHandler(frc -> {
+                Throwable failure = frc.failure();
+                if (failure instanceof PostNotFoundException) {
+                    frc.response().setStatusCode(404).end();
+                }
+                frc.response().setStatusCode(500).setStatusMessage("Server internal error:" + failure.getMessage()).end();
+            });
         router.put("/posts/:id").consumes("application/json").handler(BodyHandler.create()).handler(handlers::update);
         router.delete("/posts/:id").handler(handlers::delete);
 
