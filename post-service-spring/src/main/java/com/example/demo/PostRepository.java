@@ -39,7 +39,7 @@ public class PostRepository {
             .execute()
             .map(rs -> StreamSupport.stream(rs.spliterator(), false)
                 .map(MAPPER)
-                .collect(Collectors.toList())
+                .toList()
             );
     }
 
@@ -48,13 +48,17 @@ public class PostRepository {
         Objects.requireNonNull(id, "id can not be null");
         return client.preparedQuery("SELECT * FROM posts WHERE id=$1").execute(Tuple.of(id))
             .map(RowSet::iterator)
-            .map(iterator -> iterator.hasNext() ? MAPPER.apply(iterator.next()) : null)
-            .map(Optional::ofNullable)
-            .map(p -> p.orElseThrow(() -> new PostNotFoundException(id)));
+            .map(iterator -> {
+                if (iterator.hasNext()) {
+                    return MAPPER.apply(iterator.next());
+                }
+                throw new PostNotFoundException(id);
+            });
     }
 
     public Future<UUID> save(Post data) {
-        return client.preparedQuery("INSERT INTO posts(title, content) VALUES ($1, $2) RETURNING (id)").execute(Tuple.of(data.getTitle(), data.getContent()))
+        return client.preparedQuery("INSERT INTO posts(title, content) VALUES ($1, $2) RETURNING (id)")
+            .execute(Tuple.of(data.getTitle(), data.getContent()))
             .map(rs -> rs.iterator().next().getUUID("id"));
     }
 
@@ -63,7 +67,7 @@ public class PostRepository {
             .map(
                 d -> Tuple.of(d.getTitle(), d.getContent())
             )
-            .collect(Collectors.toList());
+            .toList();
 
         return client.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)")
             .executeBatch(tuples)

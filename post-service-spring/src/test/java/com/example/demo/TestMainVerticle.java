@@ -39,7 +39,8 @@ public class TestMainVerticle {
             .onSuccess(id -> {
                 LOGGER.info("deployed:" + id);
                 testContext.completeNow();
-            });
+            })
+            .onFailure(testContext::failNow);
     }
 
     @Test
@@ -67,7 +68,10 @@ public class TestMainVerticle {
                     }
                 )
             )
-            .onFailure(e -> LOGGER.log(Level.ALL, "error: {0}", e.getMessage()));
+            .onFailure(e -> {
+                LOGGER.log(Level.ALL, "error: {0}", e.getMessage());
+                testContext.failNow(e);
+            });
     }
 
 

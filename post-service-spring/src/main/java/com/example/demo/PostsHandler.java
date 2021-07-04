@@ -38,9 +38,7 @@ class PostsHandler {
             .onFailure(
                 throwable -> rc.fail(404, throwable)
             );
-
     }
-
 
     public void save(RoutingContext rc) {
         //rc.getBodyAsJson().mapTo(PostForm.class)
@@ -83,7 +81,6 @@ class PostsHandler {
             .onFailure(
                 throwable -> rc.fail(404, throwable)
             );
-
     }
 
     public void delete(RoutingContext rc) {
@@ -101,7 +98,6 @@ class PostsHandler {
             .onFailure(
                 throwable -> rc.fail(404, throwable)
             );
-
     }
 
 }
