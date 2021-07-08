@@ -7,10 +7,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.netty.util.internal.logging.InternalLoggerFactory;
 import io.netty.util.internal.logging.Slf4JLoggerFactory;
 import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.exceptions.UndeliverableException;
 import io.vertx.core.Handler;
 import io.vertx.core.json.jackson.DatabindCodec;
-import io.vertx.ext.web.validation.BadRequestException;
 import io.vertx.ext.web.validation.BodyProcessorException;
 import io.vertx.ext.web.validation.RequestPredicate;
 import io.vertx.ext.web.validation.builder.Bodies;
@@ -27,8 +25,6 @@ import io.vertx.rxjava3.json.schema.SchemaRouter;
 import io.vertx.rxjava3.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static io.vertx.json.schema.common.dsl.Keywords.maxLength;
 import static io.vertx.json.schema.common.dsl.Keywords.minLength;
@@ -76,7 +72,7 @@ public class MainVerticle extends AbstractVerticle {
             .requestHandler(router)
             // Start listening
             .rxListen(8888)
-            // Print the port
+            // convert to Completable.
             .ignoreElement()
             ;
     }
@@ -113,7 +109,7 @@ public class MainVerticle extends AbstractVerticle {
                 rc.response()
                     .setStatusCode(400)
                     .end("validation failed.");
-                    //.end(exception.toJson().encode());
+                //.end(exception.toJson().encode());
             }
         };
 
