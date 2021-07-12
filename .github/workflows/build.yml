@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: 'adopt'
-          java-version: 15
+          java-version: 16
 
       - name: Cache Maven packages
         uses: actions/cache@v2
@@ -38,9 +38,24 @@ jobs:
       - name: Build post-service
         run: mvn clean install --file post-service/pom.xml
       
+      - name: Build post-service-spring
+        run: mvn clean install --file post-service-spring/pom.xml
+        
+      - name: Build post-service-cdi
+        run: mvn clean install --file post-service-cdi/pom.xml 
+        
       - name: Build rxjava2
         run: mvn clean install --file rxjava2/pom.xml
-      
+        
+      - name: Build graphql
+        run: mvn clean install --file graphql/pom.xml
+        
+      - name: Build graphql-webclient
+        run: mvn clean install --file graphql-webclient/pom.xml -DskipTests
+        
+      - name: Build rxjava3
+        run: mvn clean install --file rxjava3/pom.xml
+        
       - name: Build kotlin
         run: mvn clean install --file kotlin/pom.xml
      
