@@ -6,6 +6,7 @@ import io.vertx.core.spi.VerticleFactory;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
 import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.core.http.HttpClientRequest;
 import io.vertx.mutiny.core.http.HttpClientResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -60,7 +61,8 @@ public class TestMainVerticle {
         var client = vertx.createHttpClient(options);
 
         client.request(HttpMethod.GET, "/posts")
-            .flatMap(req -> req.send().flatMap(HttpClientResponse::body))
+            .flatMap(HttpClientRequest::send)
+            .flatMap(HttpClientResponse::body)
             .subscribe()
             .with(buffer ->
                     testContext.verify(

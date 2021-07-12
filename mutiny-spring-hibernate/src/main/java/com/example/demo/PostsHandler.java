@@ -26,7 +26,11 @@ class PostsHandler {
         this.posts.findAll()
             .subscribe()
             .with(
-                data -> rc.response().end(Json.encode(data))
+                data -> {
+                    LOGGER.log(Level.INFO, "posts data: {0}", data);
+                    rc.response().endAndAwait(Json.encode(data));
+                },
+                rc::fail
             );
     }
 
@@ -36,7 +40,7 @@ class PostsHandler {
         this.posts.findById(UUID.fromString(id))
             .subscribe()
             .with(
-                post -> rc.response().end(Json.encode(post)),
+                post -> rc.response().endAndAwait(Json.encode(post)),
                 throwable -> rc.fail(404, throwable)
             );
     }
@@ -57,7 +61,7 @@ class PostsHandler {
                 savedId -> rc.response()
                     .putHeader("Location", "/posts/" + savedId)
                     .setStatusCode(201)
-                    .end()
+                    .endAndAwait()
 
             );
     }
@@ -79,7 +83,7 @@ class PostsHandler {
             )
             .subscribe()
             .with(
-                data -> rc.response().setStatusCode(204).end(),
+                data -> rc.response().setStatusCode(204).endAndAwait(),
                 throwable -> rc.fail(404, throwable)
             );
     }
@@ -95,7 +99,7 @@ class PostsHandler {
             )
             .subscribe()
             .with(
-                data -> rc.response().setStatusCode(204).end(),
+                data -> rc.response().setStatusCode(204).endAndAwait(),
                 throwable -> rc.fail(404, throwable)
             );
     }

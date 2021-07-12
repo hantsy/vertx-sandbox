@@ -2,6 +2,7 @@ package com.example.demo;
 
 import io.smallrye.mutiny.Uni;
 import io.vertx.sqlclient.Row;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.reactive.mutiny.Mutiny;
 import org.springframework.stereotype.Component;
 
@@ -14,16 +15,11 @@ import java.util.function.Function;
 import java.util.logging.Logger;
 
 @Component
+@RequiredArgsConstructor
 public class PostRepository {
     private static final Logger LOGGER = Logger.getLogger(PostRepository.class.getName());
 
-    private Mutiny.SessionFactory sessionFactory;
-    private Mutiny.Session session;
-
-    public PostRepository(Mutiny.SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
-        this.session = this.sessionFactory.openSession();
-    }
+    private final Mutiny.SessionFactory sessionFactory;
 
     public Uni<List<Post>> findAll() {
         CriteriaBuilder cb = this.sessionFactory.getCriteriaBuilder();
@@ -31,7 +27,7 @@ public class PostRepository {
         CriteriaQuery<Post> query = cb.createQuery(Post.class);
         // set the root class
         Root<Post> root = query.from(Post.class);
-        return this.session.createQuery(query).getResultList();
+        return this.sessionFactory.withSession(session -> session.createQuery(query).getResultList());
     }
 
     public Uni<List<Post>> findByKeyword(String q, int offset, int limit) {
@@ -52,31 +48,38 @@ public class PostRepository {
             );
         }
         //perform query
-        return this.session.createQuery(query)
+        return this.sessionFactory.withSession(session -> session.createQuery(query)
             .setFirstResult(offset)
             .setMaxResults(limit)
-            .getResultList();
+            .getResultList());
     }
 
 
     public Uni<Post> findById(UUID id) {
         Objects.requireNonNull(id, "id can not be null");
-        return this.session.find(Post.class, id);
+        return this.sessionFactory.withSession(session -> session.find(Post.class, id))
+            .onItem().ifNull().failWith(() -> new PostNotFoundException(id));
     }
 
     public Uni<Post> save(Post post) {
         if (post.getId() == null) {
-            this.session.persist(post);
-            return Uni.createFrom().item(post);
+            return this.sessionFactory.withSession(session ->
+                session.persist(post)
+                    .chain(session::flush)
+                    .replaceWith(post)
+            );
         } else {
-            return this.session.merge(post);
+            return this.sessionFactory.withSession(session -> session.merge(post).onItem().call(session::flush));
         }
     }
 
     public Uni<Post[]> saveAll(List<Post> data) {
         Post[] array = data.toArray(new Post[0]);
-        this.session.persistAll(array);
-        return Uni.createFrom().item(array);
+        return this.sessionFactory.withSession(session -> {
+            session.persistAll(array);
+            session.flush();
+            return Uni.createFrom().item(array);
+        });
     }
 
 //    @Transactional

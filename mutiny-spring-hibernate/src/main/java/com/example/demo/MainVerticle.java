@@ -60,7 +60,7 @@ public class MainVerticle extends AbstractVerticle {
             // Start listening
             .listen(8888)
             // Print the port
-            .onItem().invoke(() -> System.out.println("See http://127.0.0.1:8888"))
+            .onItem().invoke(() -> LOGGER.info("Http server is listening on http://127.0.0.1:8888"))
             .onFailure().invoke(Throwable::printStackTrace)
             .replaceWithVoid();
     }

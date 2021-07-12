@@ -1,19 +1,14 @@
 package com.example.demo;
 
 
-import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.reactive.mutiny.Mutiny;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.StreamSupport;
 
 @Component
 @RequiredArgsConstructor
@@ -34,6 +29,7 @@ public class DataInitializer {
             .withTransaction(
                 (conn, tx) -> conn.createQuery("DELETE FROM Post").executeUpdate()
                     .flatMap(r -> conn.persistAll(first, second))
+                    .chain(conn::flush)
                     .flatMap(r -> conn.createQuery("SELECT p from Post p", Post.class).getResultList())
             )
             .subscribe()
