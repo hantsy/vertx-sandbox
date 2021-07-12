@@ -78,6 +78,10 @@ public class MainVerticle extends AbstractVerticle {
         router.put("/posts/:id").consumes("application/json").handler(BodyHandler.create()).handler(handlers::update);
         router.delete("/posts/:id").handler(handlers::delete);
 
+        // Alternatively, use a respond to receive a function using RoutingContext as input arguments.
+        // see: https://github.com/vertx-howtos/hibernate-reactive-howto/blob/master/src/main/java/io/vertx/howtos/hr/MainVerticle.java
+        // router.post().respond(routingContext -> Uni<Post>)
+
         router.get("/hello").handler(rc -> rc.response().end("Hello from my route"));
 
         return router;
