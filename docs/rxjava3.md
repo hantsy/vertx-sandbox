@@ -1,4 +1,4 @@
-# Building a Vertx application with RxJava 3
+# Building RESTful APIs with Eclipse Vertx  and RxJava 3
 
 Eclipse Vertx has a great codegen mechanism to bring its *Event Loop* based asynchronous programming model to diverse platforms, including other asynchronous  libraries, such as [RxJava2/3](https://github.com/ReactiveX/RxJava) and [SmallRye Mutiny](https://smallrye.io/smallrye-mutiny/) and different languages,  such as Kotlin, Kotlin Coroutines, and even Node/Typescript, PHP etc.
 
