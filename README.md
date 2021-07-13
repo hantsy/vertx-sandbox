@@ -14,6 +14,7 @@ Read it online: [https://hantsy.github.io/vertx-sandbox/](https://hantsy.github.
 | [post-service-cdi](https://github.com/hantsy/vertx-sandbox/tree/master/post-service-cdi)| Weld/CDI intergration example|
 | [rxjava2](https://github.com/hantsy/vertx-sandbox/tree/master/rxjava2)| Simple CRUD RESTful APIs example but using RxJava2|
 | [rxjava3](https://github.com/hantsy/vertx-sandbox/tree/master/rxjava3)| Simple CRUD RESTful APIs example but using RxJava3|
+| [mutiny-spring-hibernate](https://github.com/hantsy/vertx-sandbox/tree/master/mutiny-spring-hibernate)| Simple CRUD RESTful APIs example with SmallRye Mutiny bindings, Spring and Hibernate Reactive|
 | [kotlin](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin)| Simple CRUD RESTful APIs example written in Kotlin|
 | [kotlin-co](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin-co)| Simple CRUD RESTful APIs example written in Kotlin Coroutines|
 | [graphql](https://github.com/hantsy/vertx-sandbox/tree/master/graphql)| Simple GraphQL API exmaple|
