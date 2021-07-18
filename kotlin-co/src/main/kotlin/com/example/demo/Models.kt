@@ -9,3 +9,8 @@ data class Post(
     var content: String,
     var createdAt: LocalDateTime? = LocalDateTime.now()
 )
+
+data class CreatePostCommand(
+    val title: String,
+    val content: String
+)

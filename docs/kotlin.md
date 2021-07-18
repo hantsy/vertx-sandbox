@@ -366,4 +366,20 @@ Run the application via maven command.
 mvn clean compile exec:java
 ```
 
+Vertx Kotlin adds a `Json` DSL extension to simplify the JSON encoding.
+
+```kotli
+ it.response()
+     .setStatusCode(404)
+     .end(
+         json {// an example using JSON DSL
+             obj(
+                 "message" to "${it.failure().message}",
+                 "code" to "not_found"
+             )
+         }.toString()
+     )
+```
+
 Get [the source codes](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin) from my Github.
+
