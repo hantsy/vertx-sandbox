@@ -72,15 +72,35 @@ public class MainVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
         // register BodyHandler globally.
         //router.route().handler(BodyHandler.create());
-        router.get("/posts").produces("application/json").handler(handlers::all);
-        router.post("/posts").consumes("application/json").handler(BodyHandler.create()).handler(handlers::save);
-        router.get("/posts/:id").produces("application/json").handler(handlers::get).failureHandler(frc -> frc.response().setStatusCode(404).end());
-        router.put("/posts/:id").consumes("application/json").handler(BodyHandler.create()).handler(handlers::update);
-        router.delete("/posts/:id").handler(handlers::delete);
+        router.get("/posts").produces("application/json")
+            .handler(handlers::all);
+        router.post("/posts").consumes("application/json")
+            .handler(BodyHandler.create())
+            .handler(handlers::save);
+        router.get("/posts/:id").produces("application/json")
+            .handler(handlers::get);
+            //.failureHandler(frc -> frc.response().setStatusCode(404).end());
+        router.put("/posts/:id").consumes("application/json")
+            .handler(BodyHandler.create())
+            .handler(handlers::update);
+        router.delete("/posts/:id")
+            .handler(handlers::delete);
 
         // Alternatively, use a respond to receive a function using RoutingContext as input arguments.
         // see: https://github.com/vertx-howtos/hibernate-reactive-howto/blob/master/src/main/java/io/vertx/howtos/hr/MainVerticle.java
-        // router.post().respond(routingContext -> Uni<Post>)
+        /*router.get("/posts").produces("application/json")
+            .respond(handlers::all);
+        router.post("/posts").consumes("application/json")
+            .handler(BodyHandler.create())
+            .respond(handlers::save);
+        router.get("/posts/:id").produces("application/json")
+            .respond(handlers::get)
+            .failureHandler(frc -> frc.response().setStatusCode(404).end());
+        router.put("/posts/:id").consumes("application/json")
+            .handler(BodyHandler.create())
+            .respond(handlers::update);
+        router.delete("/posts/:id")
+            .respond(handlers::delete);*/
 
         router.get("/hello").handler(rc -> rc.response().end("Hello from my route"));
 
