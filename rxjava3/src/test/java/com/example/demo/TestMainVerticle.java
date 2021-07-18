@@ -50,7 +50,8 @@ public class TestMainVerticle {
                     assertThat(response.bodyAsJsonArray().size()).isEqualTo(2);
 
                     testContext.completeNow();
-                }
+                },
+                testContext::failNow
             );
     }
 
