@@ -366,7 +366,7 @@ Run the application via maven command.
 mvn clean compile exec:java
 ```
 
-Vertx Kotlin bindings adds a `Json` DSL extension to simplify the JSON encoding.
+Additionally, Vertx Kotlin bindings provides a `Json` DSL extension to simplify the JSON encoding.
 
 ```kotli
  it.response()
