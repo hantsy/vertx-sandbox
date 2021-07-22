@@ -182,4 +182,83 @@ INFO: factory clazz:com.example.demo.CdiAwareVerticleFactory$Proxy$_$$_WeldClien
 
 By default CDI will create proxy classes for all beans, but if it is annotated with `@Singletone`, it will use the instance directly.
 
- Get the [example codes from my github](https://github.com/hantsy/vertx-sandbox/tree/master/post-service-cdi).
+To test the application, add the following dependency to *test* scope.
+
+```xml
+<dependency>
+    <groupId>org.jboss.weld</groupId>
+    <artifactId>weld-junit5</artifactId>
+    <version>2.0.2.Final</version>
+    <scope>test</scope>
+    <exclusions>
+        <exclusion>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+        </exclusion>
+        <exclusion>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+
+Similar to the Spring version, manually deploy the `Verticle` in the JUnit `@BeforeAll` hook before running tests.
+
+```java
+@EnableAutoWeld
+@AddPackages(DemoApplication.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@ExtendWith(VertxExtension.class)
+public class TestMainVerticle {
+    private final static Logger LOGGER = Logger.getLogger(TestMainVerticle.class.getName());
+
+    @Inject
+    Instance<Object> context;
+
+    Vertx vertx;
+
+    @BeforeAll
+    public void setupAll(VertxTestContext testContext) {
+        vertx = context.select(Vertx.class).get();
+        var factory = context.select(VerticleFactory.class).get();
+        vertx.deployVerticle(factory.prefix() + ":" + MainVerticle.class.getName())
+            .onSuccess(id -> {
+                LOGGER.info("deployed:" + id);
+                testContext.completeNow();
+            });
+    }
+
+    @Test
+    public void testVertx(VertxTestContext testContext) {
+        assertThat(vertx).isNotNull();
+        testContext.completeNow();
+    }
+
+
+    @Test
+    void testGetAll(VertxTestContext testContext) {
+        LOGGER.log(Level.INFO, "running test: {0}", "testGetAll");
+        var options = new HttpClientOptions()
+            .setDefaultPort(8888);
+        var client = vertx.createHttpClient(options);
+
+        client.request(HttpMethod.GET, "/posts")
+            .flatMap(req -> req.send().flatMap(HttpClientResponse::body))
+            .onSuccess(
+                buffer -> testContext.verify(
+                    () -> {
+                        LOGGER.log(Level.INFO, "response buffer: {0}", new Object[]{buffer.toString()});
+                        assertThat(buffer.toJsonArray().size()).isGreaterThan(0);
+                        testContext.completeNow();
+                    }
+                )
+            )
+            .onFailure(e -> LOGGER.log(Level.ALL, "error: {0}", e.getMessage()));
+    }
+
+}
+```
+
+Get the [example codes from my github](https://github.com/hantsy/vertx-sandbox/tree/master/post-service-cdi).
+
