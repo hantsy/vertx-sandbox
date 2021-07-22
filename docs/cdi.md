@@ -169,9 +169,11 @@ public class DataInitializer {
 }
 ```
 
-Please note, in the above `Resources` class, we add a `@Singleton` to the `Vertx`, which is a little different from the `ApplicationScoped`, Weld does not create a  proxy object for it. Here we have to use `@Singleton`, else there is an error of casting to `VertxImpl`  at start up stage.  
+Please note, in the above `Resources` class, we add a `@Singleton` to the `Vertx`, which is a little different from the `ApplicationScoped`, Weld does not create a  proxy object for it. 
 
-In the `DemoApplication`, we add log to print the class name of `Vertx` and `VerticleFactory` beans.  When starting the application, in the console,  you will see the class names as the following.
+>Here we have to add `@Singleton` on Vertx bean, else there is an error of casting to `VertxImpl` at the application startup stage, because CDI does not create a proxy bean for `VertxImpl`.
+
+In the `DemoApplication`, we have added some log to print the class name of `Vertx` and `VerticleFactory` beans.  When starting the application, in the console, you will see the class names as the following.
 
 ```bash
 //..
