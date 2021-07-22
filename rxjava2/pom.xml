@@ -17,14 +17,14 @@
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
 
-        <vertx.version>4.1.1</vertx.version>
+        <vertx.version>4.1.2</vertx.version>
         <junit-jupiter.version>5.7.2</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.20.2</assertj-core.version>
         <jackson.version>2.11.3</jackson.version>
-        <slf4j-api.version>1.7.31</slf4j-api.version>
-        <logback.version>1.2.3</logback.version>
+        <slf4j-api.version>1.7.32</slf4j-api.version>
+        <logback.version>1.2.4</logback.version>
         <log4j2.version>2.14.1</log4j2.version>
     </properties>
 
