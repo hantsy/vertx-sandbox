@@ -278,5 +278,5 @@ public class TestMainVerticle {
 }
 ```
 
- Get the [example codes from my github](https://github.com/hantsy/vertx-sandbox/tree/master/rxjava3).
+ Get the [example codes from my github](https://github.com/hantsy/vertx-sandbox/tree/master//post-service-spring).
 

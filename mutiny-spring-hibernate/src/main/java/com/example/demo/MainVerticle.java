@@ -78,8 +78,8 @@ public class MainVerticle extends AbstractVerticle {
             .handler(BodyHandler.create())
             .handler(handlers::save);
         router.get("/posts/:id").produces("application/json")
-            .handler(handlers::get);
-            //.failureHandler(frc -> frc.response().setStatusCode(404).end());
+            .handler(handlers::get)
+            .failureHandler(frc -> frc.response().setStatusCode(404).endAndAwait());
         router.put("/posts/:id").consumes("application/json")
             .handler(BodyHandler.create())
             .handler(handlers::update);
