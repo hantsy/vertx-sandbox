@@ -485,4 +485,6 @@ public class TestMainVerticle {
 ```
 
  Get the [example codes from my github](https://github.com/hantsy/vertx-sandbox/tree/master/mutiy-spring-hibernate).
+ 
+> By the way, I have no plan to create a sample applicaiton for demonstrating the combination of CDI/SmallRye Mutiny/Hibernate, if you are interested in it, please explore the [Quarkus framework](https://quarkus.io). 
 
