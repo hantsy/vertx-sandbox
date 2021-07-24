@@ -29,9 +29,7 @@ public class DataFetchers {
 
     public VertxDataFetcher<List<Post>> getAllPosts() {
         return VertxDataFetcher.create(
-            (DataFetchingEnvironment dfe) -> {
-                return this.posts.getAllPosts();
-            });
+            (DataFetchingEnvironment dfe) -> this.posts.getAllPosts());
     }
 
     public VertxDataFetcher<Post> getPostById() {
