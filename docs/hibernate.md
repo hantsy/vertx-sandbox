@@ -484,5 +484,5 @@ public class TestMainVerticle {
 
 ```
 
- Get the [example codes from my github](https://github.com/hantsy/vertx-sandbox/tree/master/mutiy-spring-hibernate).
+ Get the [example codes from my github](https://github.com/hantsy/vertx-sandbox/tree/master/mutiny-spring-hibernate).
 
