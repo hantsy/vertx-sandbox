@@ -1,10 +1,10 @@
 # Building GraphQL APIs with Eclipse Vertx
 
-I have introduced GraphQL in a former [Quarkus GraphQL post](https://itnext.io/building-graphql-apis-with-quarkus-dbbf23f897df). In this post,  we will introduce the GraphQL support in Eclipse Vertx.
+We have discussed GraphQL in a former [Quarkus GraphQL post](https://itnext.io/building-graphql-apis-with-quarkus-dbbf23f897df). In this post,  we will explore the GraphQL support in Eclipse Vertx.
 
-> Quarkus also includes another GraphQL extension to use Vertx GraphQL feature. 
+> Quarkus also includes an alternative GraphQL extension which use the Eclipse Vertx GraphQL feature. 
 
-Follow the steps in the [Building RESTful APIs with Eclipse Vertx](https://itnext.io/building-restful-apis-with-eclipse-vertx-4ce89d8eeb74) and create a new Eclipse Vertx project, add *GraphQL* into **Dependencies**.
+Follow the steps in the [Building RESTful APIs with Eclipse Vertx](https://itnext.io/building-restful-apis-with-eclipse-vertx-4ce89d8eeb74) and create a new Eclipse Vertx project, do not forget to add *GraphQL* into **Dependencies**.
 
 Or add the following dependency into the existing *pom.xml* file directly.
 
@@ -17,9 +17,9 @@ Or add the following dependency into the existing *pom.xml* file directly.
 
 Checkout the [complete sample codes from my Github](https://github.com/hantsy/vertx-sandbox/tree/master/graphql).
 
-Vertx provides a GraphQL Handler to  handle GraphQL request from client.
+Vertx provides a specific `GraphQLHandler` to  handle GraphQL request from client.
 
-Replace the `MainVerticle` with the following content.
+Fill the `MainVerticle` with the following content.
 
 ```java
 @Slf4j
@@ -253,11 +253,11 @@ public class MainVerticle extends AbstractVerticle {
 }
 ```
 
-The `start` method is similar to the former version, but here it enabled *graphql-ws* WebSocket sub protocol to activate GraphQL *Subscription* support.
+The `start` method is similar to the one  in the previous posts, but here it enabled *graphql-ws* WebSocket sub protocol to activate GraphQL *Subscription* support.
 
-In the *setupRoutes* method, it adds route */graphql* to use `GraphQLHanlder` to handle the request and enable WebSocket support via */graphql* endpoint, also adds route */graphiql* to activate GraphiQL interactive Web UI.
+In the *setupRoutes* method, it adds the route */graphql* to use `GraphQLHanlder` to handle the HTTP request and enable WebSocket support via */graphql* endpoint, also adds route */graphiql* to activate GraphiQL interactive Web UI.
 
-The following is used to create a `GraphQLHandler`  instance.
+As you see, the following is used to create a `GraphQLHandler`  instance.
 
 ```java
 GraphQLHandler.create(graphQL, options)
@@ -271,7 +271,7 @@ To build a `GraphQL` instance, it requires a `GraphQLSchema` which depends on th
 * A `TypeDefinitionRegistry` to parse the graphql scheme definitions from files, see the above `buildTypeDefinitionRegistry` method.
 * A `RuntimeWiring` instance to assemble runtime handler to serve the GraphQL request, see the above `buildRuntimeWiring` method.
 
-You can also register global data loaders in the GraphQLHandler, which will be instantiated in every web request.  Which is used to decrease the queries in a N+1 queries and improve the application performance.
+In the GraphQLHandler, register the global data loaders which will be instantiated in every request. It is used to decrease the frequency of executing queries in a N+1 query and improve the application performance.
 
 Let's have a look at the graphql schema file under the *main/resources/schema/schema.graphql* folder.
 
@@ -339,9 +339,9 @@ enum PostStatus {
 }
 ```
 
-In this schema file, we declare 3 top level types:  *Query*, *Mutation* and *Subscription* which presents the basic operations defined in our application. `Post` and `Comment`  are generic types to present the type in the returned response.  `CreatePostInput` and `CommentInput` are input arguments presents the payload of the graphql request. The *scalar* defines custom scalar types. The *directive* defines custom directive *@uppercase* applied on field.
+In this schema file, we declare 3 top level types:  *Query*, *Mutation* and *Subscription* which presents the basic operations defined in our application. The `Post` and `Comment`  are generic types to present the types used in the returned response.  The `CreatePostInput` and `CommentInput` are input arguments presents the payload of the graphql request. The *scalar* keyword defines custom scalar types. The *directive* defines custom directive *@uppercase* applied on field.
 
-In the `MainVerticle.buildCodeRegistry` method, it assembles data fetchers according the coordinates in the schema definition.
+In the `MainVerticle.buildCodeRegistry` method, it assembles data fetchers according to the coordinates of the types defined in the schema definitions.
 
 For example, when performing a *Query*:  `postById`, it will execute the `dataFetchers.postById` defined in the `buildCodeRegistry` method.
 
@@ -351,7 +351,7 @@ For example, when performing a *Query*:  `postById`, it will execute the `dataFe
     ...
 ```
 
-Looking into the `buildRuntimeWiring`, it assembles the `Scalar`, `Directive`, etc.
+Looking into the `buildRuntimeWiring`, it also declars the `Scalar`, `Directive`, etc.
 
 The following is an example of custom Scalar type.
 
@@ -399,9 +399,9 @@ newRuntimeWiring()
     .scalar(Scalars.localDateTimeType())
 ```
 
-Vertx GraphQL provide a  `UploadScalar` for uploading files. Check out the source codes and explore the `UUIDScalar` implementation yourself.
+Vertx GraphQL provide a `UploadScalar` for uploading files. Check out the source codes and explore the `UUIDScalar` implementation yourself.
 
-Similarly  you can register a custom *Directive* yourself, eg. the `@uppercase` directive.
+Similarly register a custom *Directive* in the `buildRuntimeWiring`, eg. the `@uppercase` directive.
 
 ```java
 //UpperCaseDirectiveWiring
@@ -432,7 +432,7 @@ newRuntimeWiring()
     .directive("uppercase", new UpperCaseDirectiveWiring())
 ```
 
-Let's move on to  the data fetchers which are responsible for resolving the type values at runtime.
+Let's move on to the data fetchers which are responsible for resolving the type values at runtime.
 
 For example, in the GraphiQL UI page, try to send a predefined query like this.
 
@@ -448,17 +448,17 @@ query {
 }
 ```
 
-It means, it will perform an `allPosts` *Query*, and returns a Post array, each item includes fields `id`, `title` and `content` and an `author` object with an exact `name` field, and a `comments` array each includes a single `content` field.
+It means, it will perform an `allPosts` *Query*, and returns a Post array, each item includes fields `id`, `title` and `content` and an `author` object with an exact `name` field, and a `comments` array each item includes a single `content` field.
 
 When the GraphQL request is sent, `GraphQLHandler` will handle it.
 
-*  Validate the GraphQL request and ensure it follows schema type definitions.
-*  Locate the data fetchers via type coordinates, *Query* and *allPosts*. 
+* Validate the GraphQL request and ensure it follows schema type definitions.
+* Locate the data fetchers via type coordinates, *Query* and *allPosts*. 
 * Assemble the returned values according to the request format.
-* When resolving `Author` type in the post,  try to locate *Post* and *author* to find the existing data fetcher (`dataFetchers.authorOfPost()`) to handle it. Similarly it handles *comments* via `dataFetchers.commentsOfPost()`.
-* Other generic fields, use the default data fetcher to return the value the field of Post directly.
+* When resolving `author` field, it will try to locate *Post* and *author* to find the existing data fetcher (`dataFetchers.authorOfPost()`) to handle it. Similarly it handles *comments* via `dataFetchers.commentsOfPost()`.
+* Other generic fields, use the default data fetcher to return the value of the corresponding field of this Post directly.
 
-The `Mutation` handling is similar to `Query`, but it is designed for performing some mutations. For example, use Mutation `createPost` to create a new post, it accepts a `CreatePostInput` input argument, it will delegate to `dataFecthers.createPost` to handle it.
+The `Mutation` handling is similar to `Query`, but it is designed for performing some mutations. For example, use Mutation `createPost` to create a new post, it accepts a `CreatePostInput` input argument, then delegate to `dataFecthers.createPost` to handle it.
 
 The file uploading is defined by [GraphQL multipart request specification](https://github.com/jaydenseric/graphql-multipart-request-spec), not part of the standard GraphQL spec. 
 
@@ -484,9 +484,9 @@ public DataFetcher<Boolean> upload() {
 
 Vertx creates a temporary file for the uploaded file, it is easy to read the files from local file system.
 
-For the `Subscription`, it is used for tracking the updates from the backend, such as stock trade news, notification, etc. GraphQL Java requires that it has to a  ReactiveStreams `Publisher` type.
+For the `Subscription`, it is used for tracking the updates from the backend, such as stock trade news, notification, etc. GraphQL Java requires that it has to return a  ReactiveStreams `Publisher` type.
 
-An example of sending notification when a comment is added.
+The following is an example of sending notification when a comment is added.
 
 ```java
 public VertxDataFetcher<UUID> addComment() {
@@ -520,9 +520,9 @@ Here we skip other codes, which are similar to the former Quarkus GraphQL post, 
 
 Not like Quarkus, Eclipse Vertx does not provides a specific GraphQL client to simplify the GraphQL request in Java. 
 
-To write tests for the GraphQL APIs, you have to switch to use the generic Vertx Http Client and you have to know well about  [GraphQL over HTTP specification](https://graphql.org/learn/serving-over-http/).
+To write tests for the GraphQL APIs, you have to switch to use the generic Vertx Http Client. And you have to know well about [GraphQL over HTTP specification](https://graphql.org/learn/serving-over-http/).
 
-An example of testing *allPosts* query and *createPost* mutation.
+The following is an example of testing *allPosts* query and *createPost* mutation using Vertx HttpClient.
 
 ```java
 @ExtendWith(VertxExtension.class)
