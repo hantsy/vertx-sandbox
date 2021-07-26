@@ -7,7 +7,7 @@ Firstly, let's review the difference between the HttpClient and WebClient.
 * The HttpClient is a low level API, which provides fine-grained control to interact with the Http Server.
 * The WebClient is a high level API, which provides more convenient approaches to simplify handling web request and response. In most of the cases, WebClient is preferred, but it lacks of WebSocket support, so when starting a WebSocket connection, we have to switch to HttpClient.
 
-Checkout the [complete sample codes from my Github](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-client).
+Checkout the [complete sample codes from my Github](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-webclient).
 
 Assume you have read the [GraphQL over HTTP specification](https://graphql.org/learn/serving-over-http/) and [GraphQL multipart request specification](https://github.com/jaydenseric/graphql-multipart-request-spec).
 
@@ -188,7 +188,7 @@ private void uploadFile(WebClient client) {
 
 As you see, it is very easy to create a multipart form and send it via `sendMultipartForm` directly with the advanced WebClient API.
 
-Get the [sample codes from my Github](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-client).
+Get the [sample codes from my Github](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-webclient).
 
 
 
