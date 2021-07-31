@@ -87,7 +87,7 @@ jobs:
         run: mvn clean install --file post-service-cdi/pom.xml 
  
 
-  rxjava2:
+  mutiny-spring-hibernate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -109,7 +109,7 @@ jobs:
             docker-compose up -d postgres
             docker ps -a       
       - name: Build rxjava2
-        run: mvn clean install --file rxjava2/pom.xml
+        run: mvn clean install --file mutiny-spring-hibernate/pom.xml
 
   graphql:
     runs-on: ubuntu-latest
@@ -158,6 +158,30 @@ jobs:
 #             docker ps -a           
       - name: Build graphql-webclient
         run: mvn clean install --file graphql-webclient/pom.xml -Dmaven.test.skip=true -DskipTests
+ 
+  rxjava2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 16
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+          
+      - name: Start up databases via Docker Compose 
+        run: |
+            docker-compose up -d postgres
+            docker ps -a       
+      - name: Build rxjava2
+        run: mvn clean install --file rxjava2/pom.xml
  
   rxjava3:
     runs-on: ubuntu-latest
