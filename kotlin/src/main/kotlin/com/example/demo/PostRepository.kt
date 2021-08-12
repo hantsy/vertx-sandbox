@@ -8,7 +8,6 @@ import io.vertx.sqlclient.Tuple
 import java.util.*
 import java.util.logging.Logger
 import java.util.stream.StreamSupport
-import kotlin.streams.toList
 
 class PostRepository(private val client: PgPool) {
 
@@ -26,7 +25,7 @@ class PostRepository(private val client: PgPool) {
         .map { it.iterator() }
         .map {
             if (it.hasNext()) mapFun(it.next());
-            throw PostNotFoundException(id)
+            else throw PostNotFoundException(id)
         }
 
 
