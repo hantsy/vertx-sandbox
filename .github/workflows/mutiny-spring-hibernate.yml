@@ -1,0 +1,45 @@
+name: mutiny-spring-hibernate
+
+on:
+  push:
+    paths-ignore:
+      - "docs/**"
+    paths:
+      - "mutiny-spring-hibernate/**"
+    branches:
+      - master
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+    paths:
+      - "mutiny-spring-hibernate/**"
+    types:
+      - opened
+      - synchronize
+      - reopened
+jobs:
+ 
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 16
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+          
+      - name: Start up databases via Docker Compose 
+        run: |
+            docker-compose up -d postgres
+            docker ps -a       
+      - name: Build rxjava2
+        run: mvn clean install --file mutiny-spring-hibernate/pom.xml
+      

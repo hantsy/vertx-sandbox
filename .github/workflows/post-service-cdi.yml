@@ -1,0 +1,44 @@
+name: post-service-cdi
+
+on:
+  push:
+    paths-ignore:
+      - "docs/**"
+    paths:
+      - "post-service-cdi/**"
+    branches:
+      - master
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+    paths:
+      - "post-service-cdi/**"
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: 16
+
+      - name: Cache Maven packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+          
+      - name: Start up databases via Docker Compose 
+        run: |
+            docker-compose up -d postgres
+            docker ps -a              
+      - name: Build post-service-cdi
+        run: mvn clean install --file post-service-cdi/pom.xml 
