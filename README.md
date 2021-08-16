@@ -2,7 +2,6 @@
 
 Eclipse Vertx playgroud 
 
-![build](https://github.com/hantsy/vertx-sandbox/workflows/build/badge.svg)
 
 ## Notes
 
