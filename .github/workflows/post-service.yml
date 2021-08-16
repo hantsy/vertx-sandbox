@@ -2,15 +2,11 @@ name: post-service
 
 on:
   push:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "post-service/**"
     branches:
       - master
   pull_request:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "post-service/**"
     types:

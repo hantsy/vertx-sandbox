@@ -2,15 +2,11 @@ name: kotlin
 
 on:
   push:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "kotlin/**"
     branches:
       - master
   pull_request:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "kotlin/**"
     types:

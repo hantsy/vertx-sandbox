@@ -2,15 +2,11 @@ name: post-service-cdi
 
 on:
   push:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "post-service-cdi/**"
     branches:
       - master
   pull_request:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "post-service-cdi/**"
     types:

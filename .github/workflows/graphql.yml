@@ -2,15 +2,11 @@ name: graphql
 
 on:
   push:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "graphql/**"
     branches:
       - master
   pull_request:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "graphql/**"
     types:

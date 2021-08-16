@@ -2,15 +2,11 @@ name: rxjava2
 
 on:
   push:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "rxjava2/**"
     branches:
       - master
   pull_request:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "rxjava2/**"
     types:

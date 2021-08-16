@@ -2,15 +2,11 @@ name: mutiny-spring-hibernate
 
 on:
   push:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "mutiny-spring-hibernate/**"
     branches:
       - master
   pull_request:
-    paths-ignore:
-      - "docs/**"
     paths:
       - "mutiny-spring-hibernate/**"
     types:
