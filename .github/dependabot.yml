@@ -7,8 +7,7 @@ updates:
 - package-ecosystem: maven
   directory: "/post-service"
   schedule:
-    interval: daily
-    time: "21:00"
+    interval: weekly
   open-pull-requests-limit: 10
   # Overwrite any ignores created using `@dependabot ignore` commands
   ignore:
@@ -22,18 +21,40 @@ updates:
 - package-ecosystem: maven
   directory: "/rxjava2"
   schedule:
-    interval: daily
-    time: "21:00"
+    interval: weekly
   open-pull-requests-limit: 10
 - package-ecosystem: maven
   directory: "/kotlin"
   schedule:
-    interval: daily
-    time: "21:00"
+    interval: weekly
   open-pull-requests-limit: 10
 - package-ecosystem: maven
   directory: "/kotlin-co"
   schedule:
-    interval: daily
-    time: "21:00"
+    interval: weekly
   open-pull-requests-limit: 10
+- package-ecosystem: maven
+  directory: "/post-service-spring"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10
+- package-ecosystem: maven
+  directory: "/post-service-cdi"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10  
+- package-ecosystem: maven
+  directory: "/mutiny-spring-hibernate"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10   
+- package-ecosystem: maven
+  directory: "/graphql"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10   
+- package-ecosystem: maven
+  directory: "/graphql-webclient"
+  schedule:
+    interval: weekly
+  open-pull-requests-limit: 10     
