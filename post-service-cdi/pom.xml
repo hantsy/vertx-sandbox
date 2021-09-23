@@ -22,7 +22,7 @@
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.20.2</assertj-core.version>
         <jackson.version>2.11.3</jackson.version>
-        <weld.version>3.1.6.Final</weld.version>
+        <weld.version>4.0.2.Final</weld.version>
     </properties>
 
     <dependencyManagement>
