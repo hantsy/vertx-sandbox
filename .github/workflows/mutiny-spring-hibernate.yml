@@ -36,6 +36,6 @@ jobs:
         run: |
             docker-compose up -d postgres
             docker ps -a       
-      - name: Build rxjava2
+      - name: Build with Maven
         run: mvn clean install --file mutiny-spring-hibernate/pom.xml
       
