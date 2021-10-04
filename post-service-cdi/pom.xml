@@ -21,7 +21,7 @@
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.21.0</assertj-core.version>
-        <jackson.version>2.11.3</jackson.version>
+        <jackson.version>2.13.0</jackson.version>
         <weld.version>3.1.6.Final</weld.version>
     </properties>
 
