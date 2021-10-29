@@ -23,8 +23,8 @@ public class DataInitializer {
     public void run() {
         log.info("Data initialization is starting...");
 
-        Tuple first = Tuple.of("Hello Quarkus", "My first post of Quarkus");
-        Tuple second = Tuple.of("Hello Again, Quarkus", "My second post of Quarkus");
+        Tuple first = Tuple.of("Hello Vertx", "My first post of Vertx");
+        Tuple second = Tuple.of("Hello Again, Vertx", "My second post of Vertx");
 
         client
             .rxWithTransaction(

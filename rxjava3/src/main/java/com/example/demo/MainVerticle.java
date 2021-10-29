@@ -10,8 +10,6 @@ import io.reactivex.rxjava3.core.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.validation.BodyProcessorException;
-import io.vertx.ext.web.validation.RequestPredicate;
-import io.vertx.ext.web.validation.builder.Bodies;
 import io.vertx.json.schema.SchemaRouterOptions;
 import io.vertx.json.schema.common.dsl.ObjectSchemaBuilder;
 import io.vertx.pgclient.PgConnectOptions;
@@ -20,11 +18,13 @@ import io.vertx.rxjava3.ext.web.Router;
 import io.vertx.rxjava3.ext.web.RoutingContext;
 import io.vertx.rxjava3.ext.web.handler.BodyHandler;
 import io.vertx.rxjava3.ext.web.validation.ValidationHandler;
+import io.vertx.rxjava3.ext.web.validation.builder.Bodies;
 import io.vertx.rxjava3.json.schema.SchemaParser;
 import io.vertx.rxjava3.json.schema.SchemaRouter;
 import io.vertx.rxjava3.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import lombok.extern.slf4j.Slf4j;
+import io.vertx.rxjava3.ext.web.validation.RequestPredicate;
 
 import static io.vertx.json.schema.common.dsl.Keywords.maxLength;
 import static io.vertx.json.schema.common.dsl.Keywords.minLength;
@@ -93,16 +93,14 @@ public class MainVerticle extends AbstractVerticle {
             .requiredProperty("title", stringSchema().with(minLength(5)).with(maxLength(100)))
             .requiredProperty("content", stringSchema().with(minLength(10)).with(maxLength(2000)));
 
-        ValidationHandler validation = ValidationHandler.newInstance(
-            ValidationHandler
-                .builder(schemaParser)
-                //.queryParameter(param("parameterName", intSchema()))
-                //.pathParameter(param("pathParam", numberSchema()))
-                .body(Bodies.json(bodySchemaBuilder))
-                //.body(Bodies.formUrlEncoded(bodySchemaBuilder))
-                .predicate(RequestPredicate.BODY_REQUIRED)
-                .build()
-        );
+        ValidationHandler validation = ValidationHandler
+            .builder(schemaParser)
+            //.queryParameter(param("parameterName", intSchema()))
+            //.pathParameter(param("pathParam", numberSchema()))
+            .body(Bodies.json(bodySchemaBuilder))
+            //.body(Bodies.formUrlEncoded(bodySchemaBuilder))
+            .predicate(RequestPredicate.BODY_REQUIRED)
+            .build();
 
         Handler<RoutingContext> validationFailureHandler = (RoutingContext rc) -> {
             if (rc.failure() instanceof BodyProcessorException exception) {
