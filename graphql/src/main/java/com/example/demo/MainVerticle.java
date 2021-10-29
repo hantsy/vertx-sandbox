@@ -138,9 +138,9 @@ public class MainVerticle extends AbstractVerticle {
                     }
                     connectionInitEvent.complete(payload);
                 })
-                //.connectionHandler(event -> log.info("connection event: {}", event))
-                //.messageHandler(msg -> log.info("websocket message: {}", msg.content().toString()))
-                //.endHandler(event -> log.info("end event: {}", event))
+            //.connectionHandler(event -> log.info("connection event: {}", event))
+            //.messageHandler(msg -> log.info("websocket message: {}", msg.content().toString()))
+            //.endHandler(event -> log.info("end event: {}", event))
         );
 
         GraphQLHandlerOptions options = new GraphQLHandlerOptions()
@@ -152,9 +152,11 @@ public class MainVerticle extends AbstractVerticle {
         router.post("/graphql")
             .handler(
                 GraphQLHandler.create(graphQL, options)
-                    .dataLoaderRegistry(buildDataLoaderRegistry(dataLoaders))
-                //.locale()
-                //.queryContext()
+                    .beforeExecute(e ->
+                        e.builder()
+                            .dataLoaderRegistry(buildDataLoaderRegistry(dataLoaders).apply(e.context()))
+                            .build()
+                    )
             );
 
         // register `/graphiql` endpoint for the GraphiQL UI

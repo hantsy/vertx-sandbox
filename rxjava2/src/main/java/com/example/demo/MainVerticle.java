@@ -10,7 +10,6 @@ import io.reactivex.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.validation.BadRequestException;
-import io.vertx.ext.web.validation.builder.Bodies;
 import io.vertx.json.schema.SchemaRouterOptions;
 import io.vertx.json.schema.common.dsl.ObjectSchemaBuilder;
 import io.vertx.pgclient.PgConnectOptions;
@@ -19,6 +18,7 @@ import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import io.vertx.reactivex.ext.web.handler.BodyHandler;
 import io.vertx.reactivex.ext.web.validation.ValidationHandler;
+import io.vertx.reactivex.ext.web.validation.builder.Bodies;
 import io.vertx.reactivex.json.schema.SchemaParser;
 import io.vertx.reactivex.json.schema.SchemaRouter;
 import io.vertx.reactivex.pgclient.PgPool;
@@ -92,13 +92,13 @@ public class MainVerticle extends AbstractVerticle {
         ObjectSchemaBuilder bodySchemaBuilder = objectSchema()
             .requiredProperty("title", stringSchema().with(minLength(5)))
             .requiredProperty("content", stringSchema().with(minLength(10)));
-        ValidationHandler validation = ValidationHandler.newInstance(
+
+        ValidationHandler validation =
             ValidationHandler
                 .builder(schemaParser)
                 .body(Bodies.json(bodySchemaBuilder))
                 //.body(Bodies.formUrlEncoded(bodySchemaBuilder))
-                .build()
-        );
+                .build();
 
         Handler<RoutingContext> validationFailureHandler = (RoutingContext rc) -> {
             if (rc.failure() instanceof BadRequestException) {

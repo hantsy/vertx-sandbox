@@ -22,7 +22,7 @@
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.21.0</assertj-core.version>
-        <jackson.version>2.11.3</jackson.version>
+        <jackson.version>2.11.4</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -101,7 +101,7 @@
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <version>${kotlin.version}</version>
                 <configuration>
-                    <jvmTarget>16</jvmTarget>
+                    <jvmTarget>11</jvmTarget>
                 </configuration>
                 <executions>
                     <execution>
