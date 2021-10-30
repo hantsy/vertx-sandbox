@@ -6,12 +6,8 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.observables.ConnectableObservable;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.ReplaySubject;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.jackson.DatabindCodec;
-import io.vertx.ext.web.FileUpload;
-import io.vertx.ext.web.handler.graphql.ApolloWSMessage;
 import io.vertx.ext.web.handler.graphql.schema.VertxDataFetcher;
 import io.vertx.ext.web.handler.graphql.ws.Message;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +25,7 @@ public class DataFetchers {
     private final PostService posts;
 
     public VertxDataFetcher<List<Post>> getAllPosts() {
-        return VertxDataFetcher.create(
-            (DataFetchingEnvironment dfe) -> this.posts.getAllPosts());
+        return VertxDataFetcher.create((DataFetchingEnvironment dfe) -> this.posts.getAllPosts());
     }
 
     public VertxDataFetcher<Post> getPostById() {
@@ -74,8 +69,7 @@ public class DataFetchers {
             var jacksonMapper = DatabindCodec.mapper();
             var input = jacksonMapper.convertValue(commentInputArg, CommentInput.class);
             return this.posts.addComment(input)
-                .onSuccess(id -> this.posts.getCommentById(id.toString())
-                    .onSuccess(c -> subject.onNext(c)));
+                    .onSuccess(id -> this.posts.getCommentById(id.toString()).onSuccess(subject::onNext));
         });
     }
 

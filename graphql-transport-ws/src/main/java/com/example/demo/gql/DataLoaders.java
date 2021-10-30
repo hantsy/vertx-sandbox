@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.BatchLoaderEnvironment;
 import org.dataloader.DataLoader;
+import org.dataloader.DataLoaderFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,7 @@ public class DataLoaders {
         VertxBatchLoader<String, Author> batchLoader = VertxBatchLoader.create((List<String> keys, BatchLoaderEnvironment environment) ->
             authorService.getAuthorByIdIn(keys)
         );
-        return DataLoader.newDataLoader(batchLoader);
+        return DataLoaderFactory.newDataLoader(batchLoader);
     }
 
     public DataLoader<String, List<Comment>> commentsLoader() {
@@ -45,6 +46,6 @@ public class DataLoaders {
                         return mappedComments;
                     }
                 ));
-        return DataLoader.newMappedDataLoader(batchLoader);
+        return DataLoaderFactory.newMappedDataLoader(batchLoader);
     }
 }

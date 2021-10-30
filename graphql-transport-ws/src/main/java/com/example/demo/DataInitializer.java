@@ -42,6 +42,7 @@ public class DataInitializer {
                                                                                 );
                                                                     }
                                                             )
+                                                            .onFailure(event -> log.debug("failed:" + event))
                                             );
                                 }
                         )

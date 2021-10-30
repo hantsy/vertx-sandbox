@@ -20,12 +20,12 @@ public class CustomDataFetchingExceptionHandler implements DataFetcherExceptionH
         Throwable exception = handlerParameters.getException();
         if (exception instanceof AuthorNotFoundException || exception instanceof PostNotFoundException) {
             log.debug("caught exception: {}", exception);
-            enum MyErrorType implements ErrorClassification {
+            enum TypedError implements ErrorClassification {
                 NOT_FOUND
             }
             GraphQLError graphqlError = GraphqlErrorBuilder.newError()
                 .message(exception.getMessage())
-                .errorType(MyErrorType.NOT_FOUND)
+                .errorType(TypedError.NOT_FOUND)
                 .path(handlerParameters.getPath())
                 .build();
             return DataFetcherExceptionHandlerResult.newResult()
