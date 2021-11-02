@@ -20,6 +20,7 @@ Read it online: [https://hantsy.github.io/vertx-sandbox/](https://hantsy.github.
 | [kotlin-co](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin-co)| Simple CRUD RESTful APIs example written in Kotlin Coroutines|
 | [graphql](https://github.com/hantsy/vertx-sandbox/tree/master/graphql)| Simple GraphQL API exmaple|
 | [graphql-webclient](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-webclient)| Simple Vertx WebCleint example consuming GraphQL API |
+| [graphql-transport-ws](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-transport-ws)| GraphQL example using [GraphQL over WebSocket](https://github.com/enisdenjo/graphql-ws) protocol |
 
 
 ## Reference
