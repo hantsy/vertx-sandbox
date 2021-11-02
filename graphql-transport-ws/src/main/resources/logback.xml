@@ -43,7 +43,7 @@
     </logger>
     <logger name="io.vertx.core" level="DEBUG">
     </logger>
-    <logger name="io.vertx.core.http" level="DEBUG">
+    <logger name="io.vertx.ext.web" level="DEBUG">
     </logger>
     <logger name="io.vertx.pgclient.impl.PgPoolImpl" level="trace">
     </logger>

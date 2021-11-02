@@ -3,6 +3,7 @@ package com.example.demo;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.WebSocketConnectOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -12,7 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,9 +37,13 @@ public class TestMainVerticle {
     }
 
     @Test
-    public void testCreatePost(VertxTestContext testContext) {
-        var titleReplay = new ArrayList<String>();
-        client.webSocket("/graphql")
+    public void testCreatePost(VertxTestContext testContext) throws InterruptedException {
+        var createdPostReplay = new ArrayList<String>();
+        var options = new WebSocketConnectOptions()
+                .addSubProtocol("graphql-transport-ws")
+                .setURI("/graphql");
+        CountDownLatch latch = new CountDownLatch(1);
+        client.webSocket(options)
                 .onSuccess(webSocket -> {
 
                     webSocket.closeHandler(v -> log.info("websocket is being closed"));
@@ -45,17 +51,18 @@ public class TestMainVerticle {
                     webSocket.exceptionHandler(e -> log.info("catching websocket exception: {}", e.getMessage()));
 
                     webSocket.textMessageHandler(text -> {
-                        //log.info("websocket message handler:{}", text);
+                        log.info("handling websocket message: {}", text);
                         JsonObject obj = new JsonObject(text);
                         String type = obj.getString("type");
                         if (type.equals("connection_ack")) {
                             return;// do nothing when ka.
-                        } else if (type.equals("data")) {
+                        } else if (type.equals("next")) {
                             // handle the subscription `commentAdded` data.
-                            var title = obj.getJsonObject("payload").getJsonObject("data").getJsonObject("createPost").getString("title");
-                            log.info("subscription commentAdded data: {}", title);
-                            titleReplay.add(title);
+                            var id = obj.getJsonObject("payload").getJsonObject("data").getString("createPost");
+                            log.info("created post id: {}", id);
+                            createdPostReplay.add(id);
                         }
+                        latch.countDown();
                     });
 
 
@@ -65,21 +72,19 @@ public class TestMainVerticle {
                     JsonObject createPostData = new JsonObject()
                             .put("payload", new JsonObject()
                                     .put("query", "mutation newPost($input:CreatePostInput!){ createPost(createPostInput:$input)}")
-                                    .put("variables", Map.of(
-                                                    "input", Map.of("title", "test title", "content", "content of the new post")
+                                    .put("variables", new JsonObject()
+                                            .put(
+                                                    "input", new JsonObject()
+                                                            .put("title", "test title")
+                                                            .put("content", "content of the new post")
                                             )
                                     )
                             )
-                            .put("type", "start")
+                            .put("type", "subscribe")
                             .put("id", "1");
                     webSocket.write(messageInit.toBuffer());
                     webSocket.write(createPostData.toBuffer());
 
-                    try {
-                        Thread.sleep(1000L);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     testContext.completeNow();
                 })
                 .onFailure(e -> {
@@ -87,7 +92,8 @@ public class TestMainVerticle {
                     testContext.failNow(e);
                 });
 
-        assertThat(titleReplay.size()).isEqualTo(1);
-        assertThat(titleReplay.get(0)).isEqualTo("test title");
+        latch.await(5000, TimeUnit.MILLISECONDS);
+        assertThat(createdPostReplay.size()).isEqualTo(1);
+        assertThat(createdPostReplay.get(0)).isNotNull();
     }
 }
