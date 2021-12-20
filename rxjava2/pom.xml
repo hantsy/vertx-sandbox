@@ -24,7 +24,7 @@
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.21.0</assertj-core.version>
-        <jackson.version>2.11.4</jackson.version>
+        <jackson.version>2.13.1</jackson.version>
         <slf4j-api.version>1.7.32</slf4j-api.version>
         <logback.version>1.2.7</logback.version>
         <log4j2.version>2.15.0</log4j2.version>
