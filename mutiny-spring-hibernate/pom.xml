@@ -17,7 +17,7 @@
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.0.0</exec-maven-plugin.version>
 
-        <vertx.version>4.2.1</vertx.version>
+        <vertx.version>4.2.2</vertx.version>
         <mutiny-vertx.version>2.16.0</mutiny-vertx.version>
         <hibernate-reactive.version>1.1.1.Final</hibernate-reactive.version>
         <hibernate.version>5.6.3.Final</hibernate.version>
