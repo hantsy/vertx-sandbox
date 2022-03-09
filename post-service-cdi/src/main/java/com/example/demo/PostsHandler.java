@@ -4,8 +4,8 @@ import io.vertx.core.json.Json;
 import io.vertx.ext.web.RoutingContext;
 import lombok.RequiredArgsConstructor;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
