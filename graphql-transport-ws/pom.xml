@@ -23,7 +23,7 @@
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <launcher.class>io.vertx.core.Launcher</launcher.class>
         <assertj-core.version>3.22.0</assertj-core.version>
-        <jackson.version>2.11.4</jackson.version>
+        <jackson.version>2.13.2</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -99,7 +99,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.2.10</version>
+            <version>1.2.11</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
