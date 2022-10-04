@@ -13,15 +13,15 @@
         <maven.compiler.release>17</maven.compiler.release>
 
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
-        <maven-shade-plugin.version>3.3.0</maven-shade-plugin.version>
+        <maven-shade-plugin.version>3.4.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M7</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
 
-        <vertx.version>4.3.3</vertx.version>
-        <mutiny-vertx.version>2.26.0</mutiny-vertx.version>
-        <hibernate-reactive.version>1.1.7.Final</hibernate-reactive.version>
-        <hibernate.version>5.6.11.Final</hibernate.version>
-        <junit-jupiter.version>5.9.0</junit-jupiter.version>
+        <vertx.version>4.3.4</vertx.version>
+        <mutiny-vertx.version>2.27.0</mutiny-vertx.version>
+        <hibernate-reactive.version>1.1.8.Final</hibernate-reactive.version>
+        <hibernate.version>5.6.12.Final</hibernate.version>
+        <junit-jupiter.version>5.9.1</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.23.1</assertj-core.version>
@@ -46,7 +46,7 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.9.0</version>
+                <version>5.9.1</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
