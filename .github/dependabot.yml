@@ -10,14 +10,14 @@ updates:
     interval: weekly
   open-pull-requests-limit: 10
   # Overwrite any ignores created using `@dependabot ignore` commands
-  ignore:
+  # ignore:
     # Ignore updates to packages that start 'aws'
     # Wildcards match zero or more arbitrary characters
     #- dependency-name: "aws*"
     # Ignore some updates to the 'resteasy' package
-    - dependency-name: "resteasy"
+    #- dependency-name: "resteasy"
       # Ignore only new versions for 4.x
-      versions: ["3.x, 4.x"]       
+    #  versions: ["3.x, 4.x"]       
 - package-ecosystem: maven
   directory: "/rxjava2"
   schedule:
