@@ -47,12 +47,12 @@ class PostsHandler(val posts: PostRepository) {
         val id = params["id"]
         val body = rc.bodyAsJson
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", arrayOf(id, body))
-        var (title, content) = body.mapTo(CreatePostCommand::class.java)
+        val (title, content) = body.mapTo(CreatePostCommand::class.java)
         posts.findById(UUID.fromString(id))
             .flatMap { post: Post ->
                 post.apply {
-                    title = title
-                    content = content
+                    this.title = title
+                    this.content = content
                 }
                 posts.update(post)
             }
