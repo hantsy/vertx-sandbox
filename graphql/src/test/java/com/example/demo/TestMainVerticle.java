@@ -52,9 +52,8 @@ public class TestMainVerticle {
                 .flatMap(HttpClientResponse::body)
             )
             .onComplete(
-                testContext.succeeding(
-                    buffer -> testContext.verify(
-                        () -> {
+                testContext.succeeding(buffer ->
+                    testContext.verify(() -> {
                             log.info("buf: {}", buffer.toString());
                             JsonArray array = buffer.toJsonObject()
                                 .getJsonObject("data")
