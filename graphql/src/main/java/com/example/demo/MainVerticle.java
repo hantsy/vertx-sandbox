@@ -76,7 +76,7 @@ public class MainVerticle extends AbstractVerticle {
         var authorRepository = new AuthorRepository(pgPool);
 
         // Initializing the sample data
-        var initializer = new DataInitializer(postRepository, commentRepository, authorRepository);
+        var initializer = new DataInitializer(pgPool);
         initializer.run();
 
         //assemble PostService

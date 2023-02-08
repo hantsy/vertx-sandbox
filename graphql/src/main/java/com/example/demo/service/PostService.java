@@ -24,7 +24,7 @@ public class PostService {
         .content(p.content())
         .status(PostStatus.valueOf(p.status()))
         .createdAt(p.createdAt())
-        .authorId(p.authorId().toString())
+        .authorId(p.authorId() != null ? p.authorId().toString() : null)
         .build();
     public static final Function<CommentEntity, Comment> COMMENT_MAPPER = c -> Comment.builder()
         .id(c.id().toString())

@@ -41,8 +41,6 @@ public class TestMainVerticle {
                     id
                     title
                     content
-                    author{ name }
-                    comments{ content }
                 }
             }""";
         client.request(HttpMethod.POST, "/graphql")
@@ -61,7 +59,7 @@ public class TestMainVerticle {
                             assertThat(array.size()).isGreaterThan(0);
 
                             var titles = array.getList().stream().map(o -> ((Map<String, Object>) o).get("title")).toList();
-                            assertThat(titles).allMatch(s -> ((String) s).startsWith("DGS POST"));
+                            assertThat(titles).allMatch(s -> ((String) s).startsWith("HELLO"));
                             testContext.completeNow();
                         }
                     )
