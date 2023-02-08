@@ -94,6 +94,7 @@ public class TestMainVerticle {
                 }
             )
             .flatMap(buf -> {
+                log.debug("create post buf: {}", buf.toString());
                 Object id = buf.toJsonObject().getJsonObject("data").getValue("createPost");
 
                 log.info("created post: {}", id);
