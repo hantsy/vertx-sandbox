@@ -14,14 +14,14 @@
 
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.4.1</maven-shade-plugin.version>
-        <maven-surefire-plugin.version>3.0.0</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.1.0</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
 
-        <vertx.version>4.4.0</vertx.version>
-        <mutiny-vertx.version>3.2.0</mutiny-vertx.version>
+        <vertx.version>4.4.1</vertx.version>
+        <mutiny-vertx.version>3.3.0</mutiny-vertx.version>
         <hibernate-reactive.version>1.1.9.Final</hibernate-reactive.version>
         <hibernate.version>5.6.15.Final</hibernate.version>
-        <junit-jupiter.version>5.9.2</junit-jupiter.version>
+        <junit-jupiter.version>5.9.3</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.24.2</assertj-core.version>
@@ -39,14 +39,14 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.0.4</version>
+                <version>3.0.6</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.9.2</version>
+                <version>5.9.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
