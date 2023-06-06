@@ -20,8 +20,9 @@
         <vertx.version>4.4.2</vertx.version>
         <mutiny-vertx.version>3.4.1</mutiny-vertx.version>
         <hibernate-reactive.version>2.0.0.Final</hibernate-reactive.version>
-        <hibernate.version>5.6.15.Final</hibernate.version>
+        <hibernate.version>6.2.4.Final</hibernate.version>
         <junit-jupiter.version>5.9.3</junit-jupiter.version>
+        <spring-boot.version>3.1.0</spring-boot.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.24.2</assertj-core.version>
@@ -39,14 +40,14 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.1.0</version>
+                <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>5.9.3</version>
+                <version>${junit-jupiter.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
