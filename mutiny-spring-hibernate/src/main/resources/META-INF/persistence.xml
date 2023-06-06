@@ -1,23 +1,22 @@
-<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
-             version="2.2">
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
 
-    <persistence-unit name="blogPU">
+        <persistence-unit name="blogPU">
         <provider>org.hibernate.reactive.provider.ReactivePersistenceProvider</provider>
-
         <class>com.example.demo.Post</class>
 
         <properties>
 
             <!-- PostgreSQL -->
-            <property name="javax.persistence.jdbc.url"
+            <property name="jakarta.persistence.jdbc.url"
                       value="jdbc:postgresql://localhost:5432/blogdb"/>
 
             <!-- Credentials -->
-            <property name="javax.persistence.jdbc.user"
+            <property name="jakarta.persistence.jdbc.user"
                       value="user"/>
-            <property name="javax.persistence.jdbc.password"
+            <property name="jakarta.persistence.jdbc.password"
                       value="password"/>
 
             <!-- The Vert.x SQL Client connection pool size -->
@@ -25,7 +24,7 @@
                       value="10"/>
 
             <!-- Automatic schema export -->
-            <property name="javax.persistence.schema-generation.database.action"
+            <property name="jakarta.persistence.schema-generation.database.action"
                       value="drop-and-create"/>
 
             <!-- SQL statement logging -->
