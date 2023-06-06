@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.hibernate.reactive.mutiny.Mutiny;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
+import jakarta.persistence.criteria.*;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
