@@ -21,7 +21,7 @@
         <mutiny-vertx.version>3.5.0</mutiny-vertx.version>
         <hibernate-reactive.version>2.0.3.Final</hibernate-reactive.version>
         <hibernate.version>6.2.4.Final</hibernate.version>
-        <junit-jupiter.version>5.9.3</junit-jupiter.version>
+        <junit-jupiter.version>5.10.0</junit-jupiter.version>
         <spring-boot.version>3.1.1</spring-boot.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
