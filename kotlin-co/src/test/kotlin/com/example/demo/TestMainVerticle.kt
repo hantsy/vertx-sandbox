@@ -23,7 +23,7 @@ class TestMainVerticle {
     fun setUp() = runTest {
         vertx = Vertx.vertx()
         client = WebClient.create(vertx, WebClientOptions().setDefaultPort(8888))
-        awaitResult<String> { vertx.deployVerticle(MainVerticle(), it) }
+        awaitResult<String> { vertx.deployVerticle(MainVerticle()) }
     }
 
     @AfterEach
