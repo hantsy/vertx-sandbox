@@ -8,7 +8,9 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.ext.web.codec.BodyCodec
 import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.awaitResult
 import io.vertx.kotlin.coroutines.dispatcher
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -20,10 +22,12 @@ class TestMainVerticle {
     lateinit var client: WebClient
 
     @BeforeEach
-    fun setUp() = runTest(vertx.dispatcher()) {
+    fun setUp()  {
         vertx = Vertx.vertx()
         client = WebClient.create(vertx, WebClientOptions().setDefaultPort(8888))
-        vertx.deployVerticle(MainVerticle()).await()
+        runBlocking(vertx.dispatcher()) {
+            awaitResult<String> { vertx.deployVerticle(MainVerticle(), it) }
+        }
     }
 
     @AfterEach
