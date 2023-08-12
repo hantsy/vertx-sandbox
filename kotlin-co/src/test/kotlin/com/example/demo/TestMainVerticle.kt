@@ -2,14 +2,11 @@ package com.example.demo
 
 import io.kotest.matchers.equals.shouldBeEqual
 import io.vertx.core.Vertx
-import io.vertx.core.json.JsonArray
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.ext.web.codec.BodyCodec
 import io.vertx.kotlin.coroutines.await
-import io.vertx.kotlin.coroutines.awaitResult
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -24,7 +21,7 @@ class TestMainVerticle {
     fun setUp() = runTest {
         vertx = Vertx.vertx()
         client = WebClient.create(vertx, WebClientOptions().setDefaultPort(8888))
-        awaitResult<String> { vertx.deployVerticle(MainVerticle()) }
+        vertx.deployVerticle(MainVerticle()).await()
     }
 
     @AfterEach
