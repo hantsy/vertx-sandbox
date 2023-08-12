@@ -17,7 +17,8 @@ class PostRepository(private val client: PgPool) {
             StreamSupport.stream(rs.spliterator(), false)
                 .map { mapFun(it!!) }
                 .toList()
-        }.await()
+        }
+        .await()
 
 
     suspend fun findById(id: UUID): Post? = client.preparedQuery("SELECT * FROM posts WHERE id=$1")

@@ -14,3 +14,8 @@ data class CreatePostCommand(
     val title: String,
     val content: String
 )
+
+data class UpdatePostCommand(
+    val title: String,
+    val content: String
+)

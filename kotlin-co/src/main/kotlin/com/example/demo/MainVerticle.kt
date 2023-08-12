@@ -84,7 +84,7 @@ class MainVerticle : CoroutineVerticle() {
     }
 
     //create routes
-    private fun routes(handlers: PostsHandler): Router {
+    private suspend fun routes(handlers: PostsHandler): Router {
 
         // Create a Router
         val router = Router.router(vertx)
@@ -156,16 +156,6 @@ class MainVerticle : CoroutineVerticle() {
 
         // Create the pool from the data object
         return PgPool.pool(vertx, connectOptions, poolOptions)
-    }
-
-    private fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Unit) = handler {
-        launch(it.vertx().dispatcher()) {
-            try {
-                fn(it)
-            } catch (e: Exception) {
-                it.fail(e)
-            }
-        }
     }
 
 }

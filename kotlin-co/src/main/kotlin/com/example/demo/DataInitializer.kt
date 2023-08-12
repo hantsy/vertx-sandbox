@@ -27,7 +27,8 @@ class DataInitializer(private val client: PgPool) {
                             .execute()
                     }
 
-            }.await()
+            }
+            .await()
 
         result.forEach { println(it.toJson()) }
         LOGGER.info("Data initialization is done...")

@@ -7,7 +7,7 @@ import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class PostsHandler(val posts: PostRepository) {
+class PostsHandler(private val posts: PostRepository) {
     suspend fun all(rc: RoutingContext) {
 //        var params = rc.queryParams();
 //        var q = params.get("q");
@@ -32,7 +32,7 @@ class PostsHandler(val posts: PostRepository) {
 
     suspend fun save(rc: RoutingContext) {
         //rc.getBodyAsJson().mapTo(PostForm.class)
-        val body = rc.bodyAsJson
+        val body = rc.body().asJsonObject()
         LOGGER.log(Level.INFO, "request body: {0}", body)
         val (title, content) = body.mapTo(CreatePostCommand::class.java)
         val savedId = posts.save(Post(title = title, content = content))
@@ -48,9 +48,9 @@ class PostsHandler(val posts: PostRepository) {
         val params = rc.pathParams()
         val id = params["id"]
         val uuid = UUID.fromString(id)
-        val body = rc.bodyAsJson
+        val body = rc.body().asJsonObject()
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", arrayOf(id, body))
-        var (title, content) = body.mapTo(CreatePostCommand::class.java)
+        var (title, content) = body.mapTo(UpdatePostCommand::class.java)
 
         var existing: Post? = posts.findById(uuid)
         if (existing != null) {

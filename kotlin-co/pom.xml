@@ -13,19 +13,21 @@
 
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <maven.compiler.release>17</maven.compiler.release>
-
-        <kotlin.version>1.9.0</kotlin.version>
-
         <maven-shade-plugin.version>3.5.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
 
-        <vertx.version>4.4.4</vertx.version>
-        <junit-jupiter.version>5.10.0</junit-jupiter.version>
-
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
-        <assertj-core.version>3.24.2</assertj-core.version>
+
+        <kotlin.version>1.9.0</kotlin.version>
+        <coroutines.version>1.7.2</coroutines.version>
         <jackson.version>2.15.2</jackson.version>
+
+        <vertx.version>4.4.4</vertx.version>
+
+        <junit-jupiter.version>5.10.0</junit-jupiter.version>
+        <assertj-core.version>3.24.2</assertj-core.version>
+        <kotest.version>5.6.2</kotest.version>
     </properties>
 
     <dependencyManagement>
@@ -87,6 +89,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web-client</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
@@ -101,6 +108,16 @@
             <artifactId>assertj-core</artifactId>
             <version>${assertj-core.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlinx</groupId>
+            <artifactId>kotlinx-coroutines-test-jvm</artifactId>
+            <version>${coroutines.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.kotest</groupId>
+            <artifactId>kotest-assertions-core-jvm</artifactId>
+            <version>${kotest.version}</version>
         </dependency>
     </dependencies>
 
