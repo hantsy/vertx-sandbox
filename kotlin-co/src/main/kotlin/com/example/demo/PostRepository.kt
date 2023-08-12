@@ -24,7 +24,7 @@ class PostRepository(private val client: PgPool) {
     suspend fun findById(id: UUID): Post? = client.preparedQuery("SELECT * FROM posts WHERE id=$1")
         .execute(Tuple.of(id))
         .map { it.iterator() }
-        .map { if (it.hasNext()) MAPPER(it.next()) else null }
+        .map { if (it.hasNext()) MAPPER(it.next()) else throw PostNotFoundException(id) }
         .await()
 
 

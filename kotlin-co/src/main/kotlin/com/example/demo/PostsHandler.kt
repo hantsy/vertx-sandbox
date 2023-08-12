@@ -23,11 +23,7 @@ class PostsHandler(private val posts: PostRepository) {
         val id = params["id"]
         val uuid = UUID.fromString(id)
         val data = posts.findById(uuid)
-        if (data != null) {
-            rc.response().end(Json.encode(data)).await()
-        } else {
-            rc.fail(404, PostNotFoundException(uuid))
-        }
+        rc.response().end(Json.encode(data)).await()
     }
 
     suspend fun save(rc: RoutingContext) {
