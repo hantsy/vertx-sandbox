@@ -37,6 +37,7 @@ class TestMainVerticle {
             client.get("/posts").`as`(BodyCodec.jsonArray()).send()
         }
 
+        response.statusCode() shouldBeEqual 200
         val body = response.bodyAsJsonArray().map { (it as JsonObject).mapTo(Post::class.java) }
         body.size shouldBeEqual 2
     }
