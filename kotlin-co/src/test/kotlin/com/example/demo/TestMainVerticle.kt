@@ -36,7 +36,7 @@ class TestMainVerticle {
     }
 
     @Test
-    fun testGetAllPosts() = runTest(vertx.dispatcher()) {
+    fun testGetAllPosts() = runBlocking(vertx.dispatcher()) {
         val response = client.get("/posts").`as`(BodyCodec.jsonArray()).send().await()
 
         response.statusCode() shouldBeEqual 200
