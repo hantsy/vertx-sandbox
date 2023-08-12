@@ -15,7 +15,7 @@ class PostRepository(private val client: PgPool) {
         .execute()
         .map { rs: RowSet<Row?> ->
             StreamSupport.stream(rs.spliterator(), false)
-                .map { mapFun(it!!) }
+                .map { MAPPER(it!!) }
                 .toList()
         }
         .await()
@@ -24,7 +24,7 @@ class PostRepository(private val client: PgPool) {
     suspend fun findById(id: UUID): Post? = client.preparedQuery("SELECT * FROM posts WHERE id=$1")
         .execute(Tuple.of(id))
         .map { it.iterator() }
-        .map { if (it.hasNext()) mapFun(it.next()) else null }
+        .map { if (it.hasNext()) MAPPER(it.next()) else null }
         .await()
 
 
@@ -61,7 +61,7 @@ class PostRepository(private val client: PgPool) {
 
     companion object {
         private val LOGGER = Logger.getLogger(PostRepository::class.java.name)
-        val mapFun: (Row) -> Post = { row: Row ->
+        val MAPPER: (Row) -> Post = { row: Row ->
             Post(
                 row.getUUID("id"),
                 row.getString("title"),
