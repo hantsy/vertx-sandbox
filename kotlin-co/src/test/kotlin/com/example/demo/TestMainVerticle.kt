@@ -2,7 +2,6 @@ package com.example.demo
 
 import io.kotest.matchers.equals.shouldBeEqual
 import io.vertx.core.Vertx
-
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
@@ -11,7 +10,6 @@ import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.awaitResult
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -47,10 +45,9 @@ class TestMainVerticle {
     }
 
     @Test
-    fun testGetPostById_NotFound() = runTest(vertx.dispatcher() as TestDispatcher) {
+    fun testGetPostById_NotFound() = runBlocking(vertx.dispatcher()) {
         val id = UUID.randomUUID()
         val response = client.get("/posts/$id").`as`(BodyCodec.jsonObject()).send().await()
         response.statusCode() shouldBeEqual 404
     }
 }
-
