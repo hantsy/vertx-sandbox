@@ -34,7 +34,7 @@ class TestMainVerticle {
     @Test
     fun testGetAllPosts() = runTest {
         val response = awaitResult<HttpResponse<JsonArray>> {
-            client.get("/posts").`as`(BodyCodec.jsonArray()).send()
+            client.get("/posts").send()
         }
 
         response.statusCode() shouldBeEqual 200
