@@ -8,6 +8,7 @@ import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.ext.web.codec.BodyCodec
+import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.awaitResult
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
@@ -33,9 +34,7 @@ class TestMainVerticle {
 
     @Test
     fun testGetAllPosts() = runTest {
-        val response = awaitResult<HttpResponse<JsonArray>> {
-            client.get("/posts").send()
-        }
+        val response = client.get("/posts").`as`(BodyCodec.jsonArray()).send().await()
 
         response.statusCode() shouldBeEqual 200
         val body = response.bodyAsJsonArray().map { (it as JsonObject).mapTo(Post::class.java) }
