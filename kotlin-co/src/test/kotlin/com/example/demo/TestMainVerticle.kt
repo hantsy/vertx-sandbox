@@ -11,15 +11,13 @@ import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.awaitResult
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
 
+// see: https://github.com/vietj/kotlin-conf-inter-reactive/blob/master/src/test/kotlin/com/julienviet/movierating/MovieRatingTest.kt
 class TestMainVerticle {
 
     lateinit var vertx: Vertx
@@ -49,9 +47,10 @@ class TestMainVerticle {
     }
 
     @Test
-    fun testGetPostById_NotFound() = runTest(UnconfinedTestDispatcher()) {
+    fun testGetPostById_NotFound() = runTest(vertx.dispatcher() as TestDispatcher) {
         val id = UUID.randomUUID()
         val response = client.get("/posts/$id").`as`(BodyCodec.jsonObject()).send().await()
         response.statusCode() shouldBeEqual 404
     }
 }
+
