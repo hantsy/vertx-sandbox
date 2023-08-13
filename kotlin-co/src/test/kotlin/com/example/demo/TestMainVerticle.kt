@@ -3,25 +3,19 @@ package com.example.demo
 import io.kotest.matchers.equals.shouldBeEqual
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
-import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.ext.web.codec.BodyCodec
 import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.awaitResult
 import io.vertx.kotlin.coroutines.dispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 // see: https://github.com/vietj/kotlin-conf-inter-reactive/blob/master/src/test/kotlin/com/julienviet/movierating/MovieRatingTest.kt
 class TestMainVerticle {
@@ -55,10 +49,7 @@ class TestMainVerticle {
     @Test
     fun testGetPostById_NotFound() = runTest(timeout = 500.milliseconds) {
         val id = UUID.randomUUID()
-        val response = awaitResult<HttpResponse<JsonObject>> {
-            client.get("/posts/$id").`as`(BodyCodec.jsonObject()).send()
-        }
-
+        val response = client.get("/posts/$id").`as`(BodyCodec.jsonObject()).send().await()
         response.statusCode() shouldBeEqual 404
     }
 }
