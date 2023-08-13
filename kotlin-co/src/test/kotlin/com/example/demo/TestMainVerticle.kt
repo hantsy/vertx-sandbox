@@ -3,6 +3,7 @@ package com.example.demo
 import io.kotest.matchers.equals.shouldBeEqual
 import io.vertx.core.Vertx
 import io.vertx.core.json.JsonObject
+import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.ext.web.codec.BodyCodec
@@ -19,6 +20,8 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 // see: https://github.com/vietj/kotlin-conf-inter-reactive/blob/master/src/test/kotlin/com/julienviet/movierating/MovieRatingTest.kt
 class TestMainVerticle {
@@ -50,13 +53,12 @@ class TestMainVerticle {
     }
 
     @Test
-    fun testGetPostById_NotFound() = runTest {
-        Dispatchers.setMain(vertx.dispatcher())
+    fun testGetPostById_NotFound() = runTest(timeout = 500.milliseconds) {
         val id = UUID.randomUUID()
-        val response = //withContext(vertx.dispatcher()) {
-            client.get("/posts/$id").`as`(BodyCodec.jsonObject()).send().await()
-        //}
+        val response = awaitResult<HttpResponse<JsonObject>> {
+            client.get("/posts/$id").`as`(BodyCodec.jsonObject()).send()
+        }
+
         response.statusCode() shouldBeEqual 404
-        Dispatchers.resetMain()
     }
 }
