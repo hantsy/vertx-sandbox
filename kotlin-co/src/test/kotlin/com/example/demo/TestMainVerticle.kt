@@ -9,7 +9,12 @@ import io.vertx.ext.web.codec.BodyCodec
 import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.awaitResult
 import io.vertx.kotlin.coroutines.dispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -45,9 +50,11 @@ class TestMainVerticle {
     }
 
     @Test
-    fun testGetPostById_NotFound() = runBlocking(vertx.dispatcher()) {
+    fun testGetPostById_NotFound() = runTest {
         val id = UUID.randomUUID()
-        val response = client.get("/posts/$id").`as`(BodyCodec.jsonObject()).send().await()
+        val response = withContext(vertx.dispatcher()) {
+            client.get("/posts/$id").`as`(BodyCodec.jsonObject()).send().await()
+        }
         response.statusCode() shouldBeEqual 404
     }
 }
