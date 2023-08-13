@@ -51,10 +51,12 @@ class TestMainVerticle {
 
     @Test
     fun testGetPostById_NotFound() = runTest {
+        Dispatchers.setMain(vertx.dispatcher())
         val id = UUID.randomUUID()
-        val response = withContext(vertx.dispatcher()) {
+        val response = //withContext(vertx.dispatcher()) {
             client.get("/posts/$id").`as`(BodyCodec.jsonObject()).send().await()
-        }
+        //}
         response.statusCode() shouldBeEqual 404
+        Dispatchers.resetMain()
     }
 }
