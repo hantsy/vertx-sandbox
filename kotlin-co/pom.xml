@@ -19,7 +19,7 @@
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
 
-        <kotlin.version>1.9.0</kotlin.version>
+        <kotlin.version>1.9.10</kotlin.version>
         <coroutines.version>1.7.3</coroutines.version>
         <jackson.version>2.15.2</jackson.version>
 
