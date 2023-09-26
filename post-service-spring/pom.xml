@@ -12,11 +12,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <maven-shade-plugin.version>3.5.0</maven-shade-plugin.version>
+        <maven-shade-plugin.version>3.5.1</maven-shade-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
 
-        <vertx.version>4.4.4</vertx.version>
+        <vertx.version>4.4.5</vertx.version>
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
@@ -36,7 +36,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.1.2</version>
+                <version>3.1.4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
