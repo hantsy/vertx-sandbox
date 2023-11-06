@@ -25,7 +25,7 @@
 
         <vertx.version>4.4.6</vertx.version>
 
-        <junit-jupiter.version>5.10.0</junit-jupiter.version>
+        <junit-jupiter.version>5.10.1</junit-jupiter.version>
         <assertj-core.version>3.24.2</assertj-core.version>
         <kotest.version>5.7.2</kotest.version>
     </properties>
