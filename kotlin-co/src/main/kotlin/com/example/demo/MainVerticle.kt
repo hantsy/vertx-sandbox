@@ -2,7 +2,10 @@ package com.example.demo
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.Route
 import io.vertx.ext.web.Router
@@ -13,10 +16,11 @@ import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
-import io.vertx.kotlin.coroutines.dispatcher
 import io.vertx.pgclient.PgConnectOptions
 import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.PoolOptions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -45,8 +49,9 @@ class MainVerticle : CoroutineVerticle() {
             objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             objectMapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
             objectMapper.disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
-            val module = JavaTimeModule()
-            objectMapper.registerModule(module)
+            objectMapper.registerKotlinModule()
+            objectMapper.registerModule(JavaTimeModule())
+            objectMapper.registerModule(Jdk8Module())
         }
     }
 
@@ -72,11 +77,12 @@ class MainVerticle : CoroutineVerticle() {
 
         // Create the HTTP server
         val options = httpServerOptionsOf(idleTimeout = 5, idleTimeoutUnit = TimeUnit.MINUTES, logActivity = true)
-        vertx.createHttpServer(options) // Handle every request using the router
+        val result =vertx.createHttpServer(options) // Handle every request using the router
             .requestHandler(router) // Start listening
             .listen(8888) // Print the port
-            .onComplete { println("HttpSever started at ${it.result().actualPort()}") }
+           // .onComplete { println("HttpSever started at ${it.result().actualPort()}") }
             .await()
+        LOGGER.log(Level.FINEST, "HttpServer started at ${result.actualPort()}")
     }
 
     override suspend fun stop() {
@@ -157,5 +163,17 @@ class MainVerticle : CoroutineVerticle() {
         // Create the pool from the data object
         return PgPool.pool(vertx, connectOptions, poolOptions)
     }
+
+    // see: https://github.com/vert-x3/vertx-lang-kotlin/issues/194
+    private suspend fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Unit): Route =
+        handler {
+            launch(Dispatchers.Unconfined) {
+                try {
+                    fn(it)
+                } catch (e: Exception) {
+                    it.fail(e)
+                }
+            }
+        }
 
 }

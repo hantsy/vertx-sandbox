@@ -8,7 +8,12 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 class PostsHandler(private val posts: PostRepository) {
+    companion object {
+        private val LOGGER = Logger.getLogger(PostsHandler::class.java.name)
+    }
+
     suspend fun all(rc: RoutingContext) {
+        LOGGER.log(Level.ALL, "handling /posts endpoint")
 //        var params = rc.queryParams();
 //        var q = params.get("q");
 //        var limit = params.get("limit") == null ? 10 : Integer.parseInt(params.get("q"));
@@ -71,9 +76,5 @@ class PostsHandler(private val posts: PostRepository) {
         } else {
             rc.fail(404, PostNotFoundException(uuid))
         }
-    }
-
-    companion object {
-        private val LOGGER = Logger.getLogger(PostsHandler::class.java.simpleName)
     }
 }

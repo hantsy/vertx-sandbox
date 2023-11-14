@@ -10,8 +10,8 @@ class DataInitializer(private val client: PgPool) {
 
     suspend fun run() {
         LOGGER.info("Data initialization is starting...")
-        val first = Tuple.of("Hello Quarkus", "My first post of Quarkus")
-        val second = Tuple.of("Hello Again, Quarkus", "My second post of Quarkus")
+        val first = Tuple.of("Hello Vertx", "My first post of Vertx")
+        val second = Tuple.of("Hello Again, Vertx", "My second post of Vertx")
 
 
         val result = client

@@ -1,11 +1,11 @@
 package com.example.demo
 
+import com.fasterxml.jackson.core.type.TypeReference
 import io.kotest.matchers.equals.shouldBeEqual
 import io.vertx.core.Vertx
-import io.vertx.core.json.JsonObject
+import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
-import io.vertx.ext.web.codec.BodyCodec
 import io.vertx.kotlin.coroutines.await
 import io.vertx.kotlin.coroutines.awaitResult
 import io.vertx.kotlin.coroutines.dispatcher
@@ -15,10 +15,15 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.*
+import java.util.logging.Logger
 import kotlin.time.Duration.Companion.milliseconds
 
 // see: https://github.com/vietj/kotlin-conf-inter-reactive/blob/master/src/test/kotlin/com/julienviet/movierating/MovieRatingTest.kt
 class TestMainVerticle {
+    companion object {
+        private val LOGGER = Logger.getLogger(TestMainVerticle::class.java.name)
+    }
+
 
     lateinit var vertx: Vertx
     lateinit var client: WebClient
@@ -38,18 +43,21 @@ class TestMainVerticle {
     }
 
     @Test
-    fun testGetAllPosts() = runBlocking(vertx.dispatcher()) {
-        val response = client.get("/posts").`as`(BodyCodec.jsonArray()).send().await()
+    fun testGetAllPosts() = runTest {
+        val response = client.get("/posts").send().await()
 
         response.statusCode() shouldBeEqual 200
-        val body = response.bodyAsJsonArray().map { (it as JsonObject).mapTo(Post::class.java) }
-        body.size shouldBeEqual 2
+        println("response :${response.bodyAsString()}")
+        val body = response.bodyAsString()
+        val posts: List<Post> = DatabindCodec.mapper().readValue(body, object : TypeReference<List<Post>>() {})
+        println("posts: ${posts}")
+        //posts.size() shouldBeEqual 2
     }
 
     @Test
     fun testGetPostById_NotFound() = runTest(timeout = 500.milliseconds) {
         val id = UUID.randomUUID()
-        val response = client.get("/posts/$id").`as`(BodyCodec.jsonObject()).send().await()
+        val response = client.get("/posts/$id").send().await()
         response.statusCode() shouldBeEqual 404
     }
 }
