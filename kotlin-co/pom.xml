@@ -21,7 +21,7 @@
 
         <kotlin.version>1.9.20</kotlin.version>
         <coroutines.version>1.7.3</coroutines.version>
-        <jackson.version>2.15.3</jackson.version>
+        <jackson.version>2.16.0</jackson.version>
 
         <vertx.version>4.4.6</vertx.version>
 
