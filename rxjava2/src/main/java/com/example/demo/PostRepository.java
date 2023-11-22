@@ -4,10 +4,7 @@ package com.example.demo;
 import io.reactivex.Flowable;
 import io.reactivex.Single;
 import io.vertx.reactivex.pgclient.PgPool;
-import io.vertx.reactivex.sqlclient.Row;
-import io.vertx.reactivex.sqlclient.RowSet;
-import io.vertx.reactivex.sqlclient.SqlResult;
-import io.vertx.reactivex.sqlclient.Tuple;
+import io.vertx.reactivex.sqlclient.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -29,14 +26,14 @@ public class PostRepository {
         );
 
 
-    private final PgPool client;
+    private final Pool client;
 
-    private PostRepository(PgPool _client) {
+    private PostRepository(Pool _client) {
         this.client = _client;
     }
 
     //factory method
-    public static PostRepository create(PgPool client) {
+    public static PostRepository create(Pool client) {
         return new PostRepository(client);
     }
 

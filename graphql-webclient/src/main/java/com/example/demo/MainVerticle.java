@@ -4,6 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.WebSocketClientOptions;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.WebClient;
@@ -79,14 +80,14 @@ public class MainVerticle extends AbstractVerticle {
 
 
         // switch to HttpClient to handle WebSocket
-        var options = new HttpClientOptions()
-            .setWebSocketClosingTimeout(7200)
+        var options = new WebSocketClientOptions()
+            .setClosingTimeout(7200)
             .setDefaultHost("localhost")
             .setDefaultPort(8080);
 
         // see: https://github.com/vert-x3/vertx-web/blob/master/vertx-web-graphql/src/test/java/io/vertx/ext/web/handler/graphql/ApolloWSHandlerTest.java
-        var httpClient = vertx.createHttpClient(options);
-        httpClient.webSocket("/graphql")
+        var webSocketClient = vertx.createWebSocketClient(options);
+        webSocketClient.connect("/graphql")
             .onSuccess(ws -> {
                 ws.closeHandler(v -> log.info("websocket is being closed"));
                 ws.endHandler(v -> log.info("websocket is being ended"));

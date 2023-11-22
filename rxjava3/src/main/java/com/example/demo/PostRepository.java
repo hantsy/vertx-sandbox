@@ -3,7 +3,7 @@ package com.example.demo;
 
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
-import io.vertx.rxjava3.pgclient.PgPool;
+import io.vertx.rxjava3.sqlclient.Pool;
 import io.vertx.rxjava3.sqlclient.Row;
 import io.vertx.rxjava3.sqlclient.RowSet;
 import io.vertx.rxjava3.sqlclient.SqlResult;
@@ -29,14 +29,14 @@ public class PostRepository {
         );
 
 
-    private final PgPool client;
+    private final Pool client;
 
-    private PostRepository(PgPool _client) {
+    private PostRepository(Pool _client) {
         this.client = _client;
     }
 
     //factory method
-    public static PostRepository create(PgPool client) {
+    public static PostRepository create(Pool client) {
         return new PostRepository(client);
     }
 

@@ -6,13 +6,10 @@ import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.observables.ConnectableObservable;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.ReplaySubject;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.handler.graphql.ApolloWSMessage;
-import io.vertx.ext.web.handler.graphql.schema.VertxDataFetcher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.dataloader.DataLoader;
@@ -27,26 +24,25 @@ import java.util.concurrent.CompletionStage;
 public class DataFetchers {
     private final PostService posts;
 
-    public VertxDataFetcher<List<Post>> getAllPosts() {
-        return VertxDataFetcher.create(
-            (DataFetchingEnvironment dfe) -> this.posts.getAllPosts());
+    public DataFetcher<CompletionStage<List<Post>>> getAllPosts() {
+        return (DataFetchingEnvironment dfe) -> this.posts.getAllPosts().toCompletionStage();
     }
 
-    public VertxDataFetcher<Post> getPostById() {
-        return VertxDataFetcher.create((DataFetchingEnvironment dfe) -> {
+    public DataFetcher<CompletionStage<Post>> getPostById() {
+        return (DataFetchingEnvironment dfe) -> {
             String postId = dfe.getArgument("postId");
-            return posts.getPostById(postId);
-        });
+            return posts.getPostById(postId).toCompletionStage();
+        };
     }
 
 
-    public VertxDataFetcher<UUID> createPost() {
-        return VertxDataFetcher.create((DataFetchingEnvironment dfe) -> {
+    public DataFetcher<CompletionStage<UUID>> createPost() {
+        return (DataFetchingEnvironment dfe) -> {
             var postInputArg = dfe.getArgument("createPostInput");
             var jacksonMapper = DatabindCodec.mapper();
             var input = jacksonMapper.convertValue(postInputArg, CreatePostInput.class);
-            return this.posts.createPost(input);
-        });
+            return this.posts.createPost(input).toCompletionStage();
+        };
     }
 
     public DataFetcher<CompletionStage<List<Comment>>> commentsOfPost() {
@@ -67,15 +63,15 @@ public class DataFetchers {
         };
     }
 
-    public VertxDataFetcher<UUID> addComment() {
-        return VertxDataFetcher.create((DataFetchingEnvironment dfe) -> {
+    public DataFetcher<CompletionStage<UUID>> addComment() {
+        return (DataFetchingEnvironment dfe) -> {
             var commentInputArg = dfe.getArgument("commentInput");
             var jacksonMapper = DatabindCodec.mapper();
             var input = jacksonMapper.convertValue(commentInputArg, CommentInput.class);
             return this.posts.addComment(input)
-                .onSuccess(id -> this.posts.getCommentById(id.toString())
-                    .onSuccess(c -> subject.onNext(c)));
-        });
+                .onSuccess(id -> this.posts.getCommentById(id.toString()).onSuccess(c -> subject.onNext(c)))
+                .toCompletionStage();
+        };
     }
 
     private ReplaySubject<Comment> subject = ReplaySubject.create(1);

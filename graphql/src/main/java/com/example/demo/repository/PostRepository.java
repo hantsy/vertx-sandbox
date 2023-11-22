@@ -3,10 +3,7 @@ package com.example.demo.repository;
 import com.example.demo.model.PostEntity;
 import io.vertx.core.Future;
 import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +28,7 @@ public class PostRepository {
         );
 
 
-    private final PgPool client;
+    private final Pool client;
 
     public Future<List<PostEntity>> findAll() {
         return client.query("SELECT * FROM posts ORDER BY created_at DESC ")

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import graphql.GraphQL;
 import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.PropertyDataFetcher;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
@@ -32,6 +33,7 @@ import io.vertx.ext.web.handler.graphql.*;
 import io.vertx.ext.web.handler.graphql.schema.VertxPropertyDataFetcher;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -257,11 +259,11 @@ public class MainVerticle extends AbstractVerticle {
             ))
             //.typeResolver()
             //.fieldVisibility()
-            .defaultDataFetcher(environment -> VertxPropertyDataFetcher.create(environment.getFieldDefinition().getName()))
+            .defaultDataFetcher(environment -> PropertyDataFetcher.fetching(environment.getFieldDefinition().getName()))
             .build();
     }
 
-    private PgPool pgPool() {
+    private Pool pgPool() {
         PgConnectOptions connectOptions = new PgConnectOptions()
             .setPort(5432)
             .setHost("localhost")
@@ -273,9 +275,7 @@ public class MainVerticle extends AbstractVerticle {
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
         // Create the pool from the data object
-        PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
-
-        return pool;
+        return Pool.pool(vertx, connectOptions, poolOptions);
     }
 
     /**

@@ -3,13 +3,13 @@ package com.example.demo;
 import io.vertx.core.Vertx;
 import io.vertx.core.spi.VerticleFactory;
 import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Disposes;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Singleton;
+
 import java.util.logging.Logger;
 
 @ApplicationScoped
@@ -25,7 +25,7 @@ public class Resources {
     }
 
     @Produces
-    public PgPool pgPool(Vertx vertx) {
+    public Pool pgPool(Vertx vertx) {
         PgConnectOptions connectOptions = new PgConnectOptions()
             .setPort(5432)
             .setHost("localhost")
@@ -37,12 +37,10 @@ public class Resources {
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
         // Create the pool from the data object
-        PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
-
-        return pool;
+        return Pool.pool(vertx, connectOptions, poolOptions);
     }
 
-    public void disposesPgPool(@Disposes PgPool pgPool) {
+    public void disposesPgPool(@Disposes Pool pgPool) {
         LOGGER.info("disposing PgPool...");
         pgPool.close().onSuccess(v -> LOGGER.info("PgPool is closed successfully."));
     }

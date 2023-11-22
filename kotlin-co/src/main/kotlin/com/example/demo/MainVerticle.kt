@@ -4,31 +4,26 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.vertx.core.json.jackson.DatabindCodec
-import io.vertx.ext.web.Route
 import io.vertx.ext.web.Router
-import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.core.http.httpServerOptionsOf
 import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
+import io.vertx.kotlin.coroutines.CoroutineRouterSupport
 import io.vertx.kotlin.coroutines.CoroutineVerticle
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.pgclient.PgConnectOptions
-import io.vertx.pgclient.PgPool
+import io.vertx.sqlclient.Pool
 import io.vertx.sqlclient.PoolOptions
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.LogManager
 import java.util.logging.Logger
 
-class MainVerticle : CoroutineVerticle() {
+class MainVerticle : CoroutineVerticle(), CoroutineRouterSupport {
     companion object {
         private val LOGGER = Logger.getLogger(MainVerticle::class.java.name)
 
@@ -77,11 +72,11 @@ class MainVerticle : CoroutineVerticle() {
 
         // Create the HTTP server
         val options = httpServerOptionsOf(idleTimeout = 5, idleTimeoutUnit = TimeUnit.MINUTES, logActivity = true)
-        val result =vertx.createHttpServer(options) // Handle every request using the router
+        val result = vertx.createHttpServer(options) // Handle every request using the router
             .requestHandler(router) // Start listening
             .listen(8888) // Print the port
-           // .onComplete { println("HttpSever started at ${it.result().actualPort()}") }
-            .await()
+            // .onComplete { println("HttpSever started at ${it.result().actualPort()}") }
+            .coAwait()
         LOGGER.log(Level.FINEST, "HttpServer started at ${result.actualPort()}")
     }
 
@@ -99,20 +94,20 @@ class MainVerticle : CoroutineVerticle() {
 
         router.get("/posts")
             .produces("application/json")
-            .coroutineHandler {
+            .coHandler {
                 handlers.all(it)
             }
 
         router.post("/posts")
             .consumes("application/json")
             .handler(BodyHandler.create())
-            .coroutineHandler {
+            .coHandler {
                 handlers.save(it)
             }
 
         router.get("/posts/:id")
             .produces("application/json")
-            .coroutineHandler {
+            .coHandler {
                 handlers.getById(it)
             }
 
@@ -120,16 +115,16 @@ class MainVerticle : CoroutineVerticle() {
         router.put("/posts/:id")
             .consumes("application/json")
             .handler(BodyHandler.create())
-            .coroutineHandler {
+            .coHandler {
                 handlers.update(it)
             }
 
         router.delete("/posts/:id")
-            .coroutineHandler {
+            .coHandler {
                 handlers.delete(it)
             }
 
-        router.route().failureHandler {
+        router.route().coFailureHandler {
             if (it.failure() is PostNotFoundException) {
                 it.response()
                     .setStatusCode(404)
@@ -144,12 +139,12 @@ class MainVerticle : CoroutineVerticle() {
             }
         }
 
-        router.get("/hello").handler { it.response().end("Hello from my route") }
+        router.get("/hello").coRespond { it.end("Hello from my route") }
 
         return router
     }
 
-    private fun pgPool(): PgPool {
+    private fun pgPool(): Pool {
         val connectOptions = PgConnectOptions()
             .setPort(5432)
             .setHost("localhost")
@@ -161,19 +156,14 @@ class MainVerticle : CoroutineVerticle() {
         val poolOptions = PoolOptions().setMaxSize(5)
 
         // Create the pool from the data object
-        return PgPool.pool(vertx, connectOptions, poolOptions)
+        return Pool.pool(vertx, connectOptions, poolOptions)
+//
+//      return  PgBuilder.pool()
+//            .connectingTo(connectOptions)
+//            .withConnectHandler(connectHandler)
+//            .with(poolOptions)
+//            .using(vertx)
+//            .build()
     }
-
-    // see: https://github.com/vert-x3/vertx-lang-kotlin/issues/194
-    private suspend fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Unit): Route =
-        handler {
-            launch(Dispatchers.Unconfined) {
-                try {
-                    fn(it)
-                } catch (e: Exception) {
-                    it.fail(e)
-                }
-            }
-        }
 
 }

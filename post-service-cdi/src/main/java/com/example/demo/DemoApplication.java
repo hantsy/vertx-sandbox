@@ -12,9 +12,12 @@ public class DemoApplication {
 
     public static void main(String[] args) {
         var weld = new Weld();
-        var container = weld.initialize();
-        var vertx = container.select(Vertx.class).get();
-        var factory = container.select(VerticleFactory.class).get();
+        Vertx vertx;
+        VerticleFactory factory;
+        try (var container = weld.initialize()) {
+            vertx = container.select(Vertx.class).get();
+            factory = container.select(VerticleFactory.class).get();
+        }
 
         LOGGER.info("vertx clazz:" + vertx.getClass().getName());//Weld does not create proxy classes at runtime on @Singleton beans.
         LOGGER.info("factory clazz:" + factory.getClass().getName());

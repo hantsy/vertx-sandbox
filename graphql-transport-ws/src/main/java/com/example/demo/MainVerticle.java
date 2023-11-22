@@ -37,6 +37,7 @@ import io.vertx.ext.web.handler.graphql.ws.GraphQLWSHandler;
 import io.vertx.ext.web.handler.graphql.ws.GraphQLWSOptions;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -256,7 +257,7 @@ public class MainVerticle extends AbstractVerticle {
                 .build();
     }
 
-    private PgPool pgPool() {
+    private Pool pgPool() {
         PgConnectOptions connectOptions = new PgConnectOptions()
                 .setPort(5432)
                 .setHost("localhost")
@@ -268,9 +269,7 @@ public class MainVerticle extends AbstractVerticle {
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
         // Create the pool from the data object
-        PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
-
-        return pool;
+        return Pool.pool(vertx, connectOptions, poolOptions);
     }
 
     /**

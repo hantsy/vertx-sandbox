@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import io.vertx.reactivex.pgclient.PgPool;
+import io.vertx.reactivex.sqlclient.Pool;
 import io.vertx.reactivex.sqlclient.SqlConnection;
 import io.vertx.reactivex.sqlclient.Tuple;
 import org.slf4j.Logger;
@@ -13,13 +14,13 @@ public class DataInitializer {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(DataInitializer.class.getName());
 
-    private PgPool client;
+    private Pool client;
 
-    public DataInitializer(PgPool client) {
+    public DataInitializer(Pool client) {
         this.client = client;
     }
 
-    public static DataInitializer create(PgPool client) {
+    public static DataInitializer create(Pool client) {
         return new DataInitializer(client);
     }
 

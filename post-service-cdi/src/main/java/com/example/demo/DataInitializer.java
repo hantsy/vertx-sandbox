@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Tuple;
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +20,7 @@ public class DataInitializer {
 
     private final static Logger LOGGER = Logger.getLogger(DataInitializer.class.getName());
 
-    private final PgPool client;
+    private final Pool client;
 
     public void run(@Observes @Initialized(ApplicationScoped.class) Object o) {
         LOGGER.info("Data initialization is starting...");

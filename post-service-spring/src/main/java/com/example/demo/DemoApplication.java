@@ -3,7 +3,7 @@ package com.example.demo;
 import io.vertx.core.Vertx;
 import io.vertx.core.spi.VerticleFactory;
 import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -17,10 +17,10 @@ public class DemoApplication {
     public static void main(String[] args) {
         var context = new AnnotationConfigApplicationContext(DemoApplication.class);
         var vertx = context.getBean(Vertx.class);
-        var factory  = context.getBean(VerticleFactory.class);
+        var factory = context.getBean(VerticleFactory.class);
 
         // deploy MainVerticle via verticle identifier name
-        vertx.deployVerticle(factory.prefix()+":"+MainVerticle.class.getName());
+        vertx.deployVerticle(factory.prefix() + ":" + MainVerticle.class.getName());
     }
 
     @Bean
@@ -31,7 +31,7 @@ public class DemoApplication {
     }
 
     @Bean
-    public PgPool pgPool(Vertx vertx) {
+    public Pool pgPool(Vertx vertx) {
         PgConnectOptions connectOptions = new PgConnectOptions()
             .setPort(5432)
             .setHost("localhost")
@@ -43,8 +43,6 @@ public class DemoApplication {
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
         // Create the pool from the data object
-        PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
-
-        return pool;
+        return Pool.pool(vertx, connectOptions, poolOptions);
     }
 }

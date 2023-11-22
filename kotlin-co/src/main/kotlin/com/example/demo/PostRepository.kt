@@ -2,6 +2,7 @@ package com.example.demo
 
 import io.vertx.kotlin.coroutines.await
 import io.vertx.pgclient.PgPool
+import io.vertx.sqlclient.Pool
 import io.vertx.sqlclient.Row
 import io.vertx.sqlclient.RowSet
 import io.vertx.sqlclient.Tuple
@@ -9,7 +10,7 @@ import java.util.*
 import java.util.logging.Logger
 import java.util.stream.StreamSupport
 
-class PostRepository(private val client: PgPool) {
+class PostRepository(private val client: Pool) {
 
     suspend fun findAll() = client.query("SELECT * FROM posts ORDER BY id ASC")
         .execute()

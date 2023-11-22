@@ -2,10 +2,7 @@ package com.example.demo;
 
 import io.vertx.core.Future;
 import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import lombok.RequiredArgsConstructor;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -33,7 +30,7 @@ public class PostRepository {
         );
 
 
-    private final PgPool client;
+    private final Pool client;
 
     public Future<List<Post>> findAll() {
         return client.query("SELECT * FROM posts ORDER BY id ASC")

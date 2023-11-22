@@ -41,7 +41,7 @@ class PostsHandler {
                 post -> rc.response().end(Json.encode(post))
             )
             .onFailure(
-                throwable -> rc.fail(throwable)
+                rc::fail
             );
 
     }
@@ -49,7 +49,7 @@ class PostsHandler {
 
     public void save(RoutingContext rc) {
         //rc.getBodyAsJson().mapTo(PostForm.class)
-        var body = rc.getBodyAsJson();
+        var body = rc.body().asJsonObject();
         LOGGER.log(Level.INFO, "request body: {0}", body);
         var form = body.mapTo(CreatePostCommand.class);
         this.posts.save(Post.of(form.getTitle(), form.getContent()))
@@ -65,7 +65,7 @@ class PostsHandler {
     public void update(RoutingContext rc) {
         var params = rc.pathParams();
         var id = params.get("id");
-        var body = rc.getBodyAsJson();
+        var body = rc.body().asJsonObject();
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", new Object[]{id, body});
         var form = body.mapTo(CreatePostCommand.class);
         this.posts.findById(UUID.fromString(id))

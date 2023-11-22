@@ -30,7 +30,7 @@ class PostsHandler(val posts: PostRepository) {
 
     fun save(rc: RoutingContext) {
         //rc.getBodyAsJson().mapTo(PostForm.class)
-        val body = rc.bodyAsJson
+        val body = rc.body().asJsonObject()
         LOGGER.log(Level.INFO, "request body: {0}", body)
         val (title, content) = body.mapTo(CreatePostCommand::class.java)
         posts.save(Post(title = title, content = content))
@@ -45,7 +45,7 @@ class PostsHandler(val posts: PostRepository) {
     fun update(rc: RoutingContext) {
         val params = rc.pathParams()
         val id = params["id"]
-        val body = rc.bodyAsJson
+        val body = rc.body().asJsonObject()
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", arrayOf(id, body))
         val (title, content) = body.mapTo(CreatePostCommand::class.java)
         posts.findById(UUID.fromString(id))

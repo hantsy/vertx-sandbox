@@ -22,6 +22,7 @@ import io.vertx.reactivex.ext.web.validation.builder.Bodies;
 import io.vertx.reactivex.json.schema.SchemaParser;
 import io.vertx.reactivex.json.schema.SchemaRouter;
 import io.vertx.reactivex.pgclient.PgPool;
+import io.vertx.reactivex.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +124,7 @@ public class MainVerticle extends AbstractVerticle {
         return router;
     }
 
-    private PgPool pgPool() {
+    private Pool pgPool() {
         PgConnectOptions connectOptions = new PgConnectOptions()
             .setPort(5432)
             .setHost("localhost")
@@ -135,7 +136,7 @@ public class MainVerticle extends AbstractVerticle {
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
         // Create the pool from the data object
-        PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
+        Pool pool = Pool.pool(vertx, connectOptions, poolOptions);
 
         return pool;
     }

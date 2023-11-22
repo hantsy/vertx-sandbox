@@ -14,14 +14,16 @@
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.5.1</maven-shade-plugin.version>
         <maven-surefire-plugin.version>3.2.2</maven-surefire-plugin.version>
-        <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
+        <exec-maven-plugin.version>3.1.1</exec-maven-plugin.version>
 
-        <vertx.version>4.4.6</vertx.version>
+        <vertx.version>4.5.0</vertx.version>
         <junit-jupiter.version>5.10.1</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.24.2</assertj-core.version>
-        <jackson.version>2.15.3</jackson.version>
+        <jackson.version>2.16.0</jackson.version>
+        <spring-framework.version>6.1.0</spring-framework.version>
+        <lombok.version>1.18.30</lombok.version>
     </properties>
 
     <dependencyManagement>
@@ -34,9 +36,9 @@
                 <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>3.1.5</version>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-framework-bom</artifactId>
+                <version>${spring-framework.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -92,6 +94,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+            <version>1.18.30</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
@@ -126,7 +129,14 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <release>16</release>
+                    <release>17</release>
+                    <annotationProcessorPaths>
+                        <annotationProcessorPath>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </annotationProcessorPath>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>

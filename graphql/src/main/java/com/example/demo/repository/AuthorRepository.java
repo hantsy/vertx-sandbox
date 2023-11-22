@@ -3,10 +3,7 @@ package com.example.demo.repository;
 import com.example.demo.model.AuthorEntity;
 import io.vertx.core.Future;
 import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -24,7 +21,7 @@ public class AuthorRepository {
         row.getLocalDateTime("created_at")
     );
 
-    private final PgPool client;
+    private final Pool client;
 
     public Future<List<AuthorEntity>> findAll() {
         return client.query("SELECT * FROM users ORDER BY created_at DESC ")

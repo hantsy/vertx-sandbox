@@ -48,7 +48,7 @@ public class TestMainVerticle {
     void testPostValidation(Vertx vertx, VertxTestContext testContext) throws Throwable {
         WebClient client = WebClient.create(vertx);
         client.post(8888, "localhost", "/posts")
-            .rxSendJson(PostForm.of("test", ""))
+            .rxSendJson(new PostForm("test", ""))
             .subscribe(
                 response -> {
                     var statusCode = response.statusCode();

@@ -2,11 +2,12 @@ package com.example.demo
 
 import io.vertx.kotlin.coroutines.await
 import io.vertx.pgclient.PgPool
+import io.vertx.sqlclient.Pool
 import io.vertx.sqlclient.SqlConnection
 import io.vertx.sqlclient.Tuple
 import java.util.logging.Logger
 
-class DataInitializer(private val client: PgPool) {
+class DataInitializer(private val client: Pool) {
 
     suspend fun run() {
         LOGGER.info("Data initialization is starting...")

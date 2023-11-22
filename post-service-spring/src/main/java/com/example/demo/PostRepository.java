@@ -1,21 +1,15 @@
 package com.example.demo;
 
 import io.vertx.core.Future;
-import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Component
@@ -32,7 +26,7 @@ public class PostRepository {
         );
 
 
-    private final PgPool client;
+    private final Pool client;
 
     public Future<List<Post>> findAll() {
         return client.query("SELECT * FROM posts ORDER BY id ASC")

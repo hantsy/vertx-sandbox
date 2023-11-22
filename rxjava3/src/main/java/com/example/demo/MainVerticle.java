@@ -22,6 +22,7 @@ import io.vertx.rxjava3.ext.web.validation.builder.Bodies;
 import io.vertx.rxjava3.json.schema.SchemaParser;
 import io.vertx.rxjava3.json.schema.SchemaRouter;
 import io.vertx.rxjava3.pgclient.PgPool;
+import io.vertx.rxjava3.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import lombok.extern.slf4j.Slf4j;
 import io.vertx.rxjava3.ext.web.validation.RequestPredicate;
@@ -133,7 +134,7 @@ public class MainVerticle extends AbstractVerticle {
         return router;
     }
 
-    private PgPool pgPool() {
+    private Pool pgPool() {
         PgConnectOptions connectOptions = new PgConnectOptions()
             .setPort(5432)
             .setHost("localhost")
@@ -145,9 +146,7 @@ public class MainVerticle extends AbstractVerticle {
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
         // Create the pool from the data object
-        PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
-
-        return pool;
+        return Pool.pool(vertx, connectOptions, poolOptions);
     }
 
 }

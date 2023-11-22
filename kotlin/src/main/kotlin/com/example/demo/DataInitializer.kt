@@ -1,15 +1,12 @@
 package com.example.demo
 
 import io.vertx.pgclient.PgPool
-import io.vertx.sqlclient.Row
-import io.vertx.sqlclient.RowSet
-import io.vertx.sqlclient.SqlConnection
-import io.vertx.sqlclient.Tuple
+import io.vertx.sqlclient.*
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.stream.StreamSupport
 
-class DataInitializer(private val client: PgPool) {
+class DataInitializer(private val client: Pool) {
 
     fun run() {
         LOGGER.info("Data initialization is starting...")

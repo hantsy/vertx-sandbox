@@ -1,7 +1,7 @@
 package com.example.demo;
 
 
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -19,7 +19,7 @@ public class DataInitializer {
 
     private final static Logger LOGGER = Logger.getLogger(DataInitializer.class.getName());
 
-    private  final PgPool client;
+    private final Pool client;
 
     @EventListener(ContextRefreshedEvent.class)
     public void run() {

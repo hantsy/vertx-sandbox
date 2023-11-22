@@ -10,6 +10,7 @@ import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.pgclient.PgConnectOptions
 import io.vertx.pgclient.PgPool
+import io.vertx.sqlclient.Pool
 import io.vertx.sqlclient.PoolOptions
 import java.io.IOException
 import java.util.logging.Level
@@ -116,7 +117,7 @@ class MainVerticle : AbstractVerticle() {
         return router
     }
 
-    private fun pgPool(): PgPool {
+    private fun pgPool(): Pool {
         val connectOptions = PgConnectOptions()
             .setPort(5432)
             .setHost("localhost")
@@ -128,6 +129,6 @@ class MainVerticle : AbstractVerticle() {
         val poolOptions = PoolOptions().setMaxSize(5)
 
         // Create the pool from the data object
-        return PgPool.pool(vertx, connectOptions, poolOptions)
+        return Pool.pool(vertx, connectOptions, poolOptions)
     }
 }

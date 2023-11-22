@@ -1,9 +1,7 @@
 package com.example.demo;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.WebSocketConnectOptions;
+import io.vertx.core.http.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -22,28 +20,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 public class TestMainVerticle {
 
-    HttpClient client;
+    WebSocketClient client;
 
     @BeforeEach
     void setup(Vertx vertx, VertxTestContext testContext) {
         vertx.deployVerticle(new MainVerticle(), testContext.succeeding(id -> testContext.completeNow()));
-        // switch to HttpClient to handle WebSocket
-        var options = new HttpClientOptions()
-                .setWebSocketClosingTimeout(7200)
+        // switch to WebSocketClient to handle WebSocket
+        var options = new WebSocketClientOptions()
+                .setConnectTimeout(7200)
                 .setDefaultHost("localhost")
                 .setDefaultPort(8080);
 
-        client = vertx.createHttpClient(options);
+        client = vertx.createWebSocketClient(options);
     }
 
     @Test
     public void testCreatePost(VertxTestContext testContext) throws InterruptedException {
         var createdPostReplay = new ArrayList<String>();
-        var options = new WebSocketConnectOptions()
+        CountDownLatch latch = new CountDownLatch(1);
+        var connectOptions = new WebSocketConnectOptions()
                 .addSubProtocol("graphql-transport-ws")
                 .setURI("/graphql");
-        CountDownLatch latch = new CountDownLatch(1);
-        client.webSocket(options)
+        client.connect(connectOptions)
                 .onSuccess(webSocket -> {
 
                     webSocket.closeHandler(v -> log.info("websocket is being closed"));

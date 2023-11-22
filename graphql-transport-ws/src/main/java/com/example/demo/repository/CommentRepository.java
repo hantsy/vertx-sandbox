@@ -4,10 +4,7 @@ import com.example.demo.model.CommentEntity;
 import com.example.demo.model.PostEntity;
 import io.vertx.core.Future;
 import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -25,7 +22,7 @@ public class CommentRepository {
         row.getUUID("post_id")
     );
 
-    private final PgPool client;
+    private final Pool client;
 
     public Future<List<CommentEntity>> findAll() {
         return client.query("SELECT * FROM comments ORDER BY created_at DESC ")

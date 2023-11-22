@@ -2,6 +2,7 @@ package com.example.demo;
 
 
 import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
@@ -13,13 +14,13 @@ public class DataInitializer {
 
     private final static Logger LOGGER = Logger.getLogger(DataInitializer.class.getName());
 
-    private PgPool client;
+    private Pool client;
 
-    public DataInitializer(PgPool client) {
+    public DataInitializer(Pool client) {
         this.client = client;
     }
 
-    public static DataInitializer create(PgPool client) {
+    public static DataInitializer create(Pool client) {
         return new DataInitializer(client);
     }
 

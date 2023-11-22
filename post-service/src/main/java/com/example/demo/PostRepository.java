@@ -2,10 +2,7 @@ package com.example.demo;
 
 import io.vertx.core.Future;
 import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 
 import java.util.List;
 import java.util.Objects;
@@ -28,14 +25,14 @@ public class PostRepository {
         );
 
 
-    private final PgPool client;
+    private final Pool client;
 
-    private PostRepository(PgPool _client) {
+    private PostRepository(Pool _client) {
         this.client = _client;
     }
 
     //factory method
-    public static PostRepository create(PgPool client) {
+    public static PostRepository create(Pool client) {
         return new PostRepository(client);
     }
 

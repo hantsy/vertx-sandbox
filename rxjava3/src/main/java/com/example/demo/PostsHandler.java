@@ -47,7 +47,7 @@ class PostsHandler {
 
     public void save(RoutingContext rc) {
         //rc.getBodyAsJson().mapTo(PostForm.class)
-        var body = rc.getBodyAsJson();
+        var body = rc.body().asJsonObject();
         log.info("request body: {0}", body);
         var form = body.mapTo(CreatePostCommand.class);
         this.posts
@@ -68,7 +68,7 @@ class PostsHandler {
     public void update(RoutingContext rc) {
         var params = rc.pathParams();
         var id = params.get("id");
-        var body = rc.getBodyAsJson();
+        var body = rc.body().asJsonObject();
         log.info("\npath param id: {}\nrequest body: {}", id, body);
         var form = body.mapTo(CreatePostCommand.class);
         this.posts.findById(UUID.fromString(id))
