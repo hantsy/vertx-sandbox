@@ -21,7 +21,7 @@
         <junit-jupiter.version>5.10.1</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
-        <assertj-core.version>3.25.0</assertj-core.version>
+        <assertj-core.version>3.25.1</assertj-core.version>
         <jackson.version>2.16.1</jackson.version>
         <spring-framework.version>6.1.2</spring-framework.version>
         <lombok.version>1.18.30</lombok.version>
