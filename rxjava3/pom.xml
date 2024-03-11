@@ -22,7 +22,7 @@
         <junit-jupiter.version>5.10.2</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
-        <jackson.version>2.16.1</jackson.version>
+        <jackson.version>2.16.2</jackson.version>
 
         <assertj-core.version>3.25.3</assertj-core.version>
         <slf4j.version>2.0.12</slf4j.version>
