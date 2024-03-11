@@ -22,7 +22,7 @@
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.25.3</assertj-core.version>
-        <jackson.version>2.16.1</jackson.version>
+        <jackson.version>2.16.2</jackson.version>
         <spring-framework.version>6.1.3</spring-framework.version>
         <lombok.version>1.18.30</lombok.version>
     </properties>
