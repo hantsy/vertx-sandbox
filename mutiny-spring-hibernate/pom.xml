@@ -22,7 +22,7 @@
         <hibernate-reactive.version>2.2.2.Final</hibernate-reactive.version>
         <hibernate.version>6.4.0.Final</hibernate.version>
         <junit-jupiter.version>5.10.2</junit-jupiter.version>
-        <spring-boot.version>3.2.2</spring-boot.version>
+        <spring-boot.version>3.2.4</spring-boot.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.25.3</assertj-core.version>
