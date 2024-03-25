@@ -24,7 +24,7 @@
         <launcher.class>io.vertx.core.Launcher</launcher.class>
         <assertj-core.version>3.25.3</assertj-core.version>
         <jackson.version>2.16.1</jackson.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.32</lombok.version>
         <logback.version>1.4.14</logback.version>
         <slf4j.version>2.0.12</slf4j.version>
         <log4j.version>2.22.1</log4j.version>
