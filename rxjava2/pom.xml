@@ -15,19 +15,19 @@
         <maven.compiler.release>21</maven.compiler.release>
 
         <maven.compiler.release>16</maven.compiler.release>
-        <maven-shade-plugin.version>3.5.1</maven-shade-plugin.version>
+        <maven-shade-plugin.version>3.5.2</maven-shade-plugin.version>
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-        <exec-maven-plugin.version>3.1.1</exec-maven-plugin.version>
+        <exec-maven-plugin.version>3.2.0</exec-maven-plugin.version>
 
         <vertx.version>4.5.6</vertx.version>
         <junit-jupiter.version>5.10.2</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.25.3</assertj-core.version>
-        <jackson.version>2.16.1</jackson.version>
+        <jackson.version>2.17.0</jackson.version>
         <slf4j.version>2.0.12</slf4j.version>
-        <logback.version>1.4.14</logback.version>
-        <log4j.version>2.22.1</log4j.version>
+        <logback.version>1.5.3</logback.version>
+        <log4j.version>2.23.1</log4j.version>
     </properties>
 
     <dependencyManagement>
