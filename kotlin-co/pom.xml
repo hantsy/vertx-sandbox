@@ -27,7 +27,7 @@
 
         <junit-jupiter.version>5.10.2</junit-jupiter.version>
         <assertj-core.version>3.25.3</assertj-core.version>
-        <kotest.version>5.8.1</kotest.version>
+        <kotest.version>5.9.0</kotest.version>
     </properties>
 
     <dependencyManagement>
