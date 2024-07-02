@@ -24,7 +24,7 @@
         <assertj-core.version>3.26.0</assertj-core.version>
         <jackson.version>2.17.1</jackson.version>
         <weld.version>5.1.2.Final</weld.version>
-        <lombok.version>1.18.32</lombok.version>
+        <lombok.version>1.18.34</lombok.version>
     </properties>
 
     <dependencyManagement>
