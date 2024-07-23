@@ -18,7 +18,7 @@
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
 
         <vertx.version>4.5.9</vertx.version>
-        <mutiny-vertx.version>3.13.1</mutiny-vertx.version>
+        <mutiny-vertx.version>3.14.0</mutiny-vertx.version>
         <hibernate-reactive.version>2.3.1.Final</hibernate-reactive.version>
         <hibernate.version>6.4.0.Final</hibernate.version>
         <junit-jupiter.version>5.10.3</junit-jupiter.version>
