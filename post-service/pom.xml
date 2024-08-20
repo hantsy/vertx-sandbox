@@ -19,7 +19,7 @@
         <exec-maven-plugin.version>3.4.0</exec-maven-plugin.version>
 
         <vertx.version>4.5.9</vertx.version>
-        <junit-jupiter.version>5.10.3</junit-jupiter.version>
+        <junit-jupiter.version>5.11.0</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.26.3</assertj-core.version>
