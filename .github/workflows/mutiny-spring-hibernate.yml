@@ -34,7 +34,7 @@ jobs:
           
       - name: Start up databases via Docker Compose 
         run: |
-            docker-compose up -d postgres
+            docker compose up -d postgres
             docker ps -a       
       - name: Build with Maven
         run: mvn clean install --file mutiny-spring-hibernate/pom.xml

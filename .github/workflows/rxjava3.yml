@@ -34,7 +34,7 @@ jobs:
           
       - name: Start up databases via Docker Compose 
         run: |
-            docker-compose up -d postgres
+            docker compose up -d postgres
             docker ps -a          
       - name: Build rxjava3
         run: mvn clean install --file rxjava3/pom.xml

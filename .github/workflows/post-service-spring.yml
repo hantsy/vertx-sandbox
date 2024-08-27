@@ -34,7 +34,7 @@ jobs:
           
       - name: Start up databases via Docker Compose 
         run: |
-            docker-compose up -d postgres
+            docker compose up -d postgres
             docker ps -a      
       - name: Build post-service-spring
         run: mvn clean install --file post-service-spring/pom.xml

@@ -34,7 +34,7 @@ jobs:
           
       - name: Start up databases via Docker Compose 
         run: |
-            docker-compose up -d postgres
+            docker compose up -d postgres
             docker ps -a        
       - name: Build kotlin-co
         run: mvn clean install --file kotlin-co/pom.xml
