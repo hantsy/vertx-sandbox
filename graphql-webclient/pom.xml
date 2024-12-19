@@ -19,7 +19,7 @@
         <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
 
         <vertx.version>4.5.11</vertx.version>
-        <junit-jupiter.version>5.11.3</junit-jupiter.version>
+        <junit-jupiter.version>5.11.4</junit-jupiter.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <launcher.class>io.vertx.core.Launcher</launcher.class>
