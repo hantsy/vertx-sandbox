@@ -22,7 +22,7 @@
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <launcher.class>io.vertx.core.Launcher</launcher.class>
-        <assertj.version>3.26.3</assertj.version>
+        <assertj.version>3.27.3</assertj.version>
         <jackson.version>2.18.2</jackson.version>
         <lombok.version>1.18.36</lombok.version>
         <logback.version>1.5.16</logback.version>
