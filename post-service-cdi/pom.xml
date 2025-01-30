@@ -85,7 +85,7 @@
             <version>${weld.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jboss</groupId>
+            <groupId>io.smallrye</groupId>
             <artifactId>jandex</artifactId>
             <version>3.2.3</version>
         </dependency>
