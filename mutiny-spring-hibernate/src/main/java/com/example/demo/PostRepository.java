@@ -1,25 +1,27 @@
 package com.example.demo;
 
 import io.smallrye.mutiny.Uni;
-import io.vertx.sqlclient.Row;
-import lombok.RequiredArgsConstructor;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaDelete;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import org.hibernate.reactive.mutiny.Mutiny;
 import org.springframework.stereotype.Component;
 
-import jakarta.persistence.criteria.*;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.logging.Logger;
 
 @Component
-@RequiredArgsConstructor
 public class PostRepository {
     private static final Logger LOGGER = Logger.getLogger(PostRepository.class.getName());
 
     private final Mutiny.SessionFactory sessionFactory;
+
+    public PostRepository(Mutiny.SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
 
     public Uni<List<Post>> findAll() {
         CriteriaBuilder cb = this.sessionFactory.getCriteriaBuilder();
@@ -74,7 +76,7 @@ public class PostRepository {
     }
 
     public Uni<Post[]> saveAll(List<Post> data) {
-        Post[] array = data.toArray(new Post[0]);
+        var array = data.toArray(new Post[0]);
         return this.sessionFactory.withSession(session -> {
             session.persistAll(array);
             session.flush();

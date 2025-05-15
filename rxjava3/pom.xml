@@ -18,16 +18,16 @@
         <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
 
-        <vertx.version>4.5.13</vertx.version>
+        <vertx.version>5.0.0</vertx.version>
         <junit-jupiter.version>5.12.0</junit-jupiter.version>
-
-        <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <jackson.version>2.18.3</jackson.version>
         <assertj.version>3.27.3</assertj.version>
         <slf4j.version>2.0.17</slf4j.version>
         <logback.version>1.5.17</logback.version>
         <log4j.version>2.24.3</log4j.version>
-        <lombok.version>1.18.36</lombok.version>
+
+        <main.verticle>com.example.demo.MainVerticle</main.verticle>
+        <launcher.class>io.vertx.launcher.application.VertxApplication</launcher.class>
     </properties>
 
     <dependencyManagement>
@@ -52,17 +52,7 @@
     <dependencies>
         <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>vertx-web-validation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-            <version>${jackson.version}</version>
+            <artifactId>vertx-launcher-application</artifactId>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
@@ -79,24 +69,18 @@
         <!-- see: https://github.com/eclipse-vertx/vertx-sql-client/issues/1059 -->
         <dependency>
             <groupId>com.ongres.scram</groupId>
-            <artifactId>client</artifactId>
-            <version>2.1</version>
-            <optional>true</optional>
+            <artifactId>scram-client</artifactId>
+            <version>3.1</version>
         </dependency>
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-web-openapi</artifactId>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-json-schema</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <optional>true</optional>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
@@ -183,7 +167,7 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
-                                        <Main-Class>io.vertx.core.Launcher</Main-Class>
+                                        <Main-Class>${launcher.class}</Main-Class>
                                         <Main-Verticle>${main.verticle}</Main-Verticle>
                                     </manifestEntries>
                                 </transformer>
@@ -207,15 +191,12 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>${exec-maven-plugin.version}</version>
                 <configuration>
-                    <mainClass>io.vertx.core.Launcher</mainClass>
+                    <mainClass>${launcher.class}</mainClass>
                     <arguments>
-                        <argument>run</argument>
                         <argument>${main.verticle}</argument>
                     </arguments>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
-
 </project>

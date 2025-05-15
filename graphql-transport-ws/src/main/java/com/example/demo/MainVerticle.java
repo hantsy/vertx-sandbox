@@ -16,27 +16,26 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import graphql.GraphQL;
 import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.PropertyDataFetcher;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
+import io.vertx.core.Future;
+import io.vertx.core.VerticleBase;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.graphql.GraphiQLHandler;
 import io.vertx.ext.web.handler.graphql.GraphiQLHandlerOptions;
 import io.vertx.ext.web.handler.graphql.UploadScalar;
-import io.vertx.ext.web.handler.graphql.schema.VertxPropertyDataFetcher;
 import io.vertx.ext.web.handler.graphql.ws.GraphQLWSHandler;
 import io.vertx.ext.web.handler.graphql.ws.GraphQLWSOptions;
+import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import lombok.SneakyThrows;
@@ -49,7 +48,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.logging.LogManager;
 
 import static graphql.schema.idl.RuntimeWiring.newRuntimeWiring;
@@ -57,7 +55,7 @@ import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 @Slf4j
-public class MainVerticle extends AbstractVerticle {
+public class MainVerticle extends VerticleBase {
 
     static {
         log.info("Customizing the built-in jackson ObjectMapper...");
@@ -71,7 +69,7 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     @Override
-    public void start(Promise<Void> startPromise) throws Exception {
+    public Future<?> start() throws Exception {
         log.info("Starting HTTP server...");
         //setupLogging();
 
@@ -107,21 +105,14 @@ public class MainVerticle extends AbstractVerticle {
         HttpServerOptions httpServerOptions = new HttpServerOptions()
                 .addWebSocketSubProtocol("graphql-transport-ws");
         // Create the HTTP server
-        vertx.createHttpServer(httpServerOptions)
+        return vertx.createHttpServer(httpServerOptions)
                 // Handle every request using the router
                 .requestHandler(router)
                 // Start listening
                 .listen(8080)
                 // Print the port
-                .onSuccess(server -> {
-                    startPromise.complete();
-                    log.info("HTTP server started on port " + server.actualPort());
-                })
-                .onFailure(event -> {
-                    startPromise.fail(event);
-                    log.info("Failed to start HTTP server:" + event.getMessage());
-                })
-        ;
+                .onSuccess(server -> log.info("HTTP server started on port {}", server.actualPort()))
+                .onFailure(event -> log.info("Failed to start HTTP server: {}", event.getMessage()));
     }
 
     //create routes
@@ -131,34 +122,36 @@ public class MainVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
 
         //enable cors
-        router.route().handler(CorsHandler.create("*").allowedMethod(GET).allowedMethod(POST));
+        router.route().handler(CorsHandler.create().allowedMethod(GET).allowedMethod(POST));
 
         // register BodyHandler globally.
         router.route().handler(BodyHandler.create());
 
         // register `transport-ws` protocol handler
-        GraphQLWSOptions apolloWSOptions = new GraphQLWSOptions()
-                .setConnectionInitWaitTimeout(5000L);
-        router.route("/graphql").handler(
-                GraphQLWSHandler.create(graphQL, apolloWSOptions)
-                        .connectionInitHandler(connectionInitEvent -> {
-                            JsonObject payload = connectionInitEvent.message().message().getJsonObject("payload");
-                            log.info("connection init event: {}", payload);
-                            if (payload != null && payload.containsKey("rejectMessage")) {
-                                connectionInitEvent.fail(payload.getString("rejectMessage"));
-                                return;
-                            }
-                            connectionInitEvent.complete(payload);
-                        })
-                        .beforeExecute(event -> event.builder()
-                                .dataLoaderRegistry(buildDataLoaderRegistry(dataLoaders))
-                                .build()
-                        )
-        );
+        GraphQLWSOptions apolloWSOptions = new GraphQLWSOptions().setConnectionInitWaitTimeout(5000L);
+        GraphQLWSHandler graphQLWSHandler = GraphQLWSHandler.builder(graphQL)
+                .onConnectionInit(connectionInitEvent -> {
+                    JsonObject payload = connectionInitEvent.message().message().getJsonObject("payload");
+                    log.info("connection init event: {}", payload);
+                    if (payload != null && payload.containsKey("rejectMessage")) {
+                        connectionInitEvent.fail(payload.getString("rejectMessage"));
+                        return;
+                    }
+                    connectionInitEvent.complete(payload);
+                })
+                .beforeExecute(event -> event.builder()
+                        .dataLoaderRegistry(buildDataLoaderRegistry(dataLoaders))
+                        .build()
+                )
+                .with(apolloWSOptions)
+                .build();
+
+        router.route("/graphql").handler(graphQLWSHandler);
+
         // register `/graphiql` endpoint for the GraphiQL UI
-        GraphiQLHandlerOptions graphiqlOptions = new GraphiQLHandlerOptions()
-                .setEnabled(true);
-        router.get("/graphiql/*").handler(GraphiQLHandler.create(graphiqlOptions));
+        GraphiQLHandlerOptions graphiqlOptions = new GraphiQLHandlerOptions().setEnabled(true);
+        GraphiQLHandler graphiQLHandler = GraphiQLHandler.create(vertx, graphiqlOptions);
+        router.get("/graphiql/*").subRouter(graphiQLHandler.router());
 
         router.get("/hello").handler(rc -> rc.response().end("Hello from my route"));
 
@@ -253,7 +246,7 @@ public class MainVerticle extends AbstractVerticle {
                 ))
                 //.typeResolver()
                 //.fieldVisibility()
-                .defaultDataFetcher(environment -> VertxPropertyDataFetcher.create(environment.getFieldDefinition().getName()))
+                .defaultDataFetcher(environment -> PropertyDataFetcher.fetching(environment.getFieldDefinition().getName()))
                 .build();
     }
 
@@ -269,7 +262,11 @@ public class MainVerticle extends AbstractVerticle {
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
         // Create the pool from the data object
-        return Pool.pool(vertx, connectOptions, poolOptions);
+        return PgBuilder.pool()
+                .with(poolOptions)
+                .connectingTo(connectOptions)
+                .using(vertx)
+                .build();
     }
 
     /**

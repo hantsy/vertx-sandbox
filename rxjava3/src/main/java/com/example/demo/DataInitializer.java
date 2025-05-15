@@ -1,20 +1,17 @@
 package com.example.demo;
 
-import io.vertx.rxjava3.pgclient.PgPool;
-import io.vertx.rxjava3.sqlclient.Pool;
-import io.vertx.rxjava3.sqlclient.SqlConnection;
-import io.vertx.rxjava3.sqlclient.Tuple;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
+import io.vertx.rxjava3.sqlclient.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-@Slf4j
 public class DataInitializer {
+    private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
 
-    private Pool client;
+    private final Pool client;
 
     public DataInitializer(Pool client) {
         this.client = client;
@@ -24,7 +21,6 @@ public class DataInitializer {
         return new DataInitializer(client);
     }
 
-    @SneakyThrows
     public void run() {
         log.info("Data initialization is starting...");
 
@@ -40,17 +36,22 @@ public class DataInitializer {
                     .toMaybe()
             )
             .flatMapSingle(d -> client.query("SELECT * FROM posts").rxExecute())
-            .doOnComplete(latch::countDown)
+            .doOnTerminate(latch::countDown)
             .subscribe(
-                (data) -> {
-                    data.forEach(row -> {
-                        log.info("saved row: {}", row.toJson());
-                    });
+                (RowSet<Row> data) -> {
+                    data.forEach(row -> log.info("saved row: {}", row.toJson()));
+                    log.debug("Data initialization is completed successfully...");
                 },
-                err -> log.warn("failed to initializing: {}", err.getMessage())
+                err -> {
+                    log.warn("failed to initializing: {}", err.getMessage());
+                }
             );
 
-        latch.await(500, TimeUnit.MILLISECONDS);
-        log.info("Data initialization is done...");
+        try {
+            latch.await(1000, TimeUnit.MILLISECONDS);
+            log.info("Data initialization is done...");
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

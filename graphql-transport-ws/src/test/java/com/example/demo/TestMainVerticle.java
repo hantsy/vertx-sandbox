@@ -1,7 +1,9 @@
 package com.example.demo;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.http.*;
+import io.vertx.core.http.WebSocketClient;
+import io.vertx.core.http.WebSocketClientOptions;
+import io.vertx.core.http.WebSocketConnectOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
@@ -19,19 +21,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(VertxExtension.class)
 @Slf4j
 public class TestMainVerticle {
-
     WebSocketClient client;
 
     @BeforeEach
     void setup(Vertx vertx, VertxTestContext testContext) {
-        vertx.deployVerticle(new MainVerticle(), testContext.succeeding(id -> testContext.completeNow()));
-        // switch to WebSocketClient to handle WebSocket
-        var options = new WebSocketClientOptions()
-                .setConnectTimeout(7200)
-                .setDefaultHost("localhost")
-                .setDefaultPort(8080);
+        vertx.deployVerticle(new MainVerticle())
+                .onComplete(testContext.succeeding(id -> {
+                    log.debug("Deployed: {}", id);
+                    // switch to WebSocketClient to handle WebSocket
+                    var options = new WebSocketClientOptions()
+                            .setConnectTimeout(7200)
+                            .setDefaultHost("localhost")
+                            .setDefaultPort(8080);
 
-        client = vertx.createWebSocketClient(options);
+                    client = vertx.createWebSocketClient(options);
+                    testContext.completeNow();
+                }));
+
     }
 
     @Test
@@ -42,13 +48,13 @@ public class TestMainVerticle {
                 .addSubProtocol("graphql-transport-ws")
                 .setURI("/graphql");
         client.connect(connectOptions)
-                .onSuccess(webSocket -> {
+                .onSuccess(socket -> {
 
-                    webSocket.closeHandler(v -> log.info("websocket is being closed"));
-                    webSocket.endHandler(v -> log.info("websocket is being ended"));
-                    webSocket.exceptionHandler(e -> log.info("catching websocket exception: {}", e.getMessage()));
+                    socket.closeHandler(v -> log.info("websocket is being closed"));
+                    socket.endHandler(v -> log.info("websocket is being ended"));
+                    socket.exceptionHandler(e -> log.info("catching websocket exception: {}", e.getMessage()));
 
-                    webSocket.textMessageHandler(text -> {
+                    socket.textMessageHandler(text -> {
                         log.info("handling websocket message: {}", text);
                         JsonObject obj = new JsonObject(text);
                         String type = obj.getString("type");
@@ -80,8 +86,8 @@ public class TestMainVerticle {
                             )
                             .put("type", "subscribe")
                             .put("id", "1");
-                    webSocket.write(messageInit.toBuffer());
-                    webSocket.write(createPostData.toBuffer());
+                    socket.write(messageInit.toBuffer());
+                    socket.write(createPostData.toBuffer());
 
                     testContext.completeNow();
                 })
@@ -91,7 +97,7 @@ public class TestMainVerticle {
                 });
 
         latch.await(5000, TimeUnit.MILLISECONDS);
-        assertThat(createdPostReplay.size()).isEqualTo(1);
-        assertThat(createdPostReplay.get(0)).isNotNull();
+        assertThat(createdPostReplay).hasSize(1);
+        assertThat(createdPostReplay.getFirst()).isNotNull();
     }
 }

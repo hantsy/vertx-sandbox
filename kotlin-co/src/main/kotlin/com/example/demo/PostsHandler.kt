@@ -2,7 +2,7 @@ package com.example.demo
 
 import io.vertx.core.json.Json
 import io.vertx.ext.web.RoutingContext
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
@@ -20,15 +20,14 @@ class PostsHandler(private val posts: PostRepository) {
 //        var offset = params.get("offset") == null ? 0 : Integer.parseInt(params.get("offset"));
 //        LOGGER.log(Level.INFO, " find by keyword: q={0}, limit={1}, offset={2}", new Object[]{q, limit, offset});
         val data = posts.findAll()
-        rc.response().end(Json.encode(data)).await()
+        rc.response().end(Json.encode(data)).coAwait()
     }
 
     suspend fun getById(rc: RoutingContext) {
-        val params = rc.pathParams()
-        val id = params["id"]
+        val id = rc.pathParam("id") ?: throw IllegalArgumentException("Path param id is required")
         val uuid = UUID.fromString(id)
         val data = posts.findById(uuid)
-        rc.response().end(Json.encode(data)).await()
+        rc.response().end(Json.encode(data)).coAwait()
     }
 
     suspend fun save(rc: RoutingContext) {
@@ -41,38 +40,30 @@ class PostsHandler(private val posts: PostRepository) {
             .putHeader("Location", "/posts/$savedId")
             .setStatusCode(201)
             .end()
-            .await()
-
+            .coAwait()
     }
 
     suspend fun update(rc: RoutingContext) {
-        val params = rc.pathParams()
-        val id = params["id"]
+        val id = rc.pathParam("id") ?: throw IllegalArgumentException("Path param id is required")
         val uuid = UUID.fromString(id)
         val body = rc.body().asJsonObject()
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", arrayOf(id, body))
-        var (title, content) = body.mapTo(UpdatePostCommand::class.java)
-
-        var existing: Post? = posts.findById(uuid)
-        if (existing != null) {
-            val data: Post = existing.apply {
-                title = title
-                content = content
-            }
-            posts.update(data)
-            rc.response().setStatusCode(204).end().await()
-        } else {
-            rc.fail(404, PostNotFoundException(uuid))
+        val (title, content) = body.mapTo(UpdatePostCommand::class.java)
+        val existing: Post = posts.findById(uuid)
+        val data: Post = existing.apply {
+            this.title = title
+            this.content = content
         }
+        posts.update(data)
+        rc.response().setStatusCode(204).end().coAwait()
     }
 
     suspend fun delete(rc: RoutingContext) {
-        val params = rc.pathParams()
-        val id = params["id"]
+        val id = rc.pathParam("id") ?: throw IllegalArgumentException("Path param id is required")
         val uuid = UUID.fromString(id)
-        val existing = posts.findById(uuid)
-        if (existing != null) {
-            rc.response().setStatusCode(204).end().await()
+        val existing = posts.deleteById(uuid)
+        if (existing > 0) {
+            rc.response().setStatusCode(204).end().coAwait()
         } else {
             rc.fail(404, PostNotFoundException(uuid))
         }

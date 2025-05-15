@@ -1,7 +1,6 @@
 package com.example.demo
 
-import io.vertx.kotlin.coroutines.await
-import io.vertx.pgclient.PgPool
+import io.vertx.kotlin.coroutines.coAwait
 import io.vertx.sqlclient.Pool
 import io.vertx.sqlclient.SqlConnection
 import io.vertx.sqlclient.Tuple
@@ -29,7 +28,7 @@ class DataInitializer(private val client: Pool) {
                     }
 
             }
-            .await()
+            .coAwait()
 
         result.forEach { println(it.toJson()) }
         LOGGER.info("Data initialization is done...")

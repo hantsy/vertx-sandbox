@@ -2,7 +2,6 @@ package com.example.demo;
 
 import io.vertx.core.json.Json;
 import io.vertx.mutiny.ext.web.RoutingContext;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -10,11 +9,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 @Component
-@RequiredArgsConstructor
 class PostsHandler {
     private static final Logger LOGGER = Logger.getLogger(PostsHandler.class.getSimpleName());
 
     private final PostRepository posts;
+
+    PostsHandler(PostRepository posts) {
+        this.posts = posts;
+    }
 
 
     public void all(RoutingContext rc) {
@@ -47,15 +49,12 @@ class PostsHandler {
 
     public void save(RoutingContext rc) {
         //rc.getBodyAsJson().mapTo(PostForm.class)
-        var body = rc.getBodyAsJson();
+        var body = rc.body().asJsonObject();
         LOGGER.log(Level.INFO, "request body: {0}", body);
         var form = body.mapTo(CreatePostCommand.class);
+
         this.posts
-            .save(Post.builder()
-                .title(form.getTitle())
-                .content(form.getContent())
-                .build()
-            )
+            .save(Post.of(form.title(), form.content()))
             .subscribe()
             .with(
                 savedId -> rc.response()
@@ -69,14 +68,15 @@ class PostsHandler {
     public void update(RoutingContext rc) {
         var params = rc.pathParams();
         var id = params.get("id");
-        var body = rc.getBodyAsJson();
+        var body = rc.body().asJsonObject();
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", new Object[]{id, body});
         var form = body.mapTo(CreatePostCommand.class);
+
         this.posts.findById(UUID.fromString(id))
             .flatMap(
                 post -> {
-                    post.setTitle(form.getTitle());
-                    post.setContent(form.getContent());
+                    post.setTitle(form.title());
+                    post.setContent(form.content());
 
                     return this.posts.save(post);
                 }
@@ -91,8 +91,8 @@ class PostsHandler {
     public void delete(RoutingContext rc) {
         var params = rc.pathParams();
         var id = params.get("id");
-
         var uuid = UUID.fromString(id);
+
         this.posts.findById(uuid)
             .flatMap(
                 post -> this.posts.deleteById(uuid)

@@ -3,13 +3,14 @@ package com.example.demo
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import io.vertx.core.AbstractVerticle
+import io.vertx.core.Future
+import io.vertx.core.VerticleBase
 import io.vertx.core.Promise
 import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
+import io.vertx.pgclient.PgBuilder
 import io.vertx.pgclient.PgConnectOptions
-import io.vertx.pgclient.PgPool
 import io.vertx.sqlclient.Pool
 import io.vertx.sqlclient.PoolOptions
 import java.io.IOException
@@ -17,7 +18,7 @@ import java.util.logging.Level
 import java.util.logging.LogManager
 import java.util.logging.Logger
 
-class MainVerticle : AbstractVerticle() {
+class MainVerticle : VerticleBase() {
     companion object {
         private val LOGGER = Logger.getLogger(MainVerticle::class.java.name)
 
@@ -44,7 +45,7 @@ class MainVerticle : AbstractVerticle() {
     }
 
     @Throws(Exception::class)
-    override fun start(startPromise: Promise<Void>) {
+    override fun start() : Future<*> {
         LOGGER.log(Level.INFO, "Starting HTTP server...")
         //setupLogging();
 
@@ -65,17 +66,11 @@ class MainVerticle : AbstractVerticle() {
         val router = routes(postHandlers)
 
         // Create the HTTP server
-        vertx.createHttpServer() // Handle every request using the router
+        return vertx.createHttpServer() // Handle every request using the router
             .requestHandler(router) // Start listening
             .listen(8888) // Print the port
-            .onSuccess {
-                startPromise.complete()
-                println("HTTP server started on port " + it.actualPort())
-            }
-            .onFailure {
-                startPromise.fail(it)
-                println("Failed to start HTTP server:" + it.message)
-            }
+            .onSuccess { println("HTTP server started on port " + it.actualPort()) }
+            .onFailure { println("Failed to start HTTP server:" + it.message) }
     }
 
     //create routes
@@ -129,6 +124,10 @@ class MainVerticle : AbstractVerticle() {
         val poolOptions = PoolOptions().setMaxSize(5)
 
         // Create the pool from the data object
-        return Pool.pool(vertx, connectOptions, poolOptions)
+        return PgBuilder.pool()
+            .with(poolOptions)
+            .connectingTo(connectOptions)
+            .using(vertx)
+            .build()
     }
 }

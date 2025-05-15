@@ -1,0 +1,34 @@
+name: graphql-http
+
+on:
+  push:
+    paths:
+      - "graphql-http/**"
+    branches:
+      - master
+  pull_request:
+    paths:
+      - "graphql-http/**"
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+          cache: 'maven'
+          
+      - name: Start up databases via Docker Compose 
+        run: |
+            docker compose up -d postgres
+            docker ps -a              
+      - name: Build graphql-http
+        run: mvn clean install --file graphql-http/pom.xml

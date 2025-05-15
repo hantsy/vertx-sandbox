@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class TestMainVerticle {
-    private final static Logger LOGGER = Logger.getLogger(TestMainVerticle.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TestMainVerticle.class.getName());
 
     @Autowired
     ApplicationContext context;

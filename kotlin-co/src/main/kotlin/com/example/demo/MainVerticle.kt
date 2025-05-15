@@ -14,6 +14,7 @@ import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.CoroutineRouterSupport
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.coAwait
+import io.vertx.pgclient.PgBuilder
 import io.vertx.pgclient.PgConnectOptions
 import io.vertx.sqlclient.Pool
 import io.vertx.sqlclient.PoolOptions
@@ -156,14 +157,12 @@ class MainVerticle : CoroutineVerticle(), CoroutineRouterSupport {
         val poolOptions = PoolOptions().setMaxSize(5)
 
         // Create the pool from the data object
-        return Pool.pool(vertx, connectOptions, poolOptions)
-//
-//      return  PgBuilder.pool()
-//            .connectingTo(connectOptions)
-//            .withConnectHandler(connectHandler)
-//            .with(poolOptions)
-//            .using(vertx)
-//            .build()
+        return PgBuilder.pool()
+            //.withConnectHandler(connectHandler)
+            .with(poolOptions)
+            .connectingTo(connectOptions)
+            .using(vertx)
+            .build()
     }
 
 }

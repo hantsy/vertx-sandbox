@@ -1,8 +1,9 @@
 package com.example.demo;
 
+import io.smallrye.mutiny.vertx.core.AbstractVerticle;
+import io.vertx.core.Deployable;
 import io.vertx.core.Promise;
-
-import io.vertx.core.Verticle;
+import io.vertx.core.VerticleBase;
 import io.vertx.core.spi.VerticleFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -23,13 +24,13 @@ public class SpringAwareVerticleFactory implements VerticleFactory, ApplicationC
     }
 
     @Override
-    public void createVerticle(String verticleName, ClassLoader classLoader, Promise<Callable<Verticle>> promise) {
+    public void createVerticle2(String verticleName, ClassLoader classLoader, Promise<Callable<? extends Deployable>> promise) {
         String clazz = VerticleFactory.removePrefix(verticleName);
-        promise.complete(() -> (Verticle) applicationContext.getBean(Class.forName(clazz)));
+        promise.complete(() -> (AbstractVerticle) applicationContext.getBean(Class.forName(clazz)));
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
+    public void setApplicationContext(ApplicationContext appContext) throws BeansException {
+        this.applicationContext = appContext;
     }
 }

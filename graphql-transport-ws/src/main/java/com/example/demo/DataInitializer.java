@@ -17,24 +17,21 @@ import java.util.stream.Stream;
 @Slf4j
 @RequiredArgsConstructor
 public class DataInitializer {
-
     final PostRepository posts;
     final CommentRepository comments;
     final AuthorRepository authors;
-
 
     @SneakyThrows
     public void run() {
         log.info("Data initialization is starting...");
 
         CountDownLatch latch = new CountDownLatch(1);
-
         cleanData()
                 .flatMap(it -> insertData())
                 .flatMap(it -> printData())
                 .onComplete(event -> {
-                    latch.countDown();
                     log.info("Data initialization is done.");
+                    latch.countDown();
                 });
         var await = latch.await(5000, TimeUnit.MILLISECONDS);
         log.debug("awaited result: {}", await);

@@ -17,17 +17,16 @@
         <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
 
-        <main.verticle>com.example.demo.MainVerticle</main.verticle>
-
+        <vertx.version>5.0.0</vertx.version>
         <kotlin.version>2.1.20</kotlin.version>
         <coroutines.version>1.10.1</coroutines.version>
         <jackson.version>2.18.3</jackson.version>
-
-        <vertx.version>4.5.13</vertx.version>
-
         <junit-jupiter.version>5.12.0</junit-jupiter.version>
         <assertj-core.version>3.27.3</assertj-core.version>
         <kotest.version>5.9.1</kotest.version>
+
+        <main.verticle>com.example.demo.MainVerticle</main.verticle>
+        <launcher.class>io.vertx.launcher.application.VertxApplication</launcher.class>
     </properties>
 
     <dependencyManagement>
@@ -52,7 +51,21 @@
     <dependencies>
         <dependency>
             <groupId>io.vertx</groupId>
+            <artifactId>vertx-launcher-application</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-pg-client</artifactId>
+        </dependency>
+        <!-- see: https://github.com/eclipse-vertx/vertx-sql-client/issues/1059 -->
+        <dependency>
+            <groupId>com.ongres.scram</groupId>
+            <artifactId>scram-client</artifactId>
+            <version>3.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -73,17 +86,6 @@
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
             <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-pg-client</artifactId>
-        </dependency>
-        <!-- see: https://github.com/eclipse-vertx/vertx-sql-client/issues/1059 -->
-        <dependency>
-            <groupId>com.ongres.scram</groupId>
-            <artifactId>client</artifactId>
-            <version>2.1</version>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
@@ -191,7 +193,7 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
-                                        <Main-Class>io.vertx.core.Launcher</Main-Class>
+                                        <Main-Class>${launcher.class}</Main-Class>
                                         <Main-Verticle>${main.verticle}</Main-Verticle>
                                     </manifestEntries>
                                 </transformer>
@@ -215,7 +217,7 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>${exec-maven-plugin.version}</version>
                 <configuration>
-                    <mainClass>io.vertx.core.Launcher</mainClass>
+                    <mainClass>${launcher.class}</mainClass>
                     <arguments>
                         <argument>run</argument>
                         <argument>${main.verticle}</argument>

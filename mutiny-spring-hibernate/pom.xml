@@ -17,14 +17,12 @@
         <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
 
-        <vertx.version>4.5.13</vertx.version>
+        <vertx.version>5.0.0</vertx.version>
         <mutiny-vertx.version>3.18.1</mutiny-vertx.version>
-        <hibernate-reactive.version>2.4.5.Final</hibernate-reactive.version>
-        <hibernate.version>6.6.12.Final</hibernate.version>
+        <hibernate-reactive.version>3.0.0.CR2</hibernate-reactive.version>
+        <hibernate.version>7.0.0.CR2</hibernate.version>
         <junit-jupiter.version>5.12.0</junit-jupiter.version>
         <spring-boot.version>3.4.4</spring-boot.version>
-
-        <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <assertj-core.version>3.27.3</assertj-core.version>
     </properties>
 
@@ -59,12 +57,16 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
         </dependency>
-
         <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>vertx-web-validation</artifactId>
+            <artifactId>vertx-pg-client</artifactId>
         </dependency>
-
+        <!-- see: https://github.com/eclipse-vertx/vertx-sql-client/issues/1059 -->
+        <dependency>
+            <groupId>com.ongres.scram</groupId>
+            <artifactId>scram-client</artifactId>
+            <version>3.1</version>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -74,17 +76,6 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-pg-client</artifactId>
-        </dependency>
-        <!-- see: https://github.com/eclipse-vertx/vertx-sql-client/issues/1059 -->
-        <dependency>
-            <groupId>com.ongres.scram</groupId>
-            <artifactId>client</artifactId>
-            <version>2.1</version>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>io.smallrye.reactive</groupId>
             <artifactId>smallrye-mutiny-vertx-core</artifactId>
@@ -110,35 +101,33 @@
             <artifactId>hibernate-core</artifactId>
             <version>${hibernate.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-processor</artifactId>
+            <version>${hibernate.version}</version>
+            <optional>true</optional>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.antlr/antlr4-runtime -->
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
             <version>4.13.2</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.hibernate/hibernate-jpamodelgen -->
         <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-jpamodelgen</artifactId>
-            <version>${hibernate.version}</version>
+            <groupId>jakarta.persistence</groupId>
+            <artifactId>jakarta.persistence-api</artifactId>
+            <version>3.2.0</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/jakarta.xml.bind/jakarta.xml.bind-api -->
         <dependency>
             <groupId>jakarta.xml.bind</groupId>
             <artifactId>jakarta.xml.bind-api</artifactId>
             <version>4.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
         </dependency>
 
         <dependency>
@@ -180,6 +169,15 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <annotationProcessorPath>
+                            <groupId>org.hibernate.orm</groupId>
+                            <artifactId>hibernate-processor</artifactId>
+                            <version>${hibernate.version}</version>
+                        </annotationProcessorPath>
+                    </annotationProcessorPaths>
+                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-shade-plugin</artifactId>
