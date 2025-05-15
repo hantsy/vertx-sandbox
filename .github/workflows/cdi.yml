@@ -1,14 +1,14 @@
-name: rxjava2
+name: cdi
 
 on:
   push:
     paths:
-      - "rxjava2/**"
+      - "cdi/**"
     branches:
       - master
   pull_request:
     paths:
-      - "rxjava2/**"
+      - "cdi/**"
     types:
       - opened
       - synchronize
@@ -35,6 +35,6 @@ jobs:
       - name: Start up databases via Docker Compose 
         run: |
             docker compose up -d postgres
-            docker ps -a       
-      - name: Build rxjava2
-        run: mvn clean install --file rxjava2/pom.xml
+            docker ps -a              
+      - name: Build cdi
+        run: mvn clean install --file cdi/pom.xml 

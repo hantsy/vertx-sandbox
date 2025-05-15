@@ -1,14 +1,14 @@
-name: post-service
+name: spring
 
 on:
   push:
     paths:
-      - "post-service/**"
+      - "spring/**"
     branches:
       - master
   pull_request:
     paths:
-      - "post-service/**"
+      - "spring/**"
     types:
       - opened
       - synchronize
@@ -35,9 +35,6 @@ jobs:
       - name: Start up databases via Docker Compose 
         run: |
             docker compose up -d postgres
-            docker ps -a
-
-      - name: Build post-service
-        run: mvn clean install --file post-service/pom.xml
-
- 
+            docker ps -a      
+      - name: Build spring
+        run: mvn clean install --file spring/pom.xml

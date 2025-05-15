@@ -17,7 +17,7 @@
         <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
 
-        <vertx.version>4.5.13</vertx.version>
+        <vertx.version>5.0.0</vertx.version>
         <mutiny-vertx.version>3.18.1</mutiny-vertx.version>
         <hibernate-reactive.version>2.4.5.Final</hibernate-reactive.version>
         <hibernate.version>6.6.12.Final</hibernate.version>
@@ -25,6 +25,7 @@
         <spring-boot.version>3.4.4</spring-boot.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
+        <launcher.class>io.vertx.launcher.application.VertxApplication</launcher.class>
         <assertj-core.version>3.27.3</assertj-core.version>
     </properties>
 
@@ -55,6 +56,10 @@
     </dependencyManagement>
 
     <dependencies>
+             <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-launcher-application</artifactId>
+    </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web</artifactId>
