@@ -20,7 +20,6 @@
 
         <vertx.version>5.0.0</vertx.version>
         <junit-jupiter.version>5.12.0</junit-jupiter.version>
-
         <assertj-core.version>3.27.3</assertj-core.version>
         <jackson.version>2.18.3</jackson.version>
 
@@ -49,28 +48,26 @@
 
     <dependencies>
         <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-launcher-application</artifactId>
-    </dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-launcher-application</artifactId>
+        </dependency>
         <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-web</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-pg-client</artifactId>
-    </dependency>
-  <dependency>
-    <groupId>com.ongres.scram</groupId>
-    <artifactId>scram-client</artifactId>
-    <version>3.1</version>
-  </dependency>
-
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-web</artifactId>
+        </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web-validation</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-pg-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ongres.scram</groupId>
+            <artifactId>scram-client</artifactId>
+            <version>3.1</version>
+        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
@@ -125,8 +122,8 @@
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
-                                       <Main-Class>${launcher.class}</Main-Class>
-                    <Main-Verticle>${main.verticle}</Main-Verticle>
+                                        <Main-Class>${launcher.class}</Main-Class>
+                                        <Main-Verticle>${main.verticle}</Main-Verticle>
                                     </manifestEntries>
                                 </transformer>
                                 <transformer

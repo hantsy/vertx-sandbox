@@ -9,11 +9,10 @@ import java.util.logging.Logger;
 
 class PostsHandler {
     private static final Logger LOGGER = Logger.getLogger(PostsHandler.class.getSimpleName());
+    private final PostRepository posts;
 
-    PostRepository posts;
-
-    private PostsHandler(PostRepository _posts) {
-        this.posts = _posts;
+    private PostsHandler(PostRepository postsRepository) {
+        this.posts = postsRepository;
     }
 
     //factory method
@@ -37,13 +36,8 @@ class PostsHandler {
         var params = rc.pathParams();
         var id = params.get("id");
         this.posts.findById(UUID.fromString(id))
-            .onSuccess(
-                post -> rc.response().end(Json.encode(post))
-            )
-            .onFailure(
-                rc::fail
-            );
-
+            .onSuccess(post -> rc.response().end(Json.encode(post)))
+            .onFailure(rc::fail);
     }
 
 
@@ -52,13 +46,12 @@ class PostsHandler {
         var body = rc.body().asJsonObject();
         LOGGER.log(Level.INFO, "request body: {0}", body);
         var form = body.mapTo(CreatePostCommand.class);
-        this.posts.save(Post.of(form.getTitle(), form.getContent()))
+        this.posts.save(Post.of(form.title(), form.content()))
             .onSuccess(
                 savedId -> rc.response()
                     .putHeader("Location", "/posts/" + savedId)
                     .setStatusCode(201)
                     .end()
-
             );
     }
 
@@ -68,40 +61,30 @@ class PostsHandler {
         var body = rc.body().asJsonObject();
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", new Object[]{id, body});
         var form = body.mapTo(CreatePostCommand.class);
-        this.posts.findById(UUID.fromString(id))
+        UUID uuid = UUID.fromString(id);
+
+        this.posts.findById(uuid)
             .compose(
                 post -> {
-                    post.setTitle(form.getTitle());
-                    post.setContent(form.getContent());
-
-                    return this.posts.update(post);
+                    var toUpdated = new Post(post.id(), form.title(), form.content(), post.createdAt());
+                    return this.posts.update(toUpdated);
                 }
             )
-            .onSuccess(
-                data -> rc.response().setStatusCode(204).end()
-            )
-            .onFailure(
-                throwable -> rc.fail(404, throwable)
-            );
-
+            .onSuccess(data -> rc.response().setStatusCode(204).end())
+            .onFailure(throwable -> rc.fail(404, throwable));
     }
 
     public void delete(RoutingContext rc) {
         var params = rc.pathParams();
         var id = params.get("id");
-
         var uuid = UUID.fromString(id);
+
         this.posts.findById(uuid)
             .compose(
                 post -> this.posts.deleteById(uuid)
             )
-            .onSuccess(
-                data -> rc.response().setStatusCode(204).end()
-            )
-            .onFailure(
-                throwable -> rc.fail(404, throwable)
-            );
-
+            .onSuccess(data -> rc.response().setStatusCode(204).end())
+            .onFailure(throwable -> rc.fail(404, throwable));
     }
 
 }

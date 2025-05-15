@@ -3,11 +3,14 @@ package com.example.demo;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
+import io.vertx.core.Future;
+import io.vertx.core.MultiMap;
+import io.vertx.core.VerticleBase;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -18,7 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-public class MainVerticle extends AbstractVerticle {
+public class MainVerticle extends VerticleBase {
 
     private final static Logger LOGGER = Logger.getLogger(MainVerticle.class.getName());
 
@@ -34,7 +37,7 @@ public class MainVerticle extends AbstractVerticle {
     }
 
     @Override
-    public void start(Promise<Void> startPromise) throws Exception {
+    public Future<?> start() throws Exception {
         LOGGER.log(Level.INFO, "Starting HTTP server...");
         //setupLogging();
 
@@ -55,21 +58,19 @@ public class MainVerticle extends AbstractVerticle {
         var router = routes(postHandlers);
 
         // Create the HTTP server
-        vertx.createHttpServer()
+        return vertx.createHttpServer()
             // Handle every request using the router
             .requestHandler(router)
             // Start listening
             .listen(8888)
             // Print the port
-            .onSuccess(server -> {
-                startPromise.complete();
-                System.out.println("HTTP server started on port " + server.actualPort());
-            })
-            .onFailure(event -> {
-                startPromise.fail(event);
-                System.out.println("Failed to start HTTP server:" + event.getMessage());
-            })
-        ;
+            .onSuccess(server -> LOGGER.log(Level.INFO, "HTTP server started on port:" + server.actualPort()))
+            .onFailure(event -> LOGGER.log(Level.INFO, "Failed to start HTTP server:" + event.getMessage()));
+    }
+
+    @Override
+    public Future<?> stop() throws Exception {
+        return super.stop();
     }
 
     //create routes
@@ -92,8 +93,21 @@ public class MainVerticle extends AbstractVerticle {
         router.put("/posts/:id").consumes("application/json").handler(BodyHandler.create()).handler(handlers::update);
         router.delete("/posts/:id").handler(handlers::delete);
 
-        router.get("/hello").handler(rc -> rc.response().end("Hello from my route"));
-
+        // Mount the handler for all incoming requests at every path and HTTP method
+        router.get("/hello").handler(context -> {
+            // Get the address of the request
+            String address = context.request().connection().remoteAddress().toString();
+            // Get the query parameter "name"
+            MultiMap queryParams = context.queryParams();
+            String name = queryParams.contains("name") ? queryParams.get("name") : "unknown";
+            // Write a json response
+            context.json(
+                new JsonObject()
+                    .put("name", name)
+                    .put("address", address)
+                    .put("message", "Hello " + name + " connected from " + address)
+            );
+        });
         return router;
     }
 
@@ -104,14 +118,19 @@ public class MainVerticle extends AbstractVerticle {
             .setDatabase("blogdb")
             .setUser("user")
             .setPassword("password");
+//            .setSslOptions(new ClientSSLOptions()
+//                .setTrustOptions(new PemTrustOptions().addCertPath(pathToCert))
+//            );
 
         // Pool Options
         PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
         // Create the pool from the data object
-        Pool pool = Pool.pool(vertx, connectOptions, poolOptions);
-
-        return pool;
+        return PgBuilder.pool()
+            .with(poolOptions)
+            .connectingTo(connectOptions)
+            .using(vertx)
+            .build();
     }
 
     /**

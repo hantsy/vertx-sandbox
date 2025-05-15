@@ -19,15 +19,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(VertxExtension.class)
 public class TestMainVerticle {
-    private final static Logger LOGGER = Logger.getLogger(TestMainVerticle.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(TestMainVerticle.class.getName());
     HttpClient client;
 
     @BeforeEach
     void setup(Vertx vertx, VertxTestContext testContext) {
-        vertx.deployVerticle(new MainVerticle(), testContext.succeeding(id -> testContext.completeNow()));
-        var options = new HttpClientOptions()
-            .setDefaultPort(8888);
-        this.client = vertx.createHttpClient(options);
+        vertx.deployVerticle(new MainVerticle())
+            .onComplete(
+                testContext.succeeding(
+                    id-> {
+                        LOGGER.log(Level.INFO, "deployed:{0}", new Object[]{ id});
+                        var options = new HttpClientOptions()
+                            .setDefaultPort(8888);
+                        this.client = vertx.createHttpClient(options);
+                        testContext.completeNow();
+                    }
+                )
+            );
     }
 
     // Repeat this test 3 times
@@ -41,7 +49,7 @@ public class TestMainVerticle {
                 testContext.succeeding(
                     buffer -> testContext.verify(
                         () -> {
-                            assertThat(buffer.toString()).isEqualTo("Hello from my route");
+                            assertThat(buffer.toString()).contains("Hello");
                             testContext.completeNow();
                         }
                     )

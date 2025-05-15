@@ -1,11 +1,12 @@
 package com.example.demo;
 
 
-import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.StreamSupport;
@@ -14,7 +15,7 @@ public class DataInitializer {
 
     private final static Logger LOGGER = Logger.getLogger(DataInitializer.class.getName());
 
-    private Pool client;
+    private final Pool client;
 
     public DataInitializer(Pool client) {
         this.client = client;
@@ -24,12 +25,13 @@ public class DataInitializer {
         return new DataInitializer(client);
     }
 
-    public void run() {
+    public void run() throws InterruptedException {
         LOGGER.info("Data initialization is starting...");
 
         Tuple first = Tuple.of("Hello Quarkus", "My first post of Quarkus");
         Tuple second = Tuple.of("Hello Again, Quarkus", "My second post of Quarkus");
 
+        CountDownLatch latch = new CountDownLatch(1);
         client
             .withTransaction(
                 conn -> conn.query("DELETE FROM posts").execute()
@@ -38,17 +40,25 @@ public class DataInitializer {
                     )
                     .flatMap(r -> conn.query("SELECT * FROM posts").execute())
             )
-            .onSuccess(data -> StreamSupport.stream(data.spliterator(), true)
-                .forEach(row -> LOGGER.log(Level.INFO, "saved data:{0}", new Object[]{row.toJson()}))
+            .onSuccess(data -> {
+                    StreamSupport.stream(data.spliterator(), true)
+                        .forEach(row -> LOGGER.log(Level.INFO, "saved data:{0}", new Object[]{row.toJson()}));
+                    LOGGER.info("Data initialization is done sucessfully...");
+                    latch.countDown();
+                }
             )
             .onComplete(
-                r -> {
-                    //client.close(); will block the application.
-                    LOGGER.info("Data initialization is done...");
+                data -> {
+                    LOGGER.info("Data initialization is completed...");
                 }
             )
             .onFailure(
-                throwable -> LOGGER.warning("Data initialization is failed:" + throwable.getMessage())
+                throwable -> {
+                    latch.countDown();
+                    LOGGER.warning("Data initialization is failed:" + throwable.getMessage());
+                }
             );
+
+        latch.await(5000, TimeUnit.MICROSECONDS);
     }
 }
