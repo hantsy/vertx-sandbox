@@ -21,7 +21,7 @@
         <kotlin.version>2.1.21</kotlin.version>
         <coroutines.version>1.10.1</coroutines.version>
         <jackson.version>2.19.0</jackson.version>
-        <junit-jupiter.version>5.12.0</junit-jupiter.version>
+        <junit-jupiter.version>5.12.2</junit-jupiter.version>
         <assertj-core.version>3.27.3</assertj-core.version>
         <kotest.version>5.9.1</kotest.version>
 
