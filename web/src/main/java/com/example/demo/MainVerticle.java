@@ -135,8 +135,10 @@ public class MainVerticle extends VerticleBase {
 
     /**
      * Configure logging from logging.properties file.
-     * When using custom JUL logging properties, named it to vertx-default-jul-logging.properties
+     * When using custom JUL logging properties, named it to vertx-default-jul-vertx-default-jul-logging.properties
      * or set java.util.logging.config.file system property to locate the properties file.
+     *
+     * The method load logging config manually.
      */
     private static void setupLogging() throws IOException {
         try (InputStream is = MainVerticle.class.getResourceAsStream("/logging.properties")) {
