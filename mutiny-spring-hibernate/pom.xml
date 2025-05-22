@@ -19,7 +19,7 @@
 
         <vertx.version>5.0.0</vertx.version>
         <mutiny-vertx.version>3.19.0</mutiny-vertx.version>
-        <hibernate-reactive.version>3.0.0.CR2</hibernate-reactive.version>
+        <hibernate-reactive.version>3.0.0.Final</hibernate-reactive.version>
         <hibernate.version>7.0.0.Final</hibernate.version>
         <junit-jupiter.version>5.12.2</junit-jupiter.version>
         <spring-boot.version>3.4.5</spring-boot.version>
