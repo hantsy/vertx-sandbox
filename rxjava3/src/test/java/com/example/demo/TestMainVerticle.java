@@ -47,7 +47,7 @@ public class TestMainVerticle {
         client.get("/posts")
             .rxSend()
             .subscribe(
-                response -> testContext.verify(() ->{
+                response -> testContext.verify(() -> {
                     assertThat(response.statusCode()).isEqualTo(200);
                     assertThat(response.bodyAsJsonArray().size()).isEqualTo(2);
 
@@ -75,6 +75,21 @@ public class TestMainVerticle {
                 }),
                 testContext::failNow
             );
+    }
+
+    @Test
+    void testHello(Vertx vertx, VertxTestContext testContext) {
+        client.get("/hello")
+            .rxSend()
+            .subscribe(response -> testContext.verify(() -> {
+                    var helloResponse = response.body().toString();
+                    log.info("Get response from /hello: {}", helloResponse);
+                    assertThat(helloResponse).contains("Hello");
+                    testContext.completeNow();
+                }),
+                testContext::failNow
+            );
+
     }
 
 }
