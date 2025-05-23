@@ -28,10 +28,10 @@ public class TestMainVerticle {
         RxHelper
             .deployVerticle(vertx, new MainVerticle())
             .subscribe(
-                message -> testContext.verify(() -> {
+                message -> {
                     log.info("deployed: {}", message);
                     testContext.completeNow();
-                }),
+                },
                 testContext::failNow
             );
 
@@ -81,12 +81,12 @@ public class TestMainVerticle {
     void testHello(Vertx vertx, VertxTestContext testContext) {
         client.get("/hello")
             .rxSend()
-            .subscribe(response -> testContext.verify(() -> {
+            .subscribe(response ->{
                     var helloResponse = response.body().toString();
                     log.info("Get response from /hello: {}", helloResponse);
                     assertThat(helloResponse).contains("Hello");
                     testContext.completeNow();
-                }),
+                },
                 testContext::failNow
             );
 
