@@ -36,5 +36,13 @@ jobs:
         run: |
             docker compose up -d postgres
             docker ps -a          
+        
+      - name: Test with CURL
+        run: |
+            mvn clean package exec:java -DskipTests --file rxjava3/pom.xml & 
+            sleep 10
+            echo ">>> print cURL result <<<"
+            curl http://localhost:8888/hello & 
+      
       - name: Build rxjava3
-        run: mvn clean install --file rxjava3/pom.xml
+        run: mvn clean install --file rxjava3/pom.xml      
