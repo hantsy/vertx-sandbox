@@ -28,18 +28,20 @@ public class TestMainVerticle {
         RxHelper
             .deployVerticle(vertx, new MainVerticle())
             .subscribe(
-                message -> {
+                message -> testContext.verify(() -> {
                     log.info("deployed: {}", message);
+
+                    // build RxJava3 WebClient
+                    var options = new WebClientOptions()
+                        .setDefaultHost("localhost")
+                        .setDefaultPort(8888);
+                    this.client = WebClient.create(vertx, options);
+
+                    // clean test context
                     testContext.completeNow();
-                },
+                }),
                 testContext::failNow
             );
-
-        // build RxJava3 WebClient
-        var options = new WebClientOptions()
-            .setDefaultHost("localhost")
-            .setDefaultPort(8888);
-        this.client = WebClient.create(vertx, options);
     }
 
     @Test
@@ -81,12 +83,12 @@ public class TestMainVerticle {
     void testHello(Vertx vertx, VertxTestContext testContext) {
         client.get("/hello")
             .rxSend()
-            .subscribe(response ->{
+            .subscribe(response -> testContext.verify(() -> {
                     var helloResponse = response.body().toString();
                     log.info("Get response from /hello: {}", helloResponse);
                     assertThat(helloResponse).contains("Hello");
                     testContext.completeNow();
-                },
+                }),
                 testContext::failNow
             );
 

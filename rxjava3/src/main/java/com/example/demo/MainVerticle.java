@@ -118,7 +118,7 @@ public class MainVerticle extends AbstractVerticle {
         router.delete("/posts/:id")
             .handler(handlers::delete);
 
-        router.get("/hello").handler(rc -> rc.response().rxEnd("Hello from my route"));
+        router.get("/hello").handler(rc -> rc.response().rxWrite("Hello from my route"));
 
         return router;
     }
