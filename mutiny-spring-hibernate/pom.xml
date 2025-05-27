@@ -15,7 +15,7 @@
         <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <maven-shade-plugin.version>3.6.0</maven-shade-plugin.version>
         <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
-        <exec-maven-plugin.version>3.5.0</exec-maven-plugin.version>
+        <exec-maven-plugin.version>3.5.1</exec-maven-plugin.version>
 
         <vertx.version>5.0.0</vertx.version>
         <mutiny-vertx.version>3.19.0</mutiny-vertx.version>
