@@ -21,7 +21,7 @@
         <junit-jupiter.version>5.13.1</junit-jupiter.version>
         <assertj-core.version>3.27.3</assertj-core.version>
         <jackson.version>2.19.1</jackson.version>
-        <spring-framework.version>6.2.7</spring-framework.version>
+        <spring-framework.version>6.2.8</spring-framework.version>
     </properties>
 
     <dependencyManagement>
