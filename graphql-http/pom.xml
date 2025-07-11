@@ -27,7 +27,7 @@
         <lombok.version>1.18.38</lombok.version>
         <logback.version>1.5.18</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
-        <log4j.version>2.25.0</log4j.version>
+        <log4j.version>2.25.1</log4j.version>
     </properties>
 
     <dependencyManagement>
