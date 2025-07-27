@@ -20,7 +20,7 @@
         <vertx.version>5.0.1</vertx.version>
         <mutiny-vertx.version>3.19.2</mutiny-vertx.version>
         <hibernate-reactive.version>4.0.0.Beta1</hibernate-reactive.version>
-        <hibernate.version>7.0.7.Final</hibernate.version>
+        <hibernate.version>7.0.8.Final</hibernate.version>
         <junit-jupiter.version>5.13.4</junit-jupiter.version>
         <spring-boot.version>3.5.3</spring-boot.version>
         <assertj-core.version>3.27.3</assertj-core.version>
