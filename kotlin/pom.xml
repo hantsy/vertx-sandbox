@@ -22,7 +22,7 @@
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <launcher.class>io.vertx.launcher.application.VertxApplication</launcher.class>
-        <assertj-core.version>3.27.3</assertj-core.version>
+        <assertj-core.version>3.27.4</assertj-core.version>
         <jackson.version>2.19.2</jackson.version>
     </properties>
 
