@@ -20,7 +20,7 @@
         <vertx.version>5.0.3</vertx.version>
         <kotlin.version>2.2.10</kotlin.version>
         <coroutines.version>1.10.2</coroutines.version>
-        <jackson.version>2.19.2</jackson.version>
+        <jackson.version>2.20.0</jackson.version>
         <junit-jupiter.version>5.13.4</junit-jupiter.version>
         <assertj-core.version>3.27.4</assertj-core.version>
         <kotest.version>6.0.1</kotest.version>
