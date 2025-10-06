@@ -23,7 +23,7 @@
         <hibernate.version>7.1.1.Final</hibernate.version>
         <junit-jupiter.version>5.13.4</junit-jupiter.version>
         <spring-boot.version>3.5.6</spring-boot.version>
-        <assertj-core.version>3.27.4</assertj-core.version>
+        <assertj-core.version>3.27.6</assertj-core.version>
     </properties>
 
     <dependencyManagement>
