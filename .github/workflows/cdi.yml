@@ -24,14 +24,8 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
+          cache: 'maven'
 
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-          
       - name: Start up databases via Docker Compose 
         run: |
             docker compose up -d postgres
