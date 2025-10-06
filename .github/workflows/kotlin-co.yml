@@ -1,4 +1,4 @@
-name: kotlin-co
+          cache: 'maven'name: kotlin-co
 
 on:
   push:
@@ -24,13 +24,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '21'
-
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+          cache: 'maven'
           
       - name: Start up databases via Docker Compose 
         run: |
