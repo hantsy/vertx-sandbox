@@ -20,7 +20,7 @@
         <vertx.version>5.0.5</vertx.version>
         <junit-jupiter.version>6.0.0</junit-jupiter.version>
         <assertj-core.version>3.27.6</assertj-core.version>
-        <jackson.version>2.20.0</jackson.version>
+        <jackson.version>2.20.1</jackson.version>
         <weld.version>6.0.3.Final</weld.version>
         <weld-junit5.version>5.0.3.Final</weld-junit5.version>
         <jandex.version>3.5.2</jandex.version>
