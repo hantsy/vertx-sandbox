@@ -11,7 +11,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <kotlin.version>2.2.21</kotlin.version>
+        <kotlin.version>2.3.0</kotlin.version>
 
         <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version>
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
