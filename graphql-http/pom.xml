@@ -23,7 +23,7 @@
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <launcher.class>io.vertx.launcher.application.VertxApplication</launcher.class>
         <assertj.version>3.27.6</assertj.version>
-        <jackson.version>2.20.1</jackson.version>
+        <jackson.version>2.21.0</jackson.version>
         <lombok.version>1.18.42</lombok.version>
         <logback.version>1.5.24</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
