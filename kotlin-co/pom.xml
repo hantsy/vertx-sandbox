@@ -17,7 +17,7 @@
         <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
         <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
 
-        <vertx.version>5.0.6</vertx.version>
+        <vertx.version>5.0.7</vertx.version>
         <kotlin.version>2.3.0</kotlin.version>
         <coroutines.version>1.10.2</coroutines.version>
         <jackson.version>2.20.1</jackson.version>
