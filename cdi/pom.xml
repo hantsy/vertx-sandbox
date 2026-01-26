@@ -19,7 +19,7 @@
 
         <vertx.version>5.0.7</vertx.version>
         <junit-jupiter.version>6.0.2</junit-jupiter.version>
-        <assertj-core.version>3.27.6</assertj-core.version>
+        <assertj-core.version>3.27.7</assertj-core.version>
         <jackson.version>2.20.1</jackson.version>
         <weld.version>6.0.4.Final</weld.version>
         <weld-junit5.version>5.0.3.Final</weld-junit5.version>
