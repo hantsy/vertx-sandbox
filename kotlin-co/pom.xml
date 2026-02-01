@@ -23,7 +23,7 @@
         <jackson.version>2.20.1</jackson.version>
         <junit-jupiter.version>6.0.2</junit-jupiter.version>
         <assertj-core.version>3.27.7</assertj-core.version>
-        <kotest.version>6.1.1</kotest.version>
+        <kotest.version>6.1.2</kotest.version>
 
         <main.verticle>com.example.demo.MainVerticle</main.verticle>
         <launcher.class>io.vertx.launcher.application.VertxApplication</launcher.class>
