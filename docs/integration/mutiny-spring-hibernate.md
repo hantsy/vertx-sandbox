@@ -13,7 +13,7 @@ This module is built with:
 
 - **Vert.x 5.1.3** (via `vertx-stack-depchain` BOM)
 - **Java 25** (`maven.compiler.release=25`)
-- **SmallRye Mutiny Vert.x 3.21.4** (`smallrye-mutiny-vertx-core`, `-web`, `-pg-client`)
+- **SmallRye Mutiny Vert.x 4.0.0** (`smallrye-mutiny-vertx-core`, `-web`, `-pg-client`)
 - **Hibernate Reactive 4.2.2.Final** (`hibernate-reactive-core`)
 - **Hibernate ORM 7.2.3.Final** (`hibernate-core`, `hibernate-processor`)
 - **Spring Boot 4.0.2** (via `spring-boot-dependencies` BOM)
@@ -68,6 +68,8 @@ Add the Hibernate dependencies.
     <version>${mutiny-vertx.version}</version>
 </dependency>
 ```
+
+> **Note**: In SmallRye Mutiny Vert.x 4.0.0+, the `AbstractVerticle` import is from `io.smallrye.mutiny.vertx.core.AbstractVerticle` (not `io.vertx.mutiny.core`), matching the actual source code in this module.
 
 ## persistence.xml
 

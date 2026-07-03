@@ -290,7 +290,7 @@ private Pool pgPool() {
 }
 ```
 
-Create a class to initialize some sample data.
+Create a class to initialize some sample data. In Vert.x 5, the `DataInitializer.run()` returns a `Future<Void>` instead of blocking with `CountDownLatch`, allowing proper chaining in the startup sequence.
 
 ```java
 public class DataInitializer {
@@ -307,14 +307,13 @@ public class DataInitializer {
         return new DataInitializer(client);
     }
 
-    public void run() throws InterruptedException {
+    public Future<Void> run() {
         LOGGER.info("Data initialization is starting...");
 
         Tuple first = Tuple.of("Hello Quarkus", "My first post of Quarkus");
         Tuple second = Tuple.of("Hello Again, Quarkus", "My second post of Quarkus");
 
-        CountDownLatch latch = new CountDownLatch(1);
-        client
+        return client
             .withTransaction(
                 conn -> conn.query("DELETE FROM posts").execute()
                     .flatMap(r -> conn.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)")
@@ -326,35 +325,24 @@ public class DataInitializer {
                     StreamSupport.stream(data.spliterator(), true)
                         .forEach(row -> LOGGER.log(Level.INFO, "saved data:{0}", new Object[]{row.toJson()}));
                     LOGGER.info("Data initialization is done sucessfully...");
-                    latch.countDown();
-                }
-            )
-            .onComplete(
-                data -> {
-                    LOGGER.info("Data initialization is completed...");
                 }
             )
             .onFailure(
-                throwable -> {
-                    latch.countDown();
-                    LOGGER.warning("Data initialization is failed:" + throwable.getMessage());
-                }
-            );
-
-        latch.await(5000, TimeUnit.MICROSECONDS);
+                throwable -> LOGGER.warning("Data initialization is failed:" + throwable.getMessage())
+            )
+            .mapEmpty();
     }
 }
 ```
 
 In the above codes, use the `withTransaction` method to wrap a series of database operations in a single transaction.  
 
-Let's assemble all the resources in the `MainVerticle`'s start method.
+Let's assemble all the resources in the `MainVerticle`'s start method. Since `DataInitializer.run()` now returns `Future<Void>`, we chain it with `.compose()` before starting the HTTP server.
 
 ```java
 @Override
 public Future<?> start() throws Exception {
     LOGGER.log(Level.INFO, "Starting HTTP server...");
-    //setupLogging();
 
     //Create a PgPool instance
     var pgPool = pgPool();
@@ -367,16 +355,17 @@ public Future<?> start() throws Exception {
 
     // Initializing the sample data
     var initializer = DataInitializer.create(pgPool);
-    initializer.run();
 
     // Configure routes
     var router = routes(postHandlers);
 
     // Create the HTTP server
-    return vertx.createHttpServer()
-        // Handle every request using the router
-        .requestHandler(router)
-        ...
+    return initializer.run()
+        .compose(v -> vertx.createHttpServer()
+            // Handle every request using the router
+            .requestHandler(router)
+            ...
+        );
 }
 ```
 

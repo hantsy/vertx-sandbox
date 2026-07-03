@@ -231,7 +231,7 @@ class PostsHandler {
 
 In the `subscribe` method, use the RxJava 3 specific `RoutingContext` to send response.
 
-Refactor the `DataInitializer` to use the RxJava 3 API bindings.
+Refactor the `DataInitializer` to use the RxJava 3 API bindings. In Vert.x 5, it returns a `Completable` instead of blocking with `CountDownLatch`, allowing seamless chaining without blocking the event loop.
 
 ```java
 @Slf4j
@@ -248,38 +248,22 @@ public class DataInitializer {
         return new DataInitializer(client);
     }
 
-    public void run() {
+    public Completable run() {
         log.info("Data initialization is starting...");
 
         Tuple first = Tuple.of("Hello Vertx", "My first post of Vertx");
         Tuple second = Tuple.of("Hello Again, Vertx", "My second post of Vertx");
 
-        var latch = new CountDownLatch(1);
-
-        client
+        return client
             .rxWithTransaction(
                 (SqlConnection tx) -> tx.query("DELETE FROM posts").rxExecute()
                     .flatMap(result -> tx.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)").rxExecuteBatch(List.of(first, second)))
                     .toMaybe()
             )
             .flatMapSingle(d -> client.query("SELECT * FROM posts").rxExecute())
-            .doOnTerminate(latch::countDown)
-            .subscribe(
-                (RowSet<Row> data) -> {
-                    data.forEach(row -> log.info("saved row: {}", row.toJson()));
-                    log.debug("Data initialization is completed successfully...");
-                },
-                err -> {
-                    log.warn("failed to initializing: {}", err.getMessage());
-                }
-            );
-
-        try {
-            latch.await(1000, TimeUnit.MILLISECONDS);
-            log.info("Data initialization is done...");
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+            .doOnSuccess(data -> data.forEach(row -> log.info("saved row: {}", row.toJson())))
+            .doOnError(err -> log.warn("failed to initializing: {}", err.getMessage()))
+            .ignoreElement();
     }
 }
 
@@ -287,7 +271,7 @@ public class DataInitializer {
 
 
 
-The complete codes of the `rxStart` method in the `MainVerticle` class.
+The complete codes of the `rxStart` method in the `MainVerticle` class. Since `DataInitializer.run()` returns a `Completable`, it can be chained via `.andThen()` before starting the HTTP server.
 
 ```java
 private Pool pgPool() {
@@ -324,15 +308,16 @@ public Completable rxStart() {
 
     // Initializing the sample data
     var initializer = DataInitializer.create(pgPool);
-    initializer.run();
 
     // Configure routes
     var router = routes(postHandlers);
 
     // Create the HTTP server and return the future
-    return vertx.createHttpServer()
-        .requestHandler(router)
-        .rxListen(8888)
+    return initializer.run()
+        .andThen(vertx.createHttpServer()
+            .requestHandler(router)
+            .rxListen(8888)
+        )
         .doOnSuccess(server -> {
             log.info("HTTP server started on port " + server.actualPort());
         })

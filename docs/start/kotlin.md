@@ -74,9 +74,8 @@ class MainVerticle : VerticleBase() {
     }
 
     @Throws(Exception::class)
-    override fun start(): Future<*> {
+    override fun start() : Future<*> {
         LOGGER.log(Level.INFO, "Starting HTTP server...")
-        //setupLogging();
 
         //Create a PgPool instance
         val pgPool = pgPool()
@@ -89,17 +88,19 @@ class MainVerticle : VerticleBase() {
 
         // Initializing the sample data
         val initializer = DataInitializer(pgPool)
-        initializer.run()
 
         // Configure routes
         val router = routes(postHandlers)
 
         // Create the HTTP server
-        return vertx.createHttpServer() // Handle every request using the router
-            .requestHandler(router) // Start listening
-            .listen(8888) // Print the port
-            .onSuccess { println("HTTP server started on port " + it.actualPort()) }
-            .onFailure { println("Failed to start HTTP server:" + it.message) }
+        return initializer.run()
+            .compose {
+                vertx.createHttpServer() // Handle every request using the router
+                    .requestHandler(router) // Start listening
+                    .listen(8888) // Print the port
+                    .onSuccess { println("HTTP server started on port " + it.actualPort()) }
+                    .onFailure { println("Failed to start HTTP server:" + it.message) }
+            }
     }
 
     //create routes
@@ -338,16 +339,16 @@ data class CreatePostCommand(
 )
 ```
 
-The `DataIntializer` is still used to insert some sample data at the application startup.
+The `DataIntializer` is used to insert some sample data at the application startup. In Vert.x 5, it returns `Future<Void>` to allow chaining in the startup sequence without blocking.
 
 ```kotlin
 class DataInitializer(private val client: Pool) {
 
-    fun run() {
+    fun run(): Future<Void> {
         LOGGER.info("Data initialization is starting...")
         val first = Tuple.of("Hello Quarkus", "My first post of Quarkus")
         val second = Tuple.of("Hello Again, Quarkus", "My second post of Quarkus")
-        client
+        return client
             .withTransaction { conn: SqlConnection ->
                 conn.query("DELETE FROM posts").execute()
                     .flatMap {
@@ -365,10 +366,10 @@ class DataInitializer(private val client: Pool) {
                     }
             }
             .onComplete {
-                //client.close(); will block the application.
-                LOGGER.info("Data initialization is done...")
+                LOGGER.info("Data initialization is completed...")
             }
             .onFailure { LOGGER.warning("Data initialization is failed:" + it.message) }
+            .mapEmpty()
     }
 
     companion object {
