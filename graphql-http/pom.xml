@@ -25,7 +25,7 @@
         <assertj.version>3.27.7</assertj.version>
         <jackson.version>2.22.0</jackson.version>
         <lombok.version>1.18.42</lombok.version>
-        <logback.version>1.5.27</logback.version>
+        <logback.version>1.5.33</logback.version>
         <slf4j.version>2.0.17</slf4j.version>
         <log4j.version>2.25.3</log4j.version>
     </properties>
@@ -82,7 +82,7 @@
         <dependency>
             <groupId>com.ongres.scram</groupId>
             <artifactId>scram-client</artifactId>
-            <version>3.3</version>
+            <version>3.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
