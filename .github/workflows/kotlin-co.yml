@@ -1,4 +1,4 @@
-          cache: 'maven'name: kotlin-co
+name: kotlin-co
 
 on:
   push:
