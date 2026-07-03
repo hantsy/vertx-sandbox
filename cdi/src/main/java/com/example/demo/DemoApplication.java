@@ -3,6 +3,7 @@ package com.example.demo;
 import io.vertx.core.Vertx;
 import io.vertx.core.spi.VerticleFactory;
 import org.jboss.weld.environment.se.Weld;
+import org.jboss.weld.environment.se.WeldContainer;
 
 import java.util.logging.Logger;
 
@@ -12,7 +13,7 @@ public class DemoApplication {
 
     public static void main(String[] args) {
         var weld = new Weld();
-        var container = weld.initialize();
+        WeldContainer container = weld.initialize();
         Vertx vertx = container.select(Vertx.class).get();
         VerticleFactory factory = container.select(VerticleFactory.class).get();
 
