@@ -59,8 +59,8 @@ public class MainVerticle extends AbstractVerticle {
                 .doOnError(throwable -> {
                     log.error("Failed to start HTTP server:" + throwable.getMessage());
                 })
-                .ignoreElement())
-            ;
+                .ignoreElement()
+            );
     }
 
     @Override

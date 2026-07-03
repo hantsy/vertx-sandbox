@@ -24,11 +24,11 @@ public class TestMainVerticle {
     void setUp(Vertx vertx, VertxTestContext testContext) {
         RxHelper.deployVerticle(vertx, new MainVerticle())
             .subscribe(
-                id -> {
+                id ->  testContext.verify(() -> {
                     LOGGER.info("deployed: " + id);
                     this.client = WebClient.create(vertx);
                     testContext.completeNow();
-                },
+                }),
                 testContext::failNow
             );
     }
