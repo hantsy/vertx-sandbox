@@ -1,21 +1,18 @@
 package com.example.demo
 
+import io.vertx.core.Future
 import io.vertx.sqlclient.*
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.stream.StreamSupport
 
 class DataInitializer(private val client: Pool) {
 
-    fun run() {
+    fun run(): Future<Void> {
         LOGGER.info("Data initialization is starting...")
         val first = Tuple.of("Hello Quarkus", "My first post of Quarkus")
         val second = Tuple.of("Hello Again, Quarkus", "My second post of Quarkus")
-
-        val latch = CountDownLatch(1)
-        client
+        return client
             .withTransaction { conn: SqlConnection ->
                 conn.query("DELETE FROM posts").execute()
                     .flatMap {
@@ -36,11 +33,9 @@ class DataInitializer(private val client: Pool) {
             }
             .onComplete {
                 LOGGER.info("Data initialization is completed...")
-                latch.countDown()
             }
             .onFailure { LOGGER.warning("Data initialization is failed:" + it.message) }
-
-        latch.await(1000, TimeUnit.MILLISECONDS)
+            .mapEmpty()
     }
 
     companion object {

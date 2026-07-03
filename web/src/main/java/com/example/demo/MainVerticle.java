@@ -52,20 +52,21 @@ public class MainVerticle extends VerticleBase {
 
         // Initializing the sample data
         var initializer = DataInitializer.create(pgPool);
-        initializer.run();
 
         // Configure routes
         var router = routes(postHandlers);
 
         // Create the HTTP server
-        return vertx.createHttpServer()
-            // Handle every request using the router
-            .requestHandler(router)
-            // Start listening
-            .listen(8888)
-            // Print the port
-            .onSuccess(server -> LOGGER.log(Level.INFO, "HTTP server started on port:" + server.actualPort()))
-            .onFailure(event -> LOGGER.log(Level.INFO, "Failed to start HTTP server:" + event.getMessage()));
+        return initializer.run()
+            .compose(v -> vertx.createHttpServer()
+                // Handle every request using the router
+                .requestHandler(router)
+                // Start listening
+                .listen(8888)
+                // Print the port
+                .onSuccess(server -> LOGGER.log(Level.INFO, "HTTP server started on port:" + server.actualPort()))
+                .onFailure(event -> LOGGER.log(Level.INFO, "Failed to start HTTP server:" + event.getMessage()))
+            );
     }
 
     @Override

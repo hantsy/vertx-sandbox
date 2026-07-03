@@ -27,7 +27,7 @@ class PostsHandler {
 //        var offset = params.get("offset") == null ? 0 : Integer.parseInt(params.get("offset"));
 //        LOGGER.log(Level.INFO, " find by keyword: q={0}, limit={1}, offset={2}", new Object[]{q, limit, offset});
         this.posts.findAll().takeLast(10).toList()
-            .subscribe(data -> rc.response().rxSend(Json.encode(data)));
+            .subscribe(data -> rc.response().end(Json.encode(data)));
     }
 
     public void get(RoutingContext rc) throws PostNotFoundException {
@@ -36,7 +36,7 @@ class PostsHandler {
         var uuid = UUID.fromString(id);
         this.posts.findById(uuid)
             .subscribe(
-                post -> rc.response().rxSend(Json.encode(post)),
+                post -> rc.response().end(Json.encode(post)),
                 error -> rc.fail(404, new PostNotFoundException(uuid))
             );
     }
@@ -52,7 +52,7 @@ class PostsHandler {
             .subscribe(savedId -> rc.response()
                 .putHeader("Location", "/posts/" + savedId)
                 .setStatusCode(201)
-                .rxEnd()
+                .end()
             );
     }
 
@@ -69,7 +69,7 @@ class PostsHandler {
                     return this.posts.update(toUpdated);
                 }
             )
-            .subscribe(data -> rc.response().setStatusCode(204).rxEnd());
+            .subscribe(data -> rc.response().setStatusCode(204).end());
     }
 
     public void delete(RoutingContext rc) {
@@ -78,7 +78,7 @@ class PostsHandler {
         var uuid = UUID.fromString(id);
         this.posts.findById(uuid)
             .flatMap(post -> this.posts.deleteById(uuid))
-            .subscribe(data -> rc.response().setStatusCode(204).rxEnd(),
+            .subscribe(data -> rc.response().setStatusCode(204).end(),
                 error -> rc.fail(404, error)
             );
     }

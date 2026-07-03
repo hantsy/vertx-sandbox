@@ -1,58 +1,42 @@
 package com.example.demo;
 
-import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
-import io.vertx.rxjava3.core.RxHelper;
-import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.ext.web.client.WebClient;
+import io.vertx.rxjava3.ext.web.codec.BodyCodec;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// see https://github.com/vert-x3/vertx-rx/issues/265
-// `testContext.succeeding` will block application.
 @ExtendWith(VertxExtension.class)
 public class TestMainVerticle {
-    private static final Logger log = LoggerFactory.getLogger(TestMainVerticle.class);
+    private static final Logger LOGGER = Logger.getLogger(TestMainVerticle.class.getName());
     WebClient client;
 
     @BeforeEach
     void setUp(Vertx vertx, VertxTestContext testContext) {
-
-        // see: https://github.com/vert-x3/vertx-rx/blob/master/rx-junit5-providers/vertx-junit5-rx-java3/src/test/java/io/vertx/junit5/rxjava3/RxJava3Test.java
-        RxHelper
-            .deployVerticle(vertx, new MainVerticle())
-            .subscribe(
-                message -> testContext.verify(() -> {
-                    log.info("deployed: {}", message);
-
-                    // build RxJava3 WebClient
-                    var options = new WebClientOptions()
-                        .setDefaultHost("localhost")
-                        .setDefaultPort(8888);
-                    this.client = WebClient.create(vertx, options);
-
-                    // clean test context
-                    testContext.completeNow();
-                }),
-                testContext::failNow
-            );
+        vertx.deployVerticle(new MainVerticle())
+            .onComplete(testContext.succeeding(id -> {
+                LOGGER.info("deployed: " + id);
+                this.client = WebClient.create(io.vertx.rxjava3.core.Vertx.newInstance(vertx));
+                testContext.completeNow();
+            }));
     }
 
     @Test
-    void testGetAll(Vertx vertx, VertxTestContext testContext) {
-        client.get("/posts")
+    void testGetAll(VertxTestContext testContext) {
+        client.get(8888, "localhost", "/posts")
+            .as(BodyCodec.jsonArray())
             .rxSend()
             .subscribe(
                 response -> testContext.verify(() -> {
-                    assertThat(response.statusCode()).isEqualTo(200);
-                    assertThat(response.bodyAsJsonArray().size()).isEqualTo(2);
-
+                    assertThat(response.body().size()).isEqualTo(2);
                     testContext.completeNow();
                 }),
                 testContext::failNow
@@ -60,17 +44,17 @@ public class TestMainVerticle {
     }
 
     @Test
-    void testCreatPost(Vertx vertx, VertxTestContext testContext) {
-        client.post("/posts")
-            .rxSendJson(
-                new CreatePostCommand("The quick brown fox jumps over the lazy dog",
-                    "body of `the quick brown fox jumps over the lazy dog`")
-            )
+    void testCreatPost(VertxTestContext testContext) {
+        client.post(8888, "localhost", "/posts")
+            .putHeader("Content-Type", "application/json")
+            .rxSendJson(new CreatePostCommand(
+                "The quick brown fox jumps over the lazy dog",
+                "body of the quick brown fox jumps over the lazy dog"
+            ))
             .subscribe(
                 response -> testContext.verify(() -> {
                     var statusCode = response.statusCode();
-                    var body = response.bodyAsString();
-                    log.info("status code: {}, body: {}", statusCode, body);
+                    LOGGER.info("status code: " + statusCode);
                     assertThat(statusCode).isEqualTo(201);
                     assertThat(response.getHeader("Location")).isNotNull();
                     testContext.completeNow();
@@ -80,18 +64,17 @@ public class TestMainVerticle {
     }
 
     @Test
-    void testHello(Vertx vertx, VertxTestContext testContext) {
-        client.get("/hello")
+    void testHello(VertxTestContext testContext) {
+        client.get(8888, "localhost", "/hello")
+            .as(BodyCodec.string())
             .rxSend()
-            .subscribe(response -> testContext.verify(() -> {
-                    var helloResponse = response.body().toString();
-                    log.info("Get response from /hello: {}", helloResponse);
-                    assertThat(helloResponse).contains("Hello");
+            .subscribe(
+                response -> testContext.verify(() -> {
+                    assertThat(response.body()).contains("Hello");
                     testContext.completeNow();
                 }),
                 testContext::failNow
             );
-
     }
 
 }

@@ -44,22 +44,23 @@ public class MainVerticle extends AbstractVerticle {
 
         // Initializing the sample data
         var initializer = DataInitializer.create(pgPool);
-        initializer.run();
 
         // Configure routes
         var router = routes(postHandlers);
 
         // Create the HTTP server and return the future
-        return vertx.createHttpServer()
-            .requestHandler(router)
-            .rxListen(8888)
-            .doOnSuccess(server -> {
-                log.info("HTTP server started on port " + server.actualPort());
-            })
-            .doOnError(throwable -> {
-                log.error("Failed to start HTTP server:" + throwable.getMessage());
-            })
-            .ignoreElement();
+        return initializer.run()
+            .andThen(vertx.createHttpServer()
+                .requestHandler(router)
+                .rxListen(8888)
+                .doOnSuccess(server -> {
+                    log.info("HTTP server started on port " + server.actualPort());
+                })
+                .doOnError(throwable -> {
+                    log.error("Failed to start HTTP server:" + throwable.getMessage());
+                })
+                .ignoreElement())
+            ;
     }
 
     @Override
@@ -118,7 +119,7 @@ public class MainVerticle extends AbstractVerticle {
         router.delete("/posts/:id")
             .handler(handlers::delete);
 
-        router.get("/hello").handler(rc -> rc.response().rxEnd("Hello from my route"));
+        router.get("/hello").handler(rc -> rc.response().end("Hello from my route"));
 
         return router;
     }

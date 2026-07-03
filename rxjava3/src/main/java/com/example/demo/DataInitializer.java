@@ -1,12 +1,11 @@
 package com.example.demo;
 
+import io.reactivex.rxjava3.core.Completable;
 import io.vertx.rxjava3.sqlclient.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class DataInitializer {
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
@@ -21,37 +20,21 @@ public class DataInitializer {
         return new DataInitializer(client);
     }
 
-    public void run() {
+    public Completable run() {
         log.info("Data initialization is starting...");
 
         Tuple first = Tuple.of("Hello Vertx", "My first post of Vertx");
         Tuple second = Tuple.of("Hello Again, Vertx", "My second post of Vertx");
 
-        var latch = new CountDownLatch(1);
-
-        client
+        return client
             .rxWithTransaction(
                 (SqlConnection tx) -> tx.query("DELETE FROM posts").rxExecute()
                     .flatMap(result -> tx.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)").rxExecuteBatch(List.of(first, second)))
                     .toMaybe()
             )
             .flatMapSingle(d -> client.query("SELECT * FROM posts").rxExecute())
-            .doOnTerminate(latch::countDown)
-            .subscribe(
-                (RowSet<Row> data) -> {
-                    data.forEach(row -> log.info("saved row: {}", row.toJson()));
-                    log.debug("Data initialization is completed successfully...");
-                },
-                err -> {
-                    log.warn("failed to initializing: {}", err.getMessage());
-                }
-            );
-
-        try {
-            latch.await(1000, TimeUnit.MILLISECONDS);
-            log.info("Data initialization is done...");
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+            .doOnSuccess(data -> data.forEach(row -> log.info("saved row: {}", row.toJson())))
+            .doOnError(err -> log.warn("failed to initializing: {}", err.getMessage()))
+            .ignoreElement();
     }
 }

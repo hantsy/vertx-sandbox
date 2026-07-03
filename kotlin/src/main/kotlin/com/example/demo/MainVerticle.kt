@@ -60,17 +60,19 @@ class MainVerticle : VerticleBase() {
 
         // Initializing the sample data
         val initializer = DataInitializer(pgPool)
-        initializer.run()
 
         // Configure routes
         val router = routes(postHandlers)
 
         // Create the HTTP server
-        return vertx.createHttpServer() // Handle every request using the router
-            .requestHandler(router) // Start listening
-            .listen(8888) // Print the port
-            .onSuccess { println("HTTP server started on port " + it.actualPort()) }
-            .onFailure { println("Failed to start HTTP server:" + it.message) }
+        return initializer.run()
+            .compose {
+                vertx.createHttpServer() // Handle every request using the router
+                    .requestHandler(router) // Start listening
+                    .listen(8888) // Print the port
+                    .onSuccess { println("HTTP server started on port " + it.actualPort()) }
+                    .onFailure { println("Failed to start HTTP server:" + it.message) }
+            }
     }
 
     //create routes

@@ -1,17 +1,13 @@
 package com.example.demo;
 
-
 import com.example.demo.gql.types.PostStatus;
 import com.example.demo.repository.AuthorRepository;
 import com.example.demo.repository.CommentRepository;
 import com.example.demo.repository.PostRepository;
 import io.vertx.core.Future;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -21,20 +17,14 @@ public class DataInitializer {
     final CommentRepository comments;
     final AuthorRepository authors;
 
-    @SneakyThrows
-    public void run() {
+    public Future<Void> run() {
         log.info("Data initialization is starting...");
 
-        CountDownLatch latch = new CountDownLatch(1);
-        cleanData()
+        return cleanData()
                 .flatMap(it -> insertData())
                 .flatMap(it -> printData())
-                .onComplete(event -> {
-                    log.info("Data initialization is done.");
-                    latch.countDown();
-                });
-        var await = latch.await(5000, TimeUnit.MILLISECONDS);
-        log.debug("awaited result: {}", await);
+                .onSuccess(v -> log.info("Data initialization is done."))
+                .mapEmpty();
     }
 
     Future<?> printData() {

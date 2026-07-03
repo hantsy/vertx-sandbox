@@ -18,7 +18,7 @@
         <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
 
         <vertx.version>5.1.3</vertx.version>
-        <mutiny-vertx.version>3.21.4</mutiny-vertx.version>
+        <mutiny-vertx.version>4.0.0</mutiny-vertx.version>
         <hibernate-reactive.version>4.2.2.Final</hibernate-reactive.version>
         <hibernate.version>7.2.3.Final</hibernate.version>
         <junit-jupiter.version>6.0.2</junit-jupiter.version>
@@ -92,6 +92,12 @@
             <version>${mutiny-vertx.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.smallrye.reactive</groupId>
+            <artifactId>smallrye-mutiny-vertx-junit5</artifactId>
+            <version>${mutiny-vertx.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.hibernate.reactive</groupId>
             <artifactId>hibernate-reactive-core</artifactId>
             <version>${hibernate-reactive.version}</version>
@@ -133,12 +139,6 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-junit5</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.smallrye.reactive</groupId>
-            <artifactId>smallrye-mutiny-vertx-junit5</artifactId>
-            <version>${mutiny-vertx.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

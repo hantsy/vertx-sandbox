@@ -30,3 +30,7 @@ hs_err_pid*
 
 # MkDocs build output
 site/
+
+# PostgreSQL data volume
+/data/
+/logs/

@@ -81,10 +81,6 @@ public class MainVerticle extends VerticleBase {
         var commentRepository = new CommentRepository(pgPool);
         var authorRepository = new AuthorRepository(pgPool);
 
-        // Initializing the sample data
-        var initializer = new DataInitializer(postRepository, commentRepository, authorRepository);
-        initializer.run();
-
         //assemble PostService
         var postService = new PostService(postRepository, commentRepository, authorRepository);
         var authorService = new AuthorService(authorRepository);
@@ -104,15 +100,17 @@ public class MainVerticle extends VerticleBase {
         // enable `graphql-transport-ws` Protocol for all GraphQL requests.
         HttpServerOptions httpServerOptions = new HttpServerOptions()
                 .addWebSocketSubProtocol("graphql-transport-ws");
-        // Create the HTTP server
-        return vertx.createHttpServer(httpServerOptions)
-                // Handle every request using the router
-                .requestHandler(router)
-                // Start listening
-                .listen(8080)
-                // Print the port
-                .onSuccess(server -> log.info("HTTP server started on port {}", server.actualPort()))
-                .onFailure(event -> log.info("Failed to start HTTP server: {}", event.getMessage()));
+
+        // Initializing the sample data, then start the HTTP server
+        var initializer = new DataInitializer(postRepository, commentRepository, authorRepository);
+        return initializer.run()
+                .compose(v -> vertx.createHttpServer(httpServerOptions)
+                        .requestHandler(router)
+                        .listen(8080)
+                        .onSuccess(server -> log.info("HTTP server started on port {}", server.actualPort()))
+                        .onFailure(event -> log.info("Failed to start HTTP server: {}", event.getMessage()))
+                        .mapEmpty()
+                );
     }
 
     //create routes
