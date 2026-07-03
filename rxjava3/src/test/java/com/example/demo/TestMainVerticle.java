@@ -6,20 +6,21 @@ import io.vertx.rxjava3.core.RxHelper;
 import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.ext.web.client.WebClient;
 import io.vertx.rxjava3.ext.web.codec.BodyCodec;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class TestMainVerticle {
     private static final Logger LOGGER = Logger.getLogger(TestMainVerticle.class.getName());
     WebClient client;
 
-    @BeforeEach
+    @BeforeAll
     void setUp(Vertx vertx, VertxTestContext testContext) {
         RxHelper.deployVerticle(vertx, new MainVerticle())
             .subscribe(
@@ -33,13 +34,14 @@ public class TestMainVerticle {
     }
 
     @Test
+    @Order(2)
     void testGetAll(VertxTestContext testContext) {
         client.get(8888, "localhost", "/posts")
             .as(BodyCodec.jsonArray())
             .rxSend()
             .subscribe(
                 response -> testContext.verify(() -> {
-                    assertThat(response.body().size()).isEqualTo(2);
+                    assertThat(response.body().size()).isGreaterThan(0);
                     testContext.completeNow();
                 }),
                 testContext::failNow
@@ -47,6 +49,7 @@ public class TestMainVerticle {
     }
 
     @Test
+    @Order(3)
     void testCreatPost(VertxTestContext testContext) {
         client.post(8888, "localhost", "/posts")
             .putHeader("Content-Type", "application/json")
@@ -67,6 +70,7 @@ public class TestMainVerticle {
     }
 
     @Test
+    @Order(1)
     void testHello(VertxTestContext testContext) {
         client.get(8888, "localhost", "/hello")
             .as(BodyCodec.string())

@@ -17,12 +17,13 @@ import java.util.logging.Logger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(VertxExtension.class)
 public class TestMainVerticle {
     private static final Logger LOGGER = Logger.getLogger(TestMainVerticle.class.getName());
     HttpClient client;
 
-    @BeforeEach
+    @BeforeAll
     void setup(Vertx vertx, VertxTestContext testContext) {
         vertx.deployVerticle(new MainVerticle())
             .onComplete(
