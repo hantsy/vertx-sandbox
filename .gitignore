@@ -27,3 +27,6 @@ hs_err_pid*
 .project
 .classpath
 .vscode
+
+# MkDocs build output
+site/

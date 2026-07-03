@@ -1,0 +1,48 @@
+site_name: Eclipse Vert.x Notes
+site_description: Developer notes of Eclipse Vert.x 5.x
+repo_url: https://github.com/hantsy/vertx-sandbox
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: indigo
+  features:
+    - content.code.copy
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - search.highlight
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+
+nav:
+  - Home: index.md
+  - Data Layer:
+    - RESTful APIs with Vert.x Web: data/rest.md
+    - RxJava 3: data/rxjava3.md
+    - Kotlin: data/kotlin.md
+    - Kotlin Coroutines: data/kotlin-co.md
+  - Web Layer:
+    - GraphQL HTTP: web/graphql-http.md
+    - GraphQL WebSocket (Transport WS): web/graphql-transport-ws.md
+    - GraphQL Client: web/graphql-client.md
+    - HTTP Client & WebClient: web/client.md
+    - Validation & Error Handling: web/validation.md
+  - Integration:
+    - Spring Framework: integration/spring.md
+    - CDI / Weld: integration/cdi.md
+    - Mutiny + Spring + Hibernate Reactive: integration/mutiny-spring-hibernate.md

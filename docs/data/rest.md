@@ -6,51 +6,47 @@ Unlike other frameworks in which *reactive* is an addition to the existing featu
 
 Similar to the [Spring Boot intializr](https://start.spring.io),  Eclipse Vertx also provides a scaffold tool to generate the project skeleton for you.
 
-Open your browser, navigate to the [Vertx Starter page](https://start.vertx.io/).  In the **Dependencies** field, select *Vertx Web*, *Reactive  PostgreSQL Client*, and optionally expand the **Advance options** and select the *latest Java version*(at the moment it is **16**). 
+Open your browser, navigate to the [Vertx Starter page](https://start.vertx.io/).  In the **Dependencies** field, select *Vertx Web*, *Reactive  PostgreSQL Client*, and optionally expand the **Advance options** and select the *latest Java version*(at the moment it is **25**). 
 
-![Vertx starter](./starter.png)
-
-
+![Vertx starter](../starter.png)
 
 Leave others options as they are, it will use the default values, then hit  **Generate Project** button to generate the project into an archive for downloading.
 
 Download the project archive, and extract the files into local disc, and import into your IDEs, eg. Intellij IDEA.
 
-Open the *pom.xml*.  As you see, it uses `maven-shade-plugin` to package the built results into a fat jar, and  the *Main-Class* is the Vertx built-in `io.vertx.core.Launcher`. When running the application via `java -jar target\xxx.jar` , it will use the `Launcher` to deploy the declared `MainVerticle` .  A `Verticle` is a Vertx specific deployment unit to group  the resources, such as Network, HTTP, etc.
+Open the *pom.xml*.  As you see, it uses `maven-shade-plugin` to package the built results into a fat jar, and  the *Main-Class* is `io.vertx.launcher.application.VertxApplication` and the *Main-Verticle* entry declares the main verticle to deploy. When running the application via `java -jar target\xxx.jar` , it will use the `VertxApplication` to deploy the declared `MainVerticle`.  A `Verticle` is a Vertx specific deployment unit to group  the resources, such as Network, HTTP, etc.
 
 Let's move to the `MainVerticle` class.
 
 ```java
-public class MainVerticle extends AbstractVerticle {
+public class MainVerticle extends VerticleBase {
     
 }
 ```
 
-Generally , to code our business logic, you just need to override the `start()` method or `start(Promise<Void> startPromise)`.
+Generally , to code our business logic, you just need to override the `start()` method that returns a `Future<?>`.
 
-In our application, we will start a HTTP Server to serve the HTTP requests.  Replace the content of the `start(Promise<Void> startPromise)` method with the following.
+In our application, we will start a HTTP Server to serve the HTTP requests.  Replace the content of the `start()` method with the following.
 
 ```java
 // Create the HTTP server
-vertx.createHttpServer()
+return vertx.createHttpServer()
     // Handle every request using the router
     .requestHandler(router)
     // Start listening
     .listen(8888)
     // Print the port
     .onSuccess(server -> {
-        startPromise.complete();
         System.out.println("HTTP server started on port " + server.actualPort());
     })
     .onFailure(event -> {
-        startPromise.fail(event);
         System.out.println("Failed to start HTTP server:" + event.getMessage());
     });
 ```
 
 The request handling work is done by  the above `.requestHandler(Handler<HttpServerRequest>)`. The `Router` is a specific `Handler<HttpServerRequest>`  which simplifies the handling HTTP requests and allows chaining a sequence of handlers.
 
-Add a `reoutes` method to handle requests  of all routes in a central place, it returns the router.
+Add a `routes` method to handle requests  of all routes in a central place, it returns the router.
 
 ```java
 //create routes
@@ -61,8 +57,15 @@ private Router routes(PostsHandler handlers) {
     // register BodyHandler globally.
     //router.route().handler(BodyHandler.create());
     router.get("/posts").produces("application/json").handler(handlers::all);
-   	router.post("/posts").consumes("application/json").handler(BodyHandler.create()).handler(handlers::save);
-    router.get("/posts/:id").produces("application/json").handler(handlers::get).failureHandler(frc -> frc.response().setStatusCode(404).end());
+    router.post("/posts").consumes("application/json").handler(BodyHandler.create()).handler(handlers::save);
+    router.get("/posts/:id").produces("application/json").handler(handlers::get)
+        .failureHandler(frc -> {
+            Throwable failure = frc.failure();
+            if (failure instanceof PostNotFoundException) {
+                frc.response().setStatusCode(404).end();
+            }
+            frc.response().setStatusCode(500).setStatusMessage("Server internal error:" + failure.getMessage()).end();
+        });
     router.put("/posts/:id").consumes("application/json").handler(BodyHandler.create()).handler(handlers::update);
     router.delete("/posts/:id").handler(handlers::delete);
 
@@ -74,16 +77,15 @@ private Router routes(PostsHandler handlers) {
 
 For `post` and `put` HTTP  methods, the `BodyHandler` is required to handling consuming the  HTTP request body.
 
-Extract all handing details into a new `PostHandler` class.
+Extract all handing details into a new `PostsHandler` class.
 
 ```java
 class PostsHandler {
     private static final Logger LOGGER = Logger.getLogger(PostsHandler.class.getSimpleName());
+    private final PostRepository posts;
 
-    PostRepository posts;
-
-    private PostsHandler(PostRepository _posts) {
-        this.posts = _posts;
+    private PostsHandler(PostRepository postsRepository) {
+        this.posts = postsRepository;
     }
 
     //factory method
@@ -107,71 +109,55 @@ class PostsHandler {
         var params = rc.pathParams();
         var id = params.get("id");
         this.posts.findById(UUID.fromString(id))
-            .onSuccess(
-                post -> rc.response().end(Json.encode(post))
-            )
-            .onFailure(
-                throwable -> rc.fail(404, throwable)
-            );
-
+            .onSuccess(post -> rc.response().end(Json.encode(post)))
+            .onFailure(rc::fail);
     }
 
 
     public void save(RoutingContext rc) {
         //rc.getBodyAsJson().mapTo(PostForm.class)
-        var body = rc.getBodyAsJson();
+        var body = rc.body().asJsonObject();
         LOGGER.log(Level.INFO, "request body: {0}", body);
-        var form = body.mapTo(PostForm.class);
-        this.posts.save(Post.of(form.getTitle(), form.getContent()))
+        var form = body.mapTo(CreatePostCommand.class);
+        this.posts.save(Post.of(form.title(), form.content()))
             .onSuccess(
                 savedId -> rc.response()
                     .putHeader("Location", "/posts/" + savedId)
                     .setStatusCode(201)
                     .end()
-
             );
     }
 
     public void update(RoutingContext rc) {
         var params = rc.pathParams();
         var id = params.get("id");
-        var body = rc.getBodyAsJson();
+        var body = rc.body().asJsonObject();
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", new Object[]{id, body});
-        var form = body.mapTo(PostForm.class);
-        this.posts.findById(UUID.fromString(id))
+        var form = body.mapTo(CreatePostCommand.class);
+        UUID uuid = UUID.fromString(id);
+
+        this.posts.findById(uuid)
             .compose(
                 post -> {
-                    post.setTitle(form.getTitle());
-                    post.setContent(form.getContent());
-
-                    return this.posts.update(post);
+                    var toUpdated = new Post(post.id(), form.title(), form.content(), post.createdAt());
+                    return this.posts.update(toUpdated);
                 }
             )
-            .onSuccess(
-                data -> rc.response().setStatusCode(204).end()
-            )
-            .onFailure(
-                throwable -> rc.fail(404, throwable)
-            );
-
+            .onSuccess(data -> rc.response().setStatusCode(204).end())
+            .onFailure(throwable -> rc.fail(404, throwable));
     }
 
     public void delete(RoutingContext rc) {
         var params = rc.pathParams();
         var id = params.get("id");
-
         var uuid = UUID.fromString(id);
+
         this.posts.findById(uuid)
             .compose(
                 post -> this.posts.deleteById(uuid)
             )
-            .onSuccess(
-                data -> rc.response().setStatusCode(204).end()
-            )
-            .onFailure(
-                throwable -> rc.fail(404, throwable)
-            );
-
+            .onSuccess(data -> rc.response().setStatusCode(204).end())
+            .onFailure(throwable -> rc.fail(404, throwable));
     }
 
 }
@@ -185,8 +171,8 @@ Let's have a look at the `PostRepository` class.
 public class PostRepository {
     private static final Logger LOGGER = Logger.getLogger(PostRepository.class.getName());
 
-    private static Function<Row, Post> MAPPER = (row) ->
-        Post.of(
+    private static Function<Row, Post> MAPPER = (Row row) ->
+        new Post(
             row.getUUID("id"),
             row.getString("title"),
             row.getString("content"),
@@ -194,86 +180,97 @@ public class PostRepository {
         );
 
 
-    private final PgPool client;
+    private final Pool client;
 
-    private PostRepository(PgPool _client) {
-        this.client = _client;
+    private PostRepository(Pool sqlClient) {
+        this.client = sqlClient;
     }
 
     //factory method
-    public static PostRepository create(PgPool client) {
+    public static PostRepository create(Pool client) {
         return new PostRepository(client);
     }
 
     public Future<List<Post>> findAll() {
-        return client.query("SELECT * FROM posts ORDER BY id ASC")
+        String sql = "SELECT * FROM posts ORDER BY id ASC";
+        return client.query(sql)
             .execute()
             .map(rs -> StreamSupport.stream(rs.spliterator(), false)
                 .map(MAPPER)
-                .collect(Collectors.toList())
+                .toList()
             );
     }
 
 
     public Future<Post> findById(UUID id) {
         Objects.requireNonNull(id, "id can not be null");
-        return client.preparedQuery("SELECT * FROM posts WHERE id=$1").execute(Tuple.of(id))
+        String sql = "SELECT * FROM posts WHERE id=$1";
+        return client.preparedQuery(sql).execute(Tuple.of(id))
             .map(RowSet::iterator)
-            .map(iterator -> iterator.hasNext() ? MAPPER.apply(iterator.next()) : null)
-            .map(Optional::ofNullable)
-            .map(p -> p.orElseThrow(() -> new PostNotFoundException(id)));
+            .map(iterator -> {
+                    if (iterator.hasNext()) {
+                        return MAPPER.apply(iterator.next());
+                    }
+                    throw new PostNotFoundException(id);
+                }
+            );
     }
 
     public Future<UUID> save(Post data) {
-        return client.preparedQuery("INSERT INTO posts(title, content) VALUES ($1, $2) RETURNING (id)").execute(Tuple.of(data.getTitle(), data.getContent()))
+        String sql = "INSERT INTO posts(title, content) VALUES ($1, $2) RETURNING (id)";
+        return client.preparedQuery(sql)
+            .execute(Tuple.of(data.title(), data.content()))
             .map(rs -> rs.iterator().next().getUUID("id"));
     }
 
     public Future<Integer> saveAll(List<Post> data) {
         var tuples = data.stream()
-            .map(
-                d -> Tuple.of(d.getTitle(), d.getContent())
-            )
-            .collect(Collectors.toList());
+            .map(d -> Tuple.of(d.title(), d.content()))
+            .toList();
 
-        return client.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)")
+        String sql = "INSERT INTO posts (title, content) VALUES ($1, $2)";
+        return client.preparedQuery(sql)
             .executeBatch(tuples)
             .map(SqlResult::rowCount);
     }
 
     public Future<Integer> update(Post data) {
-        return client.preparedQuery("UPDATE posts SET title=$1, content=$2 WHERE id=$3")
-            .execute(Tuple.of(data.getTitle(), data.getContent(), data.getId()))
+        String sql = "UPDATE posts SET title=$1, content=$2 WHERE id=$3";
+        return client.preparedQuery(sql)
+            .execute(Tuple.of(data.title(), data.content(), data.id()))
             .map(SqlResult::rowCount);
     }
 
     public Future<Integer> deleteAll() {
-        return client.query("DELETE FROM posts").execute()
+        String sql = "DELETE FROM posts";
+        return client.query(sql)
+            .execute()
             .map(SqlResult::rowCount);
     }
 
     public Future<Integer> deleteById(UUID id) {
         Objects.requireNonNull(id, "id can not be null");
-        return client.preparedQuery("DELETE FROM posts WHERE id=$1").execute(Tuple.of(id))
+        String sql = "DELETE FROM posts WHERE id=$1";
+        return client.preparedQuery(sql)
+            .execute(Tuple.of(id))
             .map(SqlResult::rowCount);
     }
 
 }
-
 ```
 
 
 
-The `pgPool` is a Postgres client to interact with the Postgres database, the operations  are very similar to the traditional JDBC, but it is based on the Vertx's `Future` API. Similar to Java 8 `CompletionStage` or Reactor  `Mono` /`Flux`, Vertx  Future provides very limited APIs for producing, transforming  and observing the completed result in an asynchronous mode.
+The `Pool` is a Postgres client (created via `PgBuilder`) to interact with the Postgres database, the operations  are very similar to the traditional JDBC, but it is based on the Vertx's `Future` API. Similar to Java 8 `CompletionStage` or Reactor  `Mono` /`Flux`, Vertx  Future provides very limited APIs for producing, transforming  and observing the completed result in an asynchronous mode.
 
 > More details about the  Reactive PostgreSQL Client, read [PostgreSQL Client docs](https://vertx.io/docs/vertx-pg-client/java/).
 
 > In Vertx almost all async methods provide a variant to accept a `Promise` like callback as parameter instead of returning a `Future` instance.  But personally I think the `Promise` is evil if the handling progress is passed into a sequence of  transitions, thus the `Promise`  will nest another `Promise`, and so on. It will put you in an infinite `Promise` hole.
 
-Create a method in the `MainVerticle` to produce a `PgPool` instance.
+Create a method in the `MainVerticle` to produce a `Pool` instance.
 
 ```java
-private PgPool pgPool() {
+private Pool pgPool() {
     PgConnectOptions connectOptions = new PgConnectOptions()
         .setPort(5432)
         .setHost("localhost")
@@ -285,9 +282,11 @@ private PgPool pgPool() {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
     // Create the pool from the data object
-    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
-
-    return pool;
+    return PgBuilder.pool()
+        .with(poolOptions)
+        .connectingTo(connectOptions)
+        .using(vertx)
+        .build();
 }
 ```
 
@@ -298,22 +297,23 @@ public class DataInitializer {
 
     private final static Logger LOGGER = Logger.getLogger(DataInitializer.class.getName());
 
-    private PgPool client;
+    private final Pool client;
 
-    public DataInitializer(PgPool client) {
+    public DataInitializer(Pool client) {
         this.client = client;
     }
 
-    public static DataInitializer create(PgPool client) {
+    public static DataInitializer create(Pool client) {
         return new DataInitializer(client);
     }
 
-    public void run() {
+    public void run() throws InterruptedException {
         LOGGER.info("Data initialization is starting...");
 
         Tuple first = Tuple.of("Hello Quarkus", "My first post of Quarkus");
         Tuple second = Tuple.of("Hello Again, Quarkus", "My second post of Quarkus");
 
+        CountDownLatch latch = new CountDownLatch(1);
         client
             .withTransaction(
                 conn -> conn.query("DELETE FROM posts").execute()
@@ -322,18 +322,26 @@ public class DataInitializer {
                     )
                     .flatMap(r -> conn.query("SELECT * FROM posts").execute())
             )
-            .onSuccess(data -> StreamSupport.stream(data.spliterator(), true)
-                .forEach(row -> LOGGER.log(Level.INFO, "saved data:{0}", new Object[]{row.toJson()}))
+            .onSuccess(data -> {
+                    StreamSupport.stream(data.spliterator(), true)
+                        .forEach(row -> LOGGER.log(Level.INFO, "saved data:{0}", new Object[]{row.toJson()}));
+                    LOGGER.info("Data initialization is done sucessfully...");
+                    latch.countDown();
+                }
             )
             .onComplete(
-                r -> {
-                    //client.close(); will block the application.
-                    LOGGER.info("Data initialization is done...");
+                data -> {
+                    LOGGER.info("Data initialization is completed...");
                 }
             )
             .onFailure(
-                throwable -> LOGGER.warning("Data initialization is failed:" + throwable.getMessage())
+                throwable -> {
+                    latch.countDown();
+                    LOGGER.warning("Data initialization is failed:" + throwable.getMessage());
+                }
             );
+
+        latch.await(5000, TimeUnit.MICROSECONDS);
     }
 }
 ```
@@ -344,7 +352,7 @@ Let's assemble all the resources in the `MainVerticle`'s start method.
 
 ```java
 @Override
-public void start(Promise<Void> startPromise) throws Exception {
+public Future<?> start() throws Exception {
     LOGGER.log(Level.INFO, "Starting HTTP server...");
     //setupLogging();
 
@@ -365,16 +373,16 @@ public void start(Promise<Void> startPromise) throws Exception {
     var router = routes(postHandlers);
 
     // Create the HTTP server
-    vertx.createHttpServer()
+    return vertx.createHttpServer()
         // Handle every request using the router
-    	.requestHandler(router)
+        .requestHandler(router)
         ...
 }
 ```
 
 By default Vertx Web uses Jackson to serialize and deserialize the request/response payload. Unfortunately it does not register a Java DateTime module by default.
 
-Add the following dependencies in the *pom.xml* file.
+Add the following dependencies in the *pom.xml* file. The Jackson version is managed via the `jackson-bom` in `dependencyManagement`.
 
 ```xml
 <dependency>
@@ -389,10 +397,24 @@ Add the following dependencies in the *pom.xml* file.
 </dependency>
 ```
 
-Add a `jackson.version` property to the `properties ` section.
+Add a `jackson.version` property to the `properties ` section, and include the `jackson-bom` in `dependencyManagement`.
 
 ```xml
-<jackson.version>2.11.3</jackson.version>
+<jackson.version>2.22.0</jackson.version>
+```
+
+```xml
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson</groupId>
+            <artifactId>jackson-bom</artifactId>
+            <version>${jackson.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
 ```
 
 Then add a static block to configure DateTime serialization and deserialization in the `MainVerticle` class.
@@ -442,5 +464,5 @@ curl http://localhost:8888/posts -H "Accept: application/json"
 [{"id":"1f99032b-3bb0-4795-ba9f-b0437b59cfbe","title":"Hello Quarkus","content":"My first post of Quarkus","createdAt":"2021-07-02T09:35:21.341037"},{"id":"adda9ca6-2c4c-4223-9cb6-b8407c15ba03","title":"Hello Again, Quarkus","content":"My second post of Quarkus","createdAt":"2021-07-02T09:35:21.341037"}]
 ```
 
-Get [the complete source codes](https://github.com/hantsy/vertx-sandbox/tree/master/post-service) from my Github.
+Get [the complete source codes](https://github.com/hantsy/vertx-sandbox/tree/master/web) from my Github.
 

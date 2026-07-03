@@ -23,7 +23,7 @@ Configure `kotlin-compiler-plugin` to compile the Kotlin source codes.
     <artifactId>kotlin-maven-plugin</artifactId>
     <version>${kotlin.version}</version>
     <configuration>
-        <jvmTarget>16</jvmTarget>
+        <jvmTarget>25</jvmTarget>
     </configuration>
     <executions>
         <execution>
@@ -42,12 +42,12 @@ Configure `kotlin-compiler-plugin` to compile the Kotlin source codes.
 </plugin>
 ```
 
-We will use the same file structure and migrate [the original project(written in Java)](https://github.com/hantsy/vertx-sandbox/tree/master/post-service) to Kotlin.
+We will use the same file structure and migrate [the original project(written in Java)](https://github.com/hantsy/vertx-sandbox/tree/master/web) to Kotlin.
 
 Firstly let's have a look at the entry class -  `MainVerticle`.
 
 ```kotlin
-class MainVerticle : AbstractVerticle() {
+class MainVerticle : VerticleBase() {
     companion object {
         private val LOGGER = Logger.getLogger(MainVerticle::class.java.name)
 
@@ -74,7 +74,7 @@ class MainVerticle : AbstractVerticle() {
     }
 
     @Throws(Exception::class)
-    override fun start(startPromise: Promise<Void>) {
+    override fun start(): Future<*> {
         LOGGER.log(Level.INFO, "Starting HTTP server...")
         //setupLogging();
 
@@ -95,17 +95,11 @@ class MainVerticle : AbstractVerticle() {
         val router = routes(postHandlers)
 
         // Create the HTTP server
-        vertx.createHttpServer() // Handle every request using the router
+        return vertx.createHttpServer() // Handle every request using the router
             .requestHandler(router) // Start listening
             .listen(8888) // Print the port
-            .onSuccess {
-                startPromise.complete()
-                println("HTTP server started on port " + it.actualPort())
-            }
-            .onFailure {
-                startPromise.fail(it)
-                println("Failed to start HTTP server:" + it.message)
-            }
+            .onSuccess { println("HTTP server started on port " + it.actualPort()) }
+            .onFailure { println("Failed to start HTTP server:" + it.message) }
     }
 
     //create routes
@@ -147,7 +141,7 @@ class MainVerticle : AbstractVerticle() {
         return router
     }
 
-    private fun pgPool(): PgPool {
+    private fun pgPool(): Pool {
         val connectOptions = PgConnectOptions()
             .setPort(5432)
             .setHost("localhost")
@@ -159,7 +153,11 @@ class MainVerticle : AbstractVerticle() {
         val poolOptions = PoolOptions().setMaxSize(5)
 
         // Create the pool from the data object
-        return PgPool.pool(vertx, connectOptions, poolOptions)
+        return PgBuilder.pool()
+            .with(poolOptions)
+            .connectingTo(connectOptions)
+            .using(vertx)
+            .build()
     }
 }
 ```
@@ -195,9 +193,9 @@ class PostsHandler(val posts: PostRepository) {
 
     fun save(rc: RoutingContext) {
         //rc.getBodyAsJson().mapTo(PostForm.class)
-        val body = rc.bodyAsJson
+        val body = rc.body()?.asJsonObject()
         LOGGER.log(Level.INFO, "request body: {0}", body)
-        val (title, content) = body.mapTo(CreatePostCommand::class.java)
+        val (title, content) = body!!.mapTo(CreatePostCommand::class.java)
         posts.save(Post(title = title, content = content))
             .onSuccess { savedId: UUID ->
                 rc.response()
@@ -210,9 +208,9 @@ class PostsHandler(val posts: PostRepository) {
     fun update(rc: RoutingContext) {
         val params = rc.pathParams()
         val id = params["id"]
-        val body = rc.bodyAsJson
+        val body = rc.body()?.asJsonObject()
         LOGGER.log(Level.INFO, "\npath param id: {0}\nrequest body: {1}", arrayOf(id, body))
-        var (title, content) = body.mapTo(CreatePostCommand::class.java)
+        var (title, content) = body!!.mapTo(CreatePostCommand::class.java)
         posts.findById(UUID.fromString(id))
             .flatMap { post: Post ->
                 post.apply {
@@ -244,50 +242,69 @@ class PostsHandler(val posts: PostRepository) {
 Let's move to the `PostRepository` class.
 
 ```kotlin
-class PostRepository(private val client: PgPool) {
+class PostRepository(private val client: Pool) {
 
-    fun findAll() = client.query("SELECT * FROM posts ORDER BY id ASC")
-        .execute()
-        .map { rs: RowSet<Row?> ->
-            StreamSupport.stream(rs.spliterator(), false)
-                .map { mapFun(it!!) }
-                .toList()
-        }
-
-
-    fun findById(id: UUID) = client.preparedQuery("SELECT * FROM posts WHERE id=$1")
-        .execute(Tuple.of(id))
-        .map { it.iterator() }
-        .map {
-            if (it.hasNext()) mapFun(it.next());
-            throw PostNotFoundException(id)
-        }
+    fun findAll(): Future<List<Post>> {
+        val sql = "SELECT * FROM posts ORDER BY id ASC"
+        return client.query(sql)
+            .execute()
+            .map { rs: RowSet<Row?> ->
+                StreamSupport.stream(rs.spliterator(), false)
+                    .map { mapFun(it!!) }
+                    .toList()
+            }
+    }
 
 
-    fun save(data: Post) = client.preparedQuery("INSERT INTO posts(title, content) VALUES ($1, $2) RETURNING (id)")
-        .execute(Tuple.of(data.title, data.content))
-        .map { it.iterator().next().getUUID("id") }
+    fun findById(id: UUID): Future<Post> {
+        val sql = "SELECT * FROM posts WHERE id=$1"
+        return client.preparedQuery(sql)
+            .execute(Tuple.of(id))
+            .map { it.iterator() }
+            .map {
+                if (it.hasNext()) mapFun(it.next())
+                else throw PostNotFoundException(id)
+            }
+    }
+
+
+    fun save(data: Post): Future<UUID> {
+        val sql = "INSERT INTO posts(title, content) VALUES ($1, $2) RETURNING (id)"
+        return client.preparedQuery(sql)
+            .execute(Tuple.of(data.title, data.content))
+            .map { it.iterator().next().getUUID("id") }
+    }
 
 
     fun saveAll(data: List<Post>): Future<Int> {
         val tuples = data.map { Tuple.of(it.title, it.content) }
 
-        return client.preparedQuery("INSERT INTO posts (title, content) VALUES ($1, $2)")
+        val sql = "INSERT INTO posts (title, content) VALUES ($1, $2)"
+        return client.preparedQuery(sql)
             .executeBatch(tuples)
             .map { it.rowCount() }
     }
 
-    fun update(data: Post) = client.preparedQuery("UPDATE posts SET title=$1, content=$2 WHERE id=$3")
-        .execute(Tuple.of(data.title, data.content, data.id))
-        .map { it.rowCount() }
+    fun update(data: Post): Future<Int> {
+        val sql = "UPDATE posts SET title=$1, content=$2 WHERE id=$3"
+        return client.preparedQuery(sql)
+            .execute(Tuple.of(data.title, data.content, data.id))
+            .map { it.rowCount() }
+    }
 
 
-    fun deleteAll() = client.query("DELETE FROM posts").execute()
-        .map { it.rowCount() }
+    fun deleteAll(): Future<Int> {
+        val sql = "DELETE FROM posts"
+        return client.query(sql).execute()
+            .map { it.rowCount() }
+    }
 
 
-    fun deleteById(id: UUID) = client.preparedQuery("DELETE FROM posts WHERE id=$1").execute(Tuple.of(id))
-        .map { it.rowCount() }
+    fun deleteById(id: UUID): Future<Int> {
+        val sql = "DELETE FROM posts WHERE id=$1"
+        return client.preparedQuery(sql).execute(Tuple.of(id))
+            .map { it.rowCount() }
+    }
 
     companion object {
         private val LOGGER = Logger.getLogger(PostRepository::class.java.name)
@@ -324,7 +341,7 @@ data class CreatePostCommand(
 The `DataIntializer` is still used to insert some sample data at the application startup.
 
 ```kotlin
-class DataInitializer(private val client: PgPool) {
+class DataInitializer(private val client: Pool) {
 
     fun run() {
         LOGGER.info("Data initialization is starting...")
@@ -368,7 +385,7 @@ mvn clean compile exec:java
 
 Additionally, Vertx Kotlin bindings provides a `Json` DSL extension to simplify the JSON encoding.
 
-```kotli
+```kotlin
  it.response()
      .setStatusCode(404)
      .end(
@@ -382,4 +399,3 @@ Additionally, Vertx Kotlin bindings provides a `Json` DSL extension to simplify 
 ```
 
 Get [the source codes](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin) from my Github.
-
