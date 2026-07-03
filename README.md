@@ -1,27 +1,26 @@
-# Vertx Sandbox
+# Vert.x Sandbox
 
-Eclipse Vertx playground 
+A multi-module playground for exploring Eclipse Vert.x 5 features — from REST APIs and reactive data access to GraphQL, framework integrations, and language bindings.
 
+## Documentation
 
-## Notes
+Read the full guide online: [https://hantsy.github.io/vertx-sandbox/](https://hantsy.github.io/vertx-sandbox/)
 
-Read it online: [https://hantsy.github.io/vertx-sandbox/](https://hantsy.github.io/vertx-sandbox/)
+## Modules
 
-## Sample Codes
-| name                                                         | description                                                  |
-| :----------------------------------------------------------- | ------------------------------------------------------------ |
-| [web](https://github.com/hantsy/vertx-sandbox/tree/master/web)| Simple CRUD RESTful APIs with PgClient example|
-| [spring](https://github.com/hantsy/vertx-sandbox/tree/master/spring)| Spring integration example|
-| [cdi](https://github.com/hantsy/vertx-sandbox/tree/master/cdi)| Weld/CDI integration example|
-| [rxjava3](https://github.com/hantsy/vertx-sandbox/tree/master/rxjava3)| Simple CRUD RESTful APIs example but using RxJava3|
-| [mutiny-spring-hibernate](https://github.com/hantsy/vertx-sandbox/tree/master/mutiny-spring-hibernate)| Simple CRUD RESTful APIs example with SmallRye Mutiny bindings, Spring and Hibernate Reactive|
-| [kotlin](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin)| Simple CRUD RESTful APIs example written in Kotlin|
-| [kotlin-co](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin-co)| Simple CRUD RESTful APIs example written in Kotlin Coroutines|
-| [graphql-http](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-http)| GraphQL example using HTTP protocol|
-| [graphql-transport-ws](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-transport-ws)| GraphQL example using [GraphQL over WebSocket](https://github.com/enisdenjo/graphql-ws) protocol |
+| Module | Description |
+| :----- | :---------- |
+| [web](https://github.com/hantsy/vertx-sandbox/tree/master/web) | RESTful CRUD APIs with Vert.x Web and the Reactive PostgreSQL Client |
+| [spring](https://github.com/hantsy/vertx-sandbox/tree/master/spring) | Spring Framework integration with Vert.x |
+| [cdi](https://github.com/hantsy/vertx-sandbox/tree/master/cdi) | Weld/CDI integration with Vert.x |
+| [rxjava3](https://github.com/hantsy/vertx-sandbox/tree/master/rxjava3) | RESTful CRUD APIs using RxJava 3 bindings |
+| [mutiny-spring-hibernate](https://github.com/hantsy/vertx-sandbox/tree/master/mutiny-spring-hibernate) | RESTful CRUD APIs with SmallRye Mutiny, Spring, and Hibernate Reactive |
+| [kotlin](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin) | RESTful CRUD APIs written in Kotlin |
+| [kotlin-co](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin-co) | RESTful CRUD APIs using Kotlin Coroutines |
+| [graphql-http](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-http) | GraphQL API over HTTP |
+| [graphql-transport-ws](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-transport-ws) | GraphQL API over WebSocket via the [graphql-ws](https://github.com/enisdenjo/graphql-ws) protocol |
 
+## References
 
-## Reference
-
-* [Vertx Documentation](https://vertx.io/docs/)
-* [Building Reactive Microservices in Java](https://developers.redhat.com/promotions/building-reactive-microservices-in-java)
+- [Vert.x Documentation](https://vertx.io/docs/)
+- [Building Reactive Microservices in Java](https://developers.redhat.com/promotions/building-reactive-microservices-in-java)
