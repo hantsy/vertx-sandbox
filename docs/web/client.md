@@ -1,6 +1,6 @@
-# Consuming RESTful APIs with Vert.x HttpClient/WebClient
+﻿# Consuming RESTful APIs with Vert.x HttpClient/WebClient
 
-We have discussed how to build RESTful APIs with Eclipse Vert.x Web in the [web module](../web). In this post, we cover how to create an **HttpClient** and **WebClient** to interact with those RESTful APIs.
+We have discussed how to build RESTful APIs with Eclipse Vert.x Web in the [web module](../start/rest.md). In this post, we cover how to create an **HttpClient** and **WebClient** to interact with those RESTful APIs.
 
 The project uses **Vert.x 5.1.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It uses `Pool`/`PgBuilder` for database access and Jackson BOM (`jackson-bom`, 2.22.0) for version alignment.
 
@@ -10,7 +10,7 @@ Checkout the [complete sample codes from my Github](https://github.com/hantsy/ve
 
 Create a `HttpClient` from the `Vertx` instance:
 
-```java start=null
+```java
 var options = new HttpClientOptions()
     .setDefaultPort(8888);
 var client = vertx.createHttpClient(options);
@@ -18,7 +18,7 @@ var client = vertx.createHttpClient(options);
 
 Send a request:
 
-```java start=null
+```java
 client.request(HttpMethod.GET, "/hello")
     .compose(req -> req.send().compose(HttpClientResponse::body))
     .onSuccess(body -> log.info("response: {}", body))
@@ -29,7 +29,7 @@ client.request(HttpMethod.GET, "/hello")
 
 `WebClient` provides a more fluent API on top of `HttpClient`:
 
-```java start=null
+```java
 var options = new WebClientOptions()
     .setDefaultHost("localhost")
     .setDefaultPort(8888);
@@ -52,7 +52,7 @@ Tests use `@ExtendWith(VertxExtension.class)` from `vertx-junit5` to inject `Ver
 
 In Vert.x 5, `vertx.deployVerticle()` returns a `Future` directly, which uses the fluent `onComplete(testContext.succeeding(...))` pattern:
 
-```java start=null
+```java
 @ExtendWith(VertxExtension.class)
 public class TestMainVerticle {
     private static final Logger LOGGER = Logger.getLogger(TestMainVerticle.class.getName());
@@ -87,7 +87,7 @@ public class TestMainVerticle {
 
 ### Testing GET all posts
 
-```java start=null
+```java
 @Test
 void testGetAll(Vertx vertx, VertxTestContext testContext) {
     client.request(HttpMethod.GET, "/posts")
@@ -104,7 +104,7 @@ void testGetAll(Vertx vertx, VertxTestContext testContext) {
 
 ### Testing 404 Not Found
 
-```java start=null
+```java
 @Test
 void testGetByNoneExistingId(Vertx vertx, VertxTestContext testContext) {
     var postByIdUrl = "/posts/" + UUID.randomUUID();
@@ -121,7 +121,7 @@ void testGetByNoneExistingId(Vertx vertx, VertxTestContext testContext) {
 
 ### Testing a full CRUD flow (chained operations)
 
-```java start=null
+```java
 @Test
 void testCreatePost(Vertx vertx, VertxTestContext testContext) {
     client.request(HttpMethod.POST, "/posts")

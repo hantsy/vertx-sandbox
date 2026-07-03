@@ -1,6 +1,6 @@
-# Building GraphQL APIs with Eclipse Vert.x — WebSocket Transport (graphql-transport-ws)
+﻿# Building GraphQL APIs with Eclipse Vert.x — WebSocket Transport (graphql-transport-ws)
 
-This project is the **WebSocket/Subscription transport** variant of the GraphQL APIs. While the [graphql-http](../web/graphql-http) module uses the standard HTTP `GraphQLHandler` with the legacy `graphql-ws` subprotocol, this module uses the dedicated `GraphQLWSHandler` from `io.vertx.ext.web.handler.graphql.ws` which implements the newer **`graphql-transport-ws`** protocol.
+This project is the **WebSocket/Subscription transport** variant of the GraphQL APIs. While the [graphql-http](./graphql-http.md) module uses the standard HTTP `GraphQLHandler` with the legacy `graphql-ws` subprotocol, this module uses the dedicated `GraphQLWSHandler` from `io.vertx.ext.web.handler.graphql.ws` which implements the newer **`graphql-transport-ws`** protocol.
 
 The project uses **Vert.x 5.1.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It also uses RxJava 3 (`io.reactivex.rxjava3:rxjava`), Lombok, SLF4J/Logback, and Jackson BOM for version alignment.
 
@@ -33,7 +33,7 @@ The project uses `io.vertx:vertx-stack-depchain:${vertx.version}` (pom, import s
 
 The entry point extends `VerticleBase` (Vert.x 5 replacement for `AbstractVerticle`) and uses `Future<?> start()`.
 
-```java start=null
+```java
 @Slf4j
 public class MainVerticle extends VerticleBase {
 
@@ -94,7 +94,7 @@ The key difference from the HTTP variant: the server enables the **`graphql-tran
 
 The route setup uses the dedicated `GraphQLWSHandler` (builder pattern) instead of `GraphQLHandler`:
 
-```java start=null
+```java
 private Router setupRoutes(GraphQL graphQL, DataLoaders dataLoaders) {
     Router router = Router.router(vertx);
 
@@ -147,7 +147,7 @@ Key differences from the HTTP variant:
 
 The `onConnectionInit` callback receives a `ConnectionInitEvent` which wraps the WebSocket message. It allows you to inspect the `connectionParams` payload and accept or reject the connection. This is useful for authentication:
 
-```java start=null
+```java
 .onConnectionInit(connectionInitEvent -> {
     JsonObject payload = connectionInitEvent.message().message()
         .getJsonObject("payload");
@@ -164,7 +164,7 @@ The `onConnectionInit` callback receives a `ConnectionInitEvent` which wraps the
 
 Same PgBuilder pattern as the HTTP variant:
 
-```java start=null
+```java
 private Pool pgPool() {
     PgConnectOptions connectOptions = new PgConnectOptions()
         .setPort(5432)
@@ -256,7 +256,7 @@ enum PostStatus {
 
 In the transport-ws variant, the subscription data fetcher accesses the WebSocket message via `dfe.getLocalContext()` (returning `io.vertx.ext.web.handler.graphql.ws.Message`) instead of the old `ApolloWSMessage`:
 
-```java start=null
+```java
 private final ReplaySubject<Comment> subject = ReplaySubject.create(1);
 
 public DataFetcher<Publisher<Comment>> commentAdded() {
@@ -277,7 +277,7 @@ The `Message` interface provides `.message()` (the raw JSON message) and `.conne
 
 The mutation `addComment` uses RxJava 3's `ReplaySubject` to publish newly created comments to all connected subscription clients:
 
-```java start=null
+```java
 public DataFetcher<CompletionStage<UUID>> addComment() {
     return (DataFetchingEnvironment dfe) -> {
         var input = DatabindCodec.mapper().convertValue(
@@ -294,7 +294,7 @@ public DataFetcher<CompletionStage<UUID>> addComment() {
 
 The test uses `WebSocketClient` to connect via the `graphql-transport-ws` protocol:
 
-```java start=null
+```java
 @ExtendWith(VertxExtension.class)
 @Slf4j
 public class TestMainVerticle {

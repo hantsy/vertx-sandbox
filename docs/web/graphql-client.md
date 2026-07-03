@@ -1,6 +1,6 @@
-# Consuming GraphQL APIs with Vert.x HttpClient/WebClient
+﻿# Consuming GraphQL APIs with Vert.x HttpClient/WebClient
 
-In [a previous post](./client), we covered consuming RESTful APIs with Vert.x HttpClient and WebClient. In this post, we will consume the GraphQL APIs created in the [graphql-http](./graphql-http) and [graphql-transport-ws](./graphql-transport-ws) modules.
+In [a previous post](./client.md), we covered consuming RESTful APIs with Vert.x HttpClient and WebClient. In this post, we will consume the GraphQL APIs created in the [graphql-http](./graphql-http.md) and [graphql-transport-ws](./graphql-transport-ws.md) modules.
 
 Vert.x does not provide a dedicated GraphQL client library like some other frameworks. Instead, you use the generic Vert.x **HttpClient** (low-level) or **WebClient** (high-level) to interact with GraphQL endpoints over HTTP. For WebSocket-based GraphQL (subscriptions), you use the Vert.x **WebSocketClient**.
 
@@ -33,9 +33,9 @@ When an error occurs, the `errors` field contains error details. Unlike RESTful 
 
 ## Using HttpClient (low-level)
 
-The following example is from the [graphql-http test](../web/graphql-http#testing), which sends queries and mutations via `POST /graphql`:
+The following example is from the [graphql-http test](./graphql-http.md#testing), which sends queries and mutations via `POST /graphql`:
 
-```java start=null
+```java
 @ExtendWith(VertxExtension.class)
 @Slf4j
 public class TestMainVerticle {
@@ -91,7 +91,7 @@ The key aspects are:
 
 `WebClient` provides a more fluent API for sending requests, including JSON payloads and multipart forms:
 
-```java start=null
+```java
 var options = new WebClientOptions()
     .setUserAgent(WebClientOptions.loadUserAgent())
     .setDefaultHost("localhost")
@@ -110,7 +110,7 @@ client.post("/graphql")
 
 ### Mutations with Variables
 
-```java start=null
+```java
 client.post("/graphql")
     .sendJson(Map.of(
         "query", "mutation newPost($input:CreatePostInput!){ createPost(createPostInput:$input)}",
@@ -130,7 +130,7 @@ client.post("/graphql")
 
 File uploads follow the [GraphQL multipart request specification](https://github.com/jaydenseric/graphql-multipart-request-spec) and use `MultipartForm`:
 
-```java start=null
+```java
 private void uploadFile(WebClient client) {
     Buffer fileBuf = vertx.fileSystem().readFileBlocking("test.txt");
     MultipartForm form = MultipartForm.create();
@@ -154,9 +154,9 @@ private void uploadFile(WebClient client) {
 
 ## Using WebSocketClient for graphql-transport-ws
 
-For the [graphql-transport-ws](./graphql-transport-ws) variant, all operations flow through a WebSocket connection using the dedicated `WebSocketClient`:
+For the [graphql-transport-ws](./graphql-transport-ws.md) variant, all operations flow through a WebSocket connection using the dedicated `WebSocketClient`:
 
-```java start=null
+```java
 var options = new WebSocketClientOptions()
     .setConnectTimeout(7200)
     .setDefaultHost("localhost")
@@ -194,7 +194,7 @@ client.connect(connectOptions)
     });
 ```
 
-See the [graphql-transport-ws test](../web/graphql-transport-ws#testing) for a complete working example.
+See the [graphql-transport-ws test](./graphql-transport-ws.md#testing) for a complete working example.
 
 ## Summary
 

@@ -1,10 +1,10 @@
-# Building GraphQL APIs with Eclipse Vert.x — HTTP Transport
+﻿# Building GraphQL APIs with Eclipse Vert.x — HTTP Transport
 
 This project demonstrates building GraphQL APIs with Eclipse Vert.x using the standard HTTP transport. It covers schema definitions, custom scalars, directives, data fetchers, data loaders for N+1 query prevention, file uploads, and GraphQL Subscriptions over the `graphql-ws` WebSocket protocol.
 
 The project uses **Vert.x 5.1.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It also uses RxJava 3 (`vertx-rx-java3`), Lombok, SLF4J/Logback, and Jackson BOM for version alignment.
 
-There is also a [WebSocket/Subscription-transport variant](../web/graphql-transport-ws) that uses the `graphql-transport-ws` protocol instead.
+There is also a [WebSocket/Subscription-transport variant](./graphql-transport-ws.md) that uses the `graphql-transport-ws` protocol instead.
 
 Checkout the [complete sample codes from my Github](https://github.com/hantsy/vertx-sandbox/tree/master/graphql-http).
 
@@ -33,7 +33,7 @@ The project uses `io.vertx:vertx-stack-depchain:${vertx.version}` (pom, import s
 
 Vert.x provides `GraphQLHandler` to handle GraphQL requests from clients. The entry point extends `VerticleBase` (the Vert.x 5 replacement for `AbstractVerticle`) and uses `Future<?> start()` instead of the old `start(Promise<Void>)`.
 
-```java start=null
+```java
 @Slf4j
 public class MainVerticle extends VerticleBase {
 
@@ -94,7 +94,7 @@ The `start` method returns `Future<?>` directly. The HTTP server options enable 
 
 The `GraphQLHandler` is now built using the **builder** pattern (Vert.x 5). It accepts a `beforeExecute` callback to inject per-request `DataLoaderRegistry` for batching and caching.
 
-```java start=null
+```java
 private Router setupRoutes(GraphQL graphQL, DataLoaders dataLoaders) {
     Router router = Router.router(vertx);
     router.route().handler(BodyHandler.create());
@@ -128,7 +128,7 @@ Note that `GraphiQLHandler.create(vertx, graphiqlOptions)` uses the overload tha
 
 In Vert.x 5, the recommended way to create a `PgPool` is via `PgBuilder` instead of the static `PgPool.pool()` method.
 
-```java start=null
+```java
 private Pool pgPool() {
     PgConnectOptions connectOptions = new PgConnectOptions()
         .setPort(5432)
@@ -223,7 +223,7 @@ This declares three top-level operation types: **Query**, **Mutation**, and **Su
 
 Instead of wiring data fetchers inside `RuntimeWiring.type()`, the project uses `GraphQLCodeRegistry` to map data fetchers by type coordinates:
 
-```java start=null
+```java
 private GraphQLCodeRegistry buildCodeRegistry(DataFetchers dataFetchers) {
     return GraphQLCodeRegistry.newCodeRegistry()
         .dataFetchers("Query", Map.of(
@@ -253,7 +253,7 @@ The `defaultDataFetcher` uses `PropertyDataFetcher.fetching()` which reflects on
 
 Custom scalars implement `Coercing<JavaType, String>`:
 
-```java start=null
+```java
 public class LocalDateTimeScalar implements Coercing<LocalDateTime, String> {
     @Override
     public String serialize(Object dataFetcherResult) throws CoercingSerializeException {
@@ -280,7 +280,7 @@ public class LocalDateTimeScalar implements Coercing<LocalDateTime, String> {
 
 Scalar types are registered in the `RuntimeWiring`:
 
-```java start=null
+```java
 .scalar(Scalars.localDateTimeType())
 .scalar(Scalars.uuidType())
 .scalar(UploadScalar.build())
@@ -292,7 +292,7 @@ Vert.x GraphQL provides a built-in `UploadScalar` for file uploads.
 
 The `@uppercase` directive uses the newer `env.setFieldDataFetcher()` / `env.getFieldDataFetcher()` API (instead of looking up via `env.getCodeRegistry()`):
 
-```java start=null
+```java
 public class UpperCaseDirectiveWiring implements SchemaDirectiveWiring {
     @Override
     public GraphQLFieldDefinition onField(SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition> env) {
@@ -315,7 +315,7 @@ public class UpperCaseDirectiveWiring implements SchemaDirectiveWiring {
 
 Data fetchers return `CompletionStage` by delegating to the service layer's `Future` via `.toCompletionStage()`. For subscriptions, RxJava 3's `ReplaySubject` acts as an event bus.
 
-```java start=null
+```java
 public DataFetcher<CompletionStage<UUID>> addComment() {
     return (DataFetchingEnvironment dfe) -> {
         var input = DatabindCodec.mapper().convertValue(
@@ -344,7 +344,7 @@ The subscription data fetcher returns a ReactiveStreams `Publisher` from RxJava 
 
 Tests use `@ExtendWith(VertxExtension.class)` (JUnit 5 + Vert.x) with `vertx-junit5`.
 
-```java start=null
+```java
 @ExtendWith(VertxExtension.class)
 @Slf4j
 public class TestMainVerticle {

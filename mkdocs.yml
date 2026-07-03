@@ -31,12 +31,12 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Data Layer:
-    - RESTful APIs with Vert.x Web: data/rest.md
-    - RxJava 3: data/rxjava3.md
-    - Kotlin: data/kotlin.md
-    - Kotlin Coroutines: data/kotlin-co.md
-  - Web Layer:
+  - Getting Start:
+    - RESTful APIs with Vert.x Web: start/rest.md
+    - RxJava 3: start/rxjava3.md
+    - Kotlin: start/kotlin.md
+    - Kotlin Coroutines: start/kotlin-co.md
+  - Web:
     - GraphQL HTTP: web/graphql-http.md
     - GraphQL WebSocket (Transport WS): web/graphql-transport-ws.md
     - GraphQL Client: web/graphql-client.md

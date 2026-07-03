@@ -45,12 +45,12 @@ java -jar target/xxx-fat.jar
 
 ## Subprojects
 
-### Data Layer
+### Getting Start
 
-- [Building RESTful APIs with Eclipse Vert.x](./data/rest.md) — REST API with Vert.x Web, PgPool, and SQL client
-- [Building RESTful APIs with Eclipse Vert.x and RxJava 3](./data/rxjava3.md) — RxJava 3 bindings for reactive data access
-- [Building RESTful APIs with Eclipse Vert.x and Kotlin](./data/kotlin.md) — Kotlin language support
-- [Building RESTful APIs with Eclipse Vert.x and Kotlin Coroutines](./data/kotlin-co.md) — Kotlin coroutines for async programming
+- [Building RESTful APIs with Eclipse Vert.x](./start/rest.md) — REST API with Vert.x Web, PgPool, and SQL client
+- [Building RESTful APIs with Eclipse Vert.x and RxJava 3](./start/rxjava3.md) — RxJava 3 bindings for reactive data access
+- [Building RESTful APIs with Eclipse Vert.x and Kotlin](./start/kotlin.md) — Kotlin language support
+- [Building RESTful APIs with Eclipse Vert.x and Kotlin Coroutines](./start/kotlin-co.md) — Kotlin coroutines for async programming
 
 ### Web Layer
 

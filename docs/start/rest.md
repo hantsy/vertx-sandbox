@@ -8,7 +8,7 @@ Similar to the [Spring Boot intializr](https://start.spring.io),  Eclipse Vertx 
 
 Open your browser, navigate to the [Vertx Starter page](https://start.vertx.io/).  In the **Dependencies** field, select *Vertx Web*, *Reactive  PostgreSQL Client*, and optionally expand the **Advance options** and select the *latest Java version*(at the moment it is **25**). 
 
-![Vertx starter](../starter.png)
+![Vertx starter](./starter.png)
 
 Leave others options as they are, it will use the default values, then hit  **Generate Project** button to generate the project into an archive for downloading.
 

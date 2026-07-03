@@ -1,4 +1,4 @@
-# Exception Handling and Validation Handler in Eclipse Vert.x
+﻿# Exception Handling and Validation Handler in Eclipse Vert.x
 
 Vert.x's `Future` includes several hooks when the execution is done:
 
@@ -6,7 +6,7 @@ Vert.x's `Future` includes several hooks when the execution is done:
 * `onSuccess` — handles the successful result.
 * `onFailure` — catches the exception thrown in the execution.
 
-Let's explore exception handling using the [web module](../web) as an example.
+Let's explore exception handling using the [web module](../start/rest.md) as an example.
 
 The project uses **Vert.x 5.1.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It uses `Pool`/`PgBuilder` for PostgreSQL access and `vertx-web-validation` for request body validation.
 
@@ -14,7 +14,7 @@ The project uses **Vert.x 5.1.3**, **Java 25**, and the **Launcher** approach (`
 
 Assume retrieving a `Post` via a non-existing id throws a `PostNotFoundException`:
 
-```java start=null
+```java
 public class PostNotFoundException extends RuntimeException {
     public PostNotFoundException(UUID id) {
         super("Post id: " + id + " was not found. ");
@@ -24,7 +24,7 @@ public class PostNotFoundException extends RuntimeException {
 
 In the `PostRepository.findById` method, the exception is thrown when no row is found:
 
-```java start=null
+```java
 public Future<Post> findById(UUID id) {
     Objects.requireNonNull(id, "id can not be null");
     return client.preparedQuery("SELECT * FROM posts WHERE id=$1")
@@ -41,7 +41,7 @@ public Future<Post> findById(UUID id) {
 
 In the `PostsHandler`, use `RoutingContext.fail()` to propagate the exception to a failure handler:
 
-```java start=null
+```java
 public void get(RoutingContext rc) {
     var params = rc.pathParams();
     var id = params.get("id");
@@ -53,7 +53,7 @@ public void get(RoutingContext rc) {
 
 In the router definition, a `failureHandler` catches the exception and returns the appropriate HTTP status code:
 
-```java start=null
+```java
 router.get("/posts/:id").produces("application/json")
     .handler(handlers::get)
     .failureHandler(frc -> {
@@ -88,7 +88,7 @@ Add the following dependency into your *pom.xml*:
 
 ### Router Setup with Validation
 
-```java start=null
+```java
 router.post("/posts").consumes("application/json")
     .handler(BodyHandler.create())
     .handler(validation)
@@ -103,7 +103,7 @@ router.post("/posts").consumes("application/json")
 
 ### Defining a Validation Handler
 
-```java start=null
+```java
 SchemaRouter schemaRouter = SchemaRouter.create(vertx, new SchemaRouterOptions());
 SchemaParser schemaParser = SchemaParser.createDraft201909SchemaParser(schemaRouter);
 
@@ -126,7 +126,7 @@ This validates that the request body contains a JSON object with a `title` (5-10
 
 When validation fails, a `BodyProcessorException` is thrown. The failure handler catches it and returns a 400 response:
 
-```java start=null
+```java
 Handler<RoutingContext> validationFailureHandler = (RoutingContext rc) -> {
     if (rc.failure() instanceof BodyProcessorException exception) {
         rc.response()
