@@ -1,9 +1,9 @@
 package com.example.demo;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.junit5.VertxExtension;
 import io.vertx.junit5.VertxTestContext;
+import io.vertx.rxjava3.core.RxHelper;
+import io.vertx.rxjava3.core.Vertx;
 import io.vertx.rxjava3.ext.web.client.WebClient;
 import io.vertx.rxjava3.ext.web.codec.BodyCodec;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,12 +21,15 @@ public class TestMainVerticle {
 
     @BeforeEach
     void setUp(Vertx vertx, VertxTestContext testContext) {
-        vertx.deployVerticle(new MainVerticle())
-            .onComplete(testContext.succeeding(id -> {
-                LOGGER.info("deployed: " + id);
-                this.client = WebClient.create(io.vertx.rxjava3.core.Vertx.newInstance(vertx));
-                testContext.completeNow();
-            }));
+        RxHelper.deployVerticle(vertx, new MainVerticle())
+            .subscribe(
+                id -> {
+                    LOGGER.info("deployed: " + id);
+                    this.client = WebClient.create(vertx);
+                    testContext.completeNow();
+                },
+                testContext::failNow
+            );
     }
 
     @Test
