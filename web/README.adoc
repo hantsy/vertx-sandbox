@@ -1,24 +1,24 @@
 = Demo
 
-image:https://img.shields.io/badge/vert.x-4.0.0-purple.svg[link="https://vertx.io"]
+image:https://img.shields.io/badge/vert.x-5.1.3-purple.svg[link="https://vertx.io"]
 
-This application was generated using http://start.vertx.io
+Part of the https://github.com/hantsy/vertx-sandbox[vertx-sandbox] multi-module project — RESTful APIs with Vert.x Web, PgPool, and SQL client.
 
 == Building
 
 To launch your tests:
 ```
-./mvnw clean test
+mvn clean test
 ```
 
 To package your application:
 ```
-./mvnw clean package
+mvn clean package
 ```
 
 To run your application:
 ```
-./mvnw clean compile exec:java
+mvn clean compile exec:java
 ```
 
 == Help
@@ -27,5 +27,4 @@ To run your application:
 * https://stackoverflow.com/questions/tagged/vert.x?sort=newest&pageSize=15[Vert.x Stack Overflow]
 * https://groups.google.com/forum/?fromgroups#!forum/vertx[Vert.x User Group]
 * https://gitter.im/eclipse-vertx/vertx-users[Vert.x Gitter]
-
 
