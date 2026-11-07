@@ -10,9 +10,6 @@ import com.example.demo.repository.CommentRepository;
 import com.example.demo.repository.PostRepository;
 import com.example.demo.service.AuthorService;
 import com.example.demo.service.PostService;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import graphql.GraphQL;
 import graphql.schema.GraphQLCodeRegistry;
 import graphql.schema.GraphQLSchema;
@@ -24,7 +21,6 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import io.vertx.core.Future;
 import io.vertx.core.VerticleBase;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -51,16 +47,8 @@ import static graphql.schema.idl.RuntimeWiring.newRuntimeWiring;
 @Slf4j
 public class MainVerticle extends VerticleBase {
 
-    static {
-        log.info("Customizing the built-in jackson ObjectMapper...");
-        var objectMapper = DatabindCodec.mapper();
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS);
-        objectMapper.disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
-
-        JavaTimeModule module = new JavaTimeModule();
-        objectMapper.registerModule(module);
-    }
+    // Jackson 3 has built-in java.time support and ISO-8601 date output by default,
+    // so the Jackson 2 era ObjectMapper customization is no longer needed.
 
     @Override
     public Future<?> start() throws Exception {

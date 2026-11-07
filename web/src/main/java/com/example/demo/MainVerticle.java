@@ -1,13 +1,9 @@
 package com.example.demo;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.VerticleBase;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.pgclient.PgBuilder;
@@ -25,16 +21,7 @@ public class MainVerticle extends VerticleBase {
 
     private final static Logger LOGGER = Logger.getLogger(MainVerticle.class.getName());
 
-    static {
-        LOGGER.info("Customizing the built-in jackson ObjectMapper...");
-        var objectMapper = DatabindCodec.mapper();
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS);
-        objectMapper.disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
-
-        JavaTimeModule module = new JavaTimeModule();
-        objectMapper.registerModule(module);
-    }
+    // Jackson 3 has built-in java.time support and ISO-8601 date output by default.
 
     @Override
     public Future<?> start() throws Exception {

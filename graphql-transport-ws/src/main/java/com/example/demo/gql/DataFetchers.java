@@ -7,7 +7,7 @@ import graphql.schema.DataFetchingEnvironment;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.observables.ConnectableObservable;
 import io.reactivex.rxjava3.subjects.ReplaySubject;
-import io.vertx.core.json.jackson.DatabindCodec;
+import io.vertx.core.json.jackson.v3.DatabindCodec;
 import io.vertx.ext.web.handler.graphql.ws.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
