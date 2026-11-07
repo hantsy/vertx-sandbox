@@ -369,36 +369,30 @@ public Future<?> start() throws Exception {
 }
 ```
 
-By default Vertx Web uses Jackson to serialize and deserialize the request/response payload. Unfortunately it does not register a Java DateTime module by default.
+By default Vert.x Web uses Jackson to serialize and deserialize the request/response payload. Vert.x 5.2+ supports **Jackson 3** (`tools.jackson`) as its JSON backend — see the [Migrating to Jackson 3](../guides/jackson3.md) guide for the details.
 
-Add the following dependencies in the *pom.xml* file. The Jackson version is managed via the `jackson-bom` in `dependencyManagement`.
+Add the following dependency in the *pom.xml* file. The Jackson version is managed via the `tools.jackson:jackson-bom` in `dependencyManagement`.
 
 ```xml
 <dependency>
-    <groupId>com.fasterxml.jackson.core</groupId>
+    <groupId>tools.jackson.core</groupId>
     <artifactId>jackson-databind</artifactId>
-    <version>${jackson.version}</version>
-</dependency>
-<dependency>
-    <groupId>com.fasterxml.jackson.datatype</groupId>
-    <artifactId>jackson-datatype-jsr310</artifactId>
-    <version>${jackson.version}</version>
 </dependency>
 ```
 
-Add a `jackson.version` property to the `properties ` section, and include the `jackson-bom` in `dependencyManagement`.
+Add a `jackson3.version` property to the `properties` section, and include the `jackson-bom` in `dependencyManagement`.
 
 ```xml
-<jackson.version>2.22.0</jackson.version>
+<jackson3.version>3.1.4</jackson3.version>
 ```
 
 ```xml
 <dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>com.fasterxml.jackson</groupId>
+            <groupId>tools.jackson</groupId>
             <artifactId>jackson-bom</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson3.version}</version>
             <type>pom</type>
             <scope>import</scope>
         </dependency>
@@ -406,20 +400,7 @@ Add a `jackson.version` property to the `properties ` section, and include the `
 </dependencyManagement>
 ```
 
-Then add a static block to configure DateTime serialization and deserialization in the `MainVerticle` class.
-
-```java
-static {
-    LOGGER.info("Customizing the built-in jackson ObjectMapper...");
-    var objectMapper = DatabindCodec.mapper();
-    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    objectMapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS);
-    objectMapper.disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
-
-    JavaTimeModule module = new JavaTimeModule();
-    objectMapper.registerModule(module);
-}
-```
+No extra `JavaTimeModule` registration or mapper customization is needed: Jackson 3 handles `java.time` types out of the box and uses ISO-8601 date formats by default.
 
 Let's start the application.  
 

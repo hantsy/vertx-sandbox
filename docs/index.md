@@ -6,11 +6,11 @@ A multi-module project demonstrating various Eclipse Vert.x 5 features, includin
 
 | Technology | Version |
 |---|---|
-| Vert.x | 5.1.3 |
+| Vert.x | 5.2.3 |
 | Java | 25 |
-| Kotlin | 2.4.0 |
-| Jackson | 2.22.0 |
-| JUnit | 6.0.2 |
+| Kotlin | 2.4.21 |
+| Jackson | 3.1.4 (`tools.jackson`) |
+| JUnit | 6.1.3 |
 | Maven Shade Plugin | 3.6.1 |
 | Maven Surefire | 3.5.4 |
 | Exec Maven | 3.6.3 |
@@ -64,4 +64,8 @@ java -jar target/xxx-fat.jar
 - [Integrating Vert.x Application with Spring Framework](./integration/spring.md) — Spring DI integration
 - [Integrating Vert.x Application with Weld/CDI](./integration/cdi.md) — CDI integration
 - [Building Vert.x Application with SmallRye Mutiny, Spring and Hibernate](./integration/mutiny-spring-hibernate.md) — Mutiny + Hibernate Reactive
+
+### Guides
+
+- [Migrating to Jackson 3](./guides/jackson3.md) — Switching Vert.x from Jackson 2 to the Jackson 3 (`tools.jackson`) backend
 

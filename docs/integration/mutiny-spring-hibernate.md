@@ -11,17 +11,17 @@ In this post, we will reuse the Spring base code, but:
 
 This module is built with:
 
-- **Vert.x 5.1.3** (via `vertx-stack-depchain` BOM)
+- **Vert.x 5.2.3** (via `vertx-stack-depchain` BOM)
 - **Java 25** (`maven.compiler.release=25`)
 - **SmallRye Mutiny Vert.x 4.0.0** (`smallrye-mutiny-vertx-core`, `-web`, `-pg-client`)
 - **Hibernate Reactive 4.2.2.Final** (`hibernate-reactive-core`)
 - **Hibernate ORM 7.2.3.Final** (`hibernate-core`, `hibernate-processor`)
 - **Spring Boot 4.0.2** (via `spring-boot-dependencies` BOM)
-- **JUnit 6.0.2**, AssertJ 3.27.7
+- **JUnit 6.1.3**, AssertJ 3.27.7
 
 The project uses `com.example.demo.DemoApplication` as the main class (not `VertxApplication`).
 
-No `jackson-bom` is required — Jackson version is managed by the `vertx-stack-depchain`.
+Jackson 3 is aligned via the imported `tools.jackson:jackson-bom` — see the [Migrating to Jackson 3](../guides/jackson3.md) guide.
 
 ## Hibernate Dependencies
 
