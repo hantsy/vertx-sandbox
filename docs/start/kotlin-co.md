@@ -330,4 +330,102 @@ class DataInitializer(private val client: Pool) {
 }
 ```
 
+## Customizing the Jackson 3 mapper
+
+Vert.x 5.2 uses the built-in Jackson 3 codec (`io.vertx.core.json.jackson.v3.DatabindCodec`) as its JSON backend, and Jackson 3 handles `java.time` types out of the box.
+
+If you need to customize the mapper, Jackson 3 mappers are **immutable**: the old pattern of mutating `DatabindCodec.mapper()` in a `companion object` init block no longer compiles. Instead, call `rebuild()` on the built-in mapper to get a builder preconfigured with the default settings, then register the result through the `JsonFactory` SPI.
+
+One Kotlin-specific caveat: `io.vertx.core.json.jackson.v3.DatabindCodec` lives in a multi-release jar entry that is invisible to the Kotlin compiler, so it has to be loaded reflectively at runtime.
+
+```kotlin
+class KotlinJsonFactory : JsonFactory {
+
+    override fun order(): Int = 0
+
+    override fun codec(): JsonCodec = CODEC
+
+    companion object {
+        private fun builtInMapper(): JsonMapper =
+            Class.forName("io.vertx.core.json.jackson.v3.DatabindCodec")
+                .getMethod("mapper")
+                .invoke(null) as JsonMapper
+
+        @JvmField
+        val MAPPER: ObjectMapper = builtInMapper()
+            .rebuild()
+            .addModule(KotlinModule.Builder().build())
+            .changeDefaultPropertyInclusion { incl ->
+                incl.withValueInclusion(JsonInclude.Include.NON_EMPTY)
+            }
+            .build()
+
+        // Matches the default DatabindCodec: when decoding to Object (e.g. via
+        // rc.body()?.asJsonObject()), Map/List results must be adapted to
+        // JsonObject/JsonArray.
+        @Suppress("UNCHECKED_CAST")
+        private fun <T> adapt(value: T, clazz: Class<T>): T =
+            if (clazz == Object::class.java) {
+                when (value) {
+                    is Map<*, *> -> JsonObject(value as Map<String, Any?>) as T
+                    is List<*> -> JsonArray(value) as T
+                    else -> value
+                }
+            } else {
+                value
+            }
+
+        private val CODEC = object : JsonCodec {
+            override fun <T> fromString(json: String, clazz: Class<T>): T =
+                try {
+                    adapt(MAPPER.readValue(json, clazz), clazz)
+                } catch (e: Exception) {
+                    throw DecodeException(e.message, e)
+                }
+
+            override fun <T> fromBuffer(json: Buffer, clazz: Class<T>): T =
+                try {
+                    adapt(MAPPER.readValue(json.bytes, clazz), clazz)
+                } catch (e: Exception) {
+                    throw DecodeException(e.message, e)
+                }
+
+            override fun <T> fromValue(json: Any?, toValueType: Class<T>): T =
+                MAPPER.convertValue(json, toValueType)
+
+            override fun toString(obj: Any?, pretty: Boolean): String =
+                try {
+                    if (pretty) {
+                        MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(obj)
+                    } else {
+                        MAPPER.writeValueAsString(obj)
+                    }
+                } catch (e: Exception) {
+                    throw EncodeException(e.message, e)
+                }
+
+            override fun toBuffer(obj: Any?, pretty: Boolean): Buffer =
+                try {
+                    val bytes = if (pretty) {
+                        MAPPER.writerWithDefaultPrettyPrinter().writeValueAsBytes(obj)
+                    } else {
+                        MAPPER.writeValueAsBytes(obj)
+                    }
+                    Buffer.buffer(bytes)
+                } catch (e: Exception) {
+                    throw EncodeException(e.message, e)
+                }
+        }
+    }
+}
+```
+
+Register it via Java's `ServiceLoader` mechanism by adding a file named `META-INF/services/io.vertx.core.spi.JsonFactory` to `src/main/resources` with a single line:
+
+```
+com.example.demo.KotlinJsonFactory
+```
+
+A complete working example is in the [`kotlin` subproject](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin) of the source codes, and see the [Migrating to Jackson 3](../guides/jackson3-migration.md) guide for the details.
+
 Get [the example codes](https://github.com/hantsy/vertx-sandbox/tree/master/kotlin-co) from my Github.

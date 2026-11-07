@@ -66,7 +66,7 @@ Then add the Jackson 3 databind module as a normal dependency:
 
 ## Code changes
 
-Jackson 3 mappers are **immutable**; modules must be registered when the mapper is built. The Vert.x 4/early-5 pattern of customizing the shared mapper at startup:
+Jackson 3 mappers are **immutable**; modules and settings must be configured when the mapper is built. The Vert.x 4/early-5 pattern of customizing the shared mapper at startup:
 
 ```java
 // Jackson 2 era — no longer works
@@ -75,6 +75,28 @@ mapper.registerModule(new JavaTimeModule());
 ```
 
 is no longer required: date/time handling works out of the box, and Vert.x registers its own `VertxModule` automatically.
+
+If you still need customizations (extra modules, property inclusion, etc.), call `rebuild()` on the built-in mapper. It returns a builder preconfigured with all default settings, so you only change what you care about — then plug the result back into Vert.x through the `JsonFactory` SPI (`META-INF/services/io.vertx.core.spi.JsonFactory`):
+
+```java
+public class CustomJsonFactory implements JsonFactory {
+
+    public static final ObjectMapper MAPPER = DatabindCodec.mapper()
+            .rebuild()
+            .changeDefaultPropertyInclusion(incl ->
+                    incl.withValueInclusion(JsonInclude.Include.NON_NULL))
+            .build();
+
+    @Override
+    public int order() { return 0; }
+
+    @Override
+    public JsonCodec codec() { return CODEC; } // wraps MAPPER — see the subproject examples
+}
+```
+
+!!! warning
+    A custom `JsonCodec` must replicate one non-obvious behavior of the built-in `DatabindCodec`: when decoding with target type `Object.class` (which is what `Json.decodeValue(buffer)` and `rc.body().asJsonObject()` use), plain Jackson `Map`/`List` results must be converted to `JsonObject`/`JsonArray`. Without that adaptation, request bodies fail with a `ClassCastException` (HTTP 500). Working implementations are in the `web` and `kotlin` subprojects.
 
 !!! tip
     After migrating, start the application and check the logs. Vert.x prints which codec it activated, e.g.:
@@ -85,11 +107,11 @@ is no longer required: date/time handling works out of the box, and Vert.x regis
 
 ## Kotlin projects
 
-The Kotlin subprojects (`kotlin`, `kotlin-co`) need `KotlinModule` registered on the mapper used by `io.vertx.core.json.Json` — otherwise `Json.decodeValue(buffer, Post.class)` fails on data classes. Since Jackson 3 mappers are immutable and Vert.x builds the mapper itself, the migration registers a custom `JsonFactory` SPI implementation:
+The Kotlin subprojects (`kotlin`, `kotlin-co`) need `KotlinModule` registered on the mapper used by `io.vertx.core.json.Json` — otherwise `Json.decodeValue(buffer, Post.class)` fails on data classes. Since Jackson 3 mappers are immutable and Vert.x builds the mapper itself, the `kotlin` project registers a custom `JsonFactory` SPI implementation:
 
-- `src/main/kotlin/com/example/demo/KotlinJsonFactory.kt` builds a `JsonMapper` with `VertxModule` + `KotlinModule` and exposes a shared `MAPPER`, wrapped in a Vert.x `JsonCodec`.
+- `src/main/kotlin/com/example/demo/KotlinJsonFactory.kt` calls `rebuild()` on the built-in `DatabindCodec` mapper, adds `KotlinModule` (and, as a customization example, sets the default property inclusion to `NON_EMPTY`), and exposes a shared `MAPPER`, wrapped in a Vert.x `JsonCodec`.
 - `src/main/resources/META-INF/services/io.vertx.core.spi.JsonFactory` points to it.
-- `VertxModule` lives in a multi-release JAR entry that the Kotlin compiler cannot see, so it is loaded reflectively at runtime.
+- Both `DatabindCodec` and its `VertxModule` live in multi-release JAR entries that the Kotlin compiler cannot see, so they are loaded reflectively at runtime.
 
 Application code then simply uses `Json.encodePrettily(...)` / `Json.decodeValue(...)` as before, and tests deserialize with `KotlinJsonFactory.MAPPER.readValue(body, jacksonTypeRef<List<Post>>())`.
 

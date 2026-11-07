@@ -402,6 +402,105 @@ Add a `jackson3.version` property to the `properties` section, and include the `
 
 No extra `JavaTimeModule` registration or mapper customization is needed: Jackson 3 handles `java.time` types out of the box and uses ISO-8601 date formats by default.
 
+Vert.x 5.2 uses the built-in Jackson 3 codec (`io.vertx.core.json.jackson.v3.DatabindCodec`) when the Jackson 2 `com.fasterxml.jackson.core:jackson-core` artifact is absent from the classpath.
+
+If you still need to customize the mapper, note that Jackson 3 mappers are **immutable**: the old pattern of mutating `DatabindCodec.mapper()` in a static block no longer compiles. Instead, call `rebuild()` on the built-in mapper to obtain a builder preconfigured with the default settings, adjust it, and register the result through the `JsonFactory` SPI.
+
+Create a `CustomJsonFactory` class:
+
+```java
+public class CustomJsonFactory implements JsonFactory {
+
+    public static final ObjectMapper MAPPER = DatabindCodec.mapper()
+            .rebuild()
+            .changeDefaultPropertyInclusion(incl ->
+                    incl.withValueInclusion(JsonInclude.Include.NON_NULL))
+            .build();
+
+    private static final JsonCodec CODEC = new JsonCodec() {
+
+        // Matches the default DatabindCodec: when decoding to Object (e.g. via
+        // rc.body().asJsonObject()), Map/List results must be adapted to
+        // JsonObject/JsonArray.
+        private static <T> T adapt(Object value, Class<T> clazz) {
+            if (clazz == Object.class) {
+                if (value instanceof Map<?, ?> map) {
+                    return (T) new JsonObject((Map<String, Object>) map);
+                }
+                if (value instanceof List<?> list) {
+                    return (T) new JsonArray(list);
+                }
+            }
+            return (T) value;
+        }
+
+        @Override
+        public <T> T fromString(String json, Class<T> clazz) {
+            try {
+                return adapt(MAPPER.readValue(json, clazz), clazz);
+            } catch (Exception e) {
+                throw new DecodeException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public <T> T fromBuffer(Buffer json, Class<T> clazz) {
+            try {
+                return adapt(MAPPER.readValue(json.getBytes(), clazz), clazz);
+            } catch (Exception e) {
+                throw new DecodeException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public <T> T fromValue(Object json, Class<T> toValueType) {
+            return MAPPER.convertValue(json, toValueType);
+        }
+
+        @Override
+        public String toString(Object object, boolean pretty) {
+            try {
+                return pretty
+                        ? MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(object)
+                        : MAPPER.writeValueAsString(object);
+            } catch (Exception e) {
+                throw new EncodeException(e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public Buffer toBuffer(Object object, boolean pretty) {
+            try {
+                byte[] bytes = pretty
+                        ? MAPPER.writerWithDefaultPrettyPrinter().writeValueAsBytes(object)
+                        : MAPPER.writeValueAsBytes(object);
+                return Buffer.buffer(bytes);
+            } catch (Exception e) {
+                throw new EncodeException(e.getMessage(), e);
+            }
+        }
+    };
+
+    @Override
+    public int order() {
+        return 0;
+    }
+
+    @Override
+    public JsonCodec codec() {
+        return CODEC;
+    }
+}
+```
+
+Then register it via Java's `ServiceLoader` mechanism by adding a file named `META-INF/services/io.vertx.core.spi.JsonFactory` to `src/main/resources` with a single line:
+
+```
+com.example.demo.CustomJsonFactory
+```
+
+Vert.x picks the factory with the lowest `order()` at bootstrap, so the customized mapper is used everywhere `Json`, `JsonObject`, and `BodyHandler` are involved. A complete working example is in the [`web` subproject](https://github.com/hantsy/vertx-sandbox/tree/master/web) of the source codes.
+
 Let's start the application.  
 
 Simply fetch [the source codes](https://github.com/hantsy/vertx-sandbox), it provides a docker compose file.
