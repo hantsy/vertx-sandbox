@@ -47,4 +47,4 @@ nav:
     - CDI / Weld: integration/cdi.md
     - Mutiny + Spring + Hibernate Reactive: integration/mutiny-spring-hibernate.md
   - Guides:
-    - Migrating to Jackson 3: guides/jackson3.md
+    - Jackson 3 Migration: guides/jackson3-migration.md

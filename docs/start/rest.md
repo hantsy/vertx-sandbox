@@ -369,7 +369,7 @@ public Future<?> start() throws Exception {
 }
 ```
 
-By default Vert.x Web uses Jackson to serialize and deserialize the request/response payload. Vert.x 5.2+ supports **Jackson 3** (`tools.jackson`) as its JSON backend — see the [Migrating to Jackson 3](../guides/jackson3.md) guide for the details.
+By default Vert.x Web uses Jackson to serialize and deserialize the request/response payload. Vert.x 5.2+ supports **Jackson 3** (`tools.jackson`) as its JSON backend — see the [Migrating to Jackson 3](../guides/jackson3-migration.md) guide for the details.
 
 Add the following dependency in the *pom.xml* file. The Jackson version is managed via the `tools.jackson:jackson-bom` in `dependencyManagement`.
 

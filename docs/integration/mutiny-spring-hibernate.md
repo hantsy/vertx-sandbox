@@ -21,7 +21,7 @@ This module is built with:
 
 The project uses `com.example.demo.DemoApplication` as the main class (not `VertxApplication`).
 
-Jackson 3 is aligned via the imported `tools.jackson:jackson-bom` — see the [Migrating to Jackson 3](../guides/jackson3.md) guide.
+Jackson 3 is aligned via the imported `tools.jackson:jackson-bom` — see the [Migrating to Jackson 3](../guides/jackson3-migration.md) guide.
 
 ## Hibernate Dependencies
 

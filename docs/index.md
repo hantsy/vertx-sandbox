@@ -67,5 +67,5 @@ java -jar target/xxx-fat.jar
 
 ### Guides
 
-- [Migrating to Jackson 3](./guides/jackson3.md) — Switching Vert.x from Jackson 2 to the Jackson 3 (`tools.jackson`) backend
+- [Migrating to Jackson 3](./guides/jackson3-migration.md) — Switching Vert.x from Jackson 2 to the Jackson 3 (`tools.jackson`) backend
 
