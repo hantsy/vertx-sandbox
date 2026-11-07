@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directories:
+      - /cdi
+      - /graphql-http
+      - /graphql-transport-ws
+      - /kotlin
+      - /kotlin-co
+      - /mutiny-spring-hibernate
+      - /rxjava3
+      - /spring
+      - /web
+    schedule:
+      interval: weekly
+    groups:
+      maven-dependencies:
+        patterns:
+          - "*"
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
