@@ -11,16 +11,16 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <maven-compiler-plugin.version>3.14.1</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
         <maven.compiler.release>25</maven.compiler.release>
 
-        <maven-shade-plugin.version>3.6.1</maven-shade-plugin.version>
-        <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
-        <exec-maven-plugin.version>3.6.3</exec-maven-plugin.version>
+        <maven-shade-plugin.version>3.6.2</maven-shade-plugin.version>
+        <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
+        <exec-maven-plugin.version>3.7.0</exec-maven-plugin.version>
 
         <vertx.version>5.2.3</vertx.version>
         <junit-jupiter.version>6.1.3</junit-jupiter.version>
-        <jackson3.version>3.1.4</jackson3.version>
+        <jackson3.version>3.3.0</jackson3.version>
         <assertj.version>3.27.7</assertj.version>
         <slf4j.version>2.0.20</slf4j.version>
         <logback.version>1.6.6</logback.version>
