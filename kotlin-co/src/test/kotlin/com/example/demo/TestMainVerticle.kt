@@ -1,13 +1,12 @@
 package com.example.demo
 
-import com.fasterxml.jackson.core.type.TypeReference
 import io.kotest.matchers.equals.shouldBeEqual
 import io.vertx.core.Vertx
-import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.kotlin.coroutines.coAwait
 import kotlinx.coroutines.test.runTest
+import tools.jackson.module.kotlin.jacksonTypeRef
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -48,7 +47,7 @@ class TestMainVerticle {
         response.statusCode() shouldBeEqual 200
         LOGGER.info("response :${response.bodyAsString()}")
         val body = response.bodyAsString()
-        val posts: List<Post> = DatabindCodec.mapper().readValue(body, object : TypeReference<List<Post>>() {})
+        val posts: List<Post> = KotlinJsonFactory.MAPPER.readValue(body, jacksonTypeRef<List<Post>>())
         LOGGER.info("posts: ${posts}")
         //posts.size() shouldBeEqual 2
     }

@@ -29,11 +29,11 @@ In this post, we will introduce the Spring framework to manage the dependencies 
 
 This module is built with:
 
-- **Vert.x 5.1.3** (via `vertx-stack-depchain` BOM)
+- **Vert.x 5.2.3** (via `vertx-stack-depchain` BOM)
 - **Java 25** (`maven.compiler.release=25`)
 - **Spring Framework 7.0.3** (via `spring-framework-bom` BOM)
-- **Jackson 2.22.0** (via `jackson-bom`)
-- **JUnit 6.0.2**, AssertJ 3.27.7
+- **Jackson 3.1.4** (via `tools.jackson:jackson-bom`)
+- **JUnit 6.1.3**, AssertJ 3.27.7
 - **Maven Shade Plugin 3.6.1**, Exec Maven Plugin 3.6.3
 
 The project uses `com.example.demo.DemoApplication` as the main class (not `VertxApplication`).

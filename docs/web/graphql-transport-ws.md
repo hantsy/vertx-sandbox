@@ -2,7 +2,7 @@
 
 This project is the **WebSocket/Subscription transport** variant of the GraphQL APIs. While the [graphql-http](./graphql-http.md) module uses the standard HTTP `GraphQLHandler` with the legacy `graphql-ws` subprotocol, this module uses the dedicated `GraphQLWSHandler` from `io.vertx.ext.web.handler.graphql.ws` which implements the newer **`graphql-transport-ws`** protocol.
 
-The project uses **Vert.x 5.1.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It also uses RxJava 3 (`io.reactivex.rxjava3:rxjava`), Lombok, SLF4J/Logback, and Jackson BOM for version alignment.
+The project uses **Vert.x 5.2.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It also uses RxJava 3 (`io.reactivex.rxjava3:rxjava`), Lombok, SLF4J/Logback, and Jackson 3 BOM for version alignment.
 
 In this module, **all** GraphQL operations (queries, mutations, and subscriptions) flow through the WebSocket connection, rather than just HTTP POST for queries/mutations and WebSocket only for subscriptions.
 
@@ -24,7 +24,7 @@ Other key dependencies include:
 - `io.reactivex.rxjava3:rxjava` — RxJava 3 (used for ReactiveStreams `Publisher` in subscriptions)
 - `vertx-pg-client` — PostgreSQL client (via `Pool`/`PgBuilder`)
 - `vertx-launcher-application` — Launcher entry point
-- `jackson-bom` — Jackson version alignment (2.22.0)
+- `tools.jackson:jackson-bom` — Jackson 3 version alignment (3.1.4)
 - Lombok, SLF4J + Logback
 
 The project uses `io.vertx:vertx-stack-depchain:${vertx.version}` (pom, import scope) for dependency management.

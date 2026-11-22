@@ -8,7 +8,7 @@ Vert.x's `Future` includes several hooks when the execution is done:
 
 Let's explore exception handling using the [web module](../start/rest.md) as an example.
 
-The project uses **Vert.x 5.1.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It uses `Pool`/`PgBuilder` for PostgreSQL access and `vertx-web-validation` for request body validation.
+The project uses **Vert.x 5.2.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It uses `Pool`/`PgBuilder` for PostgreSQL access and `vertx-web-validation` for request body validation.
 
 ## Exception Handling with Failure Handler
 

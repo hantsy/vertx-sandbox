@@ -2,7 +2,7 @@
 
 We have discussed how to build RESTful APIs with Eclipse Vert.x Web in the [web module](../start/rest.md). In this post, we cover how to create an **HttpClient** and **WebClient** to interact with those RESTful APIs.
 
-The project uses **Vert.x 5.1.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It uses `Pool`/`PgBuilder` for database access and Jackson BOM (`jackson-bom`, 2.22.0) for version alignment.
+The project uses **Vert.x 5.2.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It uses `Pool`/`PgBuilder` for database access and Jackson 3 BOM (`tools.jackson:jackson-bom`, 3.1.4) for version alignment.
 
 Checkout the [complete sample codes from my Github](https://github.com/hantsy/vertx-sandbox/tree/master/web).
 

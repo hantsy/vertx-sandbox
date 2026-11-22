@@ -2,7 +2,7 @@
 
 This project demonstrates building GraphQL APIs with Eclipse Vert.x using the standard HTTP transport. It covers schema definitions, custom scalars, directives, data fetchers, data loaders for N+1 query prevention, file uploads, and GraphQL Subscriptions over the `graphql-ws` WebSocket protocol.
 
-The project uses **Vert.x 5.1.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It also uses RxJava 3 (`vertx-rx-java3`), Lombok, SLF4J/Logback, and Jackson BOM for version alignment.
+The project uses **Vert.x 5.2.3**, **Java 25**, and the **Launcher** approach (`io.vertx.launcher.application.VertxApplication`). It also uses RxJava 3 (`vertx-rx-java3`), Lombok, SLF4J/Logback, and Jackson 3 BOM for version alignment.
 
 There is also a [WebSocket/Subscription-transport variant](./graphql-transport-ws.md) that uses the `graphql-transport-ws` protocol instead.
 
@@ -24,7 +24,7 @@ Other key dependencies include:
 - `vertx-rx-java3` — RxJava 3 bindings (used for ReactiveStreams `Publisher` in subscriptions)
 - `vertx-pg-client` — PostgreSQL client (via `Pool`/`PgBuilder`)
 - `vertx-launcher-application` — Launcher entry point
-- `jackson-bom` — Jackson version alignment (2.22.0)
+- `tools.jackson:jackson-bom` — Jackson 3 version alignment (3.1.4)
 - Lombok, SLF4J + Logback
 
 The project uses `io.vertx:vertx-stack-depchain:${vertx.version}` (pom, import scope) for dependency management.

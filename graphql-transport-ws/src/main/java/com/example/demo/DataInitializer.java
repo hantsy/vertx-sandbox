@@ -52,10 +52,12 @@ public class DataInitializer {
     }
 
     Future<?> cleanData() {
-        return Future.join(
-                this.comments.deleteAll().onSuccess(event -> log.info("deleted comments: {}", event)),
-                this.posts.deleteAll().onSuccess(event -> log.info("deleted posts: {}", event)),
-                this.authors.deleteAll().onSuccess(event -> log.info("deleted users: {}", event))
-        );
+        // sequential to respect foreign key order: posts reference users
+        return this.comments.deleteAll()
+                .onSuccess(event -> log.info("deleted comments: {}", event))
+                .compose(it -> this.posts.deleteAll())
+                .onSuccess(event -> log.info("deleted posts: {}", event))
+                .compose(it -> this.authors.deleteAll())
+                .onSuccess(event -> log.info("deleted users: {}", event));
     }
 }

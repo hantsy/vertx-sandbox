@@ -1,11 +1,5 @@
 package com.example.demo
 
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import io.vertx.core.json.jackson.DatabindCodec
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.core.http.httpServerOptionsOf
@@ -37,17 +31,6 @@ class MainVerticle : CoroutineVerticle(), CoroutineRouterSupport {
         private fun setupLogging() {
             MainVerticle::class.java.getResourceAsStream("/logging.properties")
                 .use { f -> LogManager.getLogManager().readConfiguration(f) }
-        }
-
-        init {
-            LOGGER.info("Customizing the built-in jackson ObjectMapper...")
-            val objectMapper = DatabindCodec.mapper()
-            objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-            objectMapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS)
-            objectMapper.disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS)
-            objectMapper.registerKotlinModule()
-            objectMapper.registerModule(JavaTimeModule())
-            objectMapper.registerModule(Jdk8Module())
         }
     }
 

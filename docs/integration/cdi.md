@@ -8,12 +8,12 @@ In [the last post](./spring.md), we introduced a simple approach to integrate Ve
 
 This module is built with:
 
-- **Vert.x 5.1.3** (via `vertx-stack-depchain` BOM)
+- **Vert.x 5.2.3** (via `vertx-stack-depchain` BOM)
 - **Java 25** (`maven.compiler.release=25`)
 - **Weld SE 6.0.4.Final** (`weld-se-shaded`)
 - **Jandex 3.5.3** (class indexing)
-- **Jackson 2.22.0** (via `jackson-bom`)
-- **JUnit 6.0.2**, AssertJ 3.27.7
+- **Jackson 3.1.4** (via `tools.jackson:jackson-bom`)
+- **JUnit 6.1.3**, AssertJ 3.27.7
 
 Add the following dependencies.
 

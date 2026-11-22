@@ -1,10 +1,6 @@
 package com.example.demo;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.reactivex.rxjava3.core.Completable;
-import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.rxjava3.core.AbstractVerticle;
 import io.vertx.rxjava3.ext.web.Router;
@@ -18,16 +14,6 @@ import org.slf4j.LoggerFactory;
 public class MainVerticle extends AbstractVerticle {
     private static final Logger log = LoggerFactory.getLogger(MainVerticle.class);
 
-    static {
-        log.info("Customizing the built-in jackson ObjectMapper...");
-        var objectMapper = DatabindCodec.mapper();
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        objectMapper.disable(SerializationFeature.WRITE_DATE_TIMESTAMPS_AS_NANOSECONDS);
-        objectMapper.disable(DeserializationFeature.READ_DATE_TIMESTAMPS_AS_NANOSECONDS);
-
-        JavaTimeModule module = new JavaTimeModule();
-        objectMapper.registerModule(module);
-    }
 
     @Override
     public Completable rxStart() {
